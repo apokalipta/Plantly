@@ -1,65 +1,57 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { ListPlantsQueryDto } from './dto/list-plants.query.dto';
 import { PlantSpeciesListItemDto } from './dto/plant-species-list-item.dto';
 import { PlantSpeciesDetailsDto } from './dto/plant-species-details.dto';
+import { PrismaService } from '../../database/prisma.service';
+ 
 
 @Injectable()
 export class WikiService {
-  // TODO: Later: load from separate wiki DB/schema
-  // TODO: Later: add full-text search by name
-
-  private readonly data: PlantSpeciesDetailsDto[] = [
-    {
-      id: 1,
-      commonName: 'Snake Plant',
-      latinName: 'Sansevieria trifasciata',
-      descriptionShort: 'Hardy, low-light tolerant plant.',
-      imageUrl: 'https://example.com/snake-plant.jpg',
-      care: {
-        minMoisture: 20,
-        maxMoisture: 40,
-        minLight: 100,
-        maxLight: 1000,
-        wateringIntervalDays: 14,
-        recommendedTemperatureMin: 15,
-        recommendedTemperatureMax: 30,
-        careTips: 'Allow soil to dry between waterings.'
-      }
-    },
-    {
-      id: 2,
-      commonName: 'Peace Lily',
-      latinName: 'Spathiphyllum',
-      descriptionShort: 'Popular indoor plant with white blooms.',
-      imageUrl: 'https://example.com/peace-lily.jpg',
-      care: {
-        minMoisture: 40,
-        maxMoisture: 70,
-        minLight: 200,
-        maxLight: 800,
-        wateringIntervalDays: 7,
-        recommendedTemperatureMin: 18,
-        recommendedTemperatureMax: 27,
-        careTips: 'Keep soil evenly moist; avoid direct sun.'
-      }
-    }
-  ];
+  constructor(private readonly prisma: PrismaService) {}
 
   async listPlantSpecies(query: ListPlantsQueryDto): Promise<PlantSpeciesListItemDto[]> {
-    const search = (query.search || '').toLowerCase();
-    const items = this.data
-      .filter(s => !search || s.commonName.toLowerCase().includes(search) || (s.latinName || '').toLowerCase().includes(search))
-      .map<PlantSpeciesListItemDto>(s => ({
-        id: s.id,
-        commonName: s.commonName,
-        latinName: s.latinName,
-        descriptionShort: s.descriptionShort,
-      }));
-    return items;
+    const search = query.search?.trim();
+    const where = search
+      ? {
+          OR: [
+            { commonName: { contains: search, mode: 'insensitive' as const } },
+            { latinName: { contains: search, mode: 'insensitive' as const } },
+          ],
+        }
+      : undefined;
+    const rows = await this.prisma.plantSpecies.findMany({ where, orderBy: { commonName: 'asc' } });
+    return rows.map((s: any) => ({
+      id: s.id,
+      commonName: s.commonName,
+      latinName: s.latinName ?? undefined,
+      descriptionShort: s.descriptionShort ?? undefined,
+    }));
   }
 
-  async getPlantSpeciesById(id: number): Promise<PlantSpeciesDetailsDto | null> {
-    const found = this.data.find(s => s.id === id) || null;
-    return found;
+  async getPlantSpeciesById(id: number): Promise<PlantSpeciesDetailsDto> {
+    const s = await this.prisma.plantSpecies.findUnique({
+      where: { id },
+      include: { care: true },
+    });
+    if (!s) throw new NotFoundException('Plant species not found');
+    return {
+      id: s.id,
+      commonName: s.commonName,
+      latinName: s.latinName ?? undefined,
+      descriptionShort: s.descriptionShort ?? undefined,
+      imageUrl: s.imageUrl ?? undefined,
+      care: s.care
+        ? {
+            minMoisture: s.care.minMoisture ?? undefined,
+            maxMoisture: s.care.maxMoisture ?? undefined,
+            minLight: s.care.minLight ?? undefined,
+            maxLight: s.care.maxLight ?? undefined,
+            wateringIntervalDays: s.care.wateringIntervalDays ?? undefined,
+            recommendedTemperatureMin: s.care.recommendedTemperatureMin ?? undefined,
+            recommendedTemperatureMax: s.care.recommendedTemperatureMax ?? undefined,
+            careTips: s.care.careTips ?? undefined,
+          }
+        : {},
+    };
   }
 }

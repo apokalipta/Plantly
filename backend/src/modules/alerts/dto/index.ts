@@ -1,2 +1,2 @@
-// TODO: add alert DTOs
-
+export * from './alert.dto';
+export * from './list-alerts.query.dto';

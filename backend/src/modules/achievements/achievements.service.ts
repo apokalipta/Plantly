@@ -9,7 +9,7 @@ export class AchievementsService {
   async getUserAchievements(userId: string): Promise<AchievementStatusDto[]> {
     const achievements = await this.prisma.achievement.findMany({
       include: {
-        users: {
+        userAchievements: {
           where: { userId },
         },
       },
@@ -17,8 +17,8 @@ export class AchievementsService {
     });
 
     return achievements.map((a: any) => {
-      const unlocked = a.users && a.users.length > 0;
-      const unlockedAt = unlocked ? a.users[0].unlockedAt : null;
+      const unlocked = a.userAchievements && a.userAchievements.length > 0;
+      const unlockedAt = unlocked ? a.userAchievements[0].unlockedAt : null;
       const dto: AchievementStatusDto = {
         id: a.id,
         code: a.code,

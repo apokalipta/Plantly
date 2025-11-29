@@ -2,6 +2,7 @@ import { Injectable, NotFoundException, BadRequestException } from '@nestjs/comm
 import { ListPotsResponseDto } from './dto/list-pots.response.dto';
 import { PotDetailsResponseDto } from './dto/pot-details.response.dto';
 import { LinkPotDto } from './dto/link-pot.dto';
+import { ProvisionDeviceDto } from './dto/provision-device.dto';
 import { PrismaService } from '../../database/prisma.service';
 
 @Injectable()
@@ -26,7 +27,14 @@ export class DevicesService {
           where: { deviceId: d.id },
           orderBy: { timestamp: 'desc' },
         });
-        const globalStatus = this.computeGlobalStatus(d as any, latest as any);
+        const plant = await this.prisma.plantInstance.findFirst({
+          where: { deviceId: d.id, status: 'ACTIVE' },
+          orderBy: { plantedAt: 'desc' },
+        });
+        const plantCare = plant
+          ? await this.prisma.plantCare.findUnique({ where: { speciesId: plant.speciesId } })
+          : null;
+        const globalStatus = this.computeGlobalStatus(d as any, latest as any, plantCare as any);
         const nextMeasurementIntervalMinutes = this.computeNextMeasurementIntervalMinutes(globalStatus);
         // TODO: expose nextMeasurementIntervalMinutes in the API or use it for device scheduling endpoints later.
         const item: ListPotsResponseDto = {
@@ -59,7 +67,10 @@ export class DevicesService {
       orderBy: { timestamp: 'desc' },
     });
 
-    const globalStatus = this.computeGlobalStatus(device as any, latest as any);
+    const plantCare = plant
+      ? await this.prisma.plantCare.findUnique({ where: { speciesId: plant.speciesId } })
+      : null;
+    const globalStatus = this.computeGlobalStatus(device as any, latest as any, plantCare as any);
     const nextMeasurementIntervalMinutes = this.computeNextMeasurementIntervalMinutes(globalStatus);
     // TODO: expose nextMeasurementIntervalMinutes in the API or use it for device scheduling endpoints later.
 
@@ -91,21 +102,43 @@ export class DevicesService {
     return details;
   }
 
+  async provisionDevice(dto: ProvisionDeviceDto): Promise<{ deviceUid: string; pairingCode: string; name: string }> {
+    const existing = await this.prisma.device.findUnique({ where: { deviceUid: dto.deviceUid } });
+    if (existing) {
+      throw new BadRequestException('Device UID already exists');
+    }
+    const code = this.generatePairingCode();
+    const created = await this.prisma.device.create({
+      data: {
+        deviceUid: dto.deviceUid,
+        deviceSecretHash: 'PROVISIONED_NO_SECRET',
+        ownerId: null,
+        name: dto.name ?? 'New Device',
+        pairingCode: code,
+        pairedAt: null,
+      },
+    });
+    return { deviceUid: created.deviceUid, pairingCode: code, name: created.name };
+  }
+
   async linkPotToUser(userId: string, dto: LinkPotDto): Promise<PotDetailsResponseDto> {
     const device = await this.prisma.device.findUnique({ where: { deviceUid: dto.deviceUid } });
     if (!device) {
-      // TODO: In real setup, devices are pre-provisioned and pairingCode validated
       throw new NotFoundException('Device not found for provided UID');
     }
-    if (device.ownerId && device.ownerId !== userId) {
-      throw new BadRequestException('Device already linked to another user');
+    if (device.ownerId) {
+      throw new BadRequestException('Device already paired');
     }
-    // TODO: validate pairingCode properly
+    if (!dto.pairingCode || device.pairingCode !== dto.pairingCode) {
+      throw new BadRequestException('Invalid pairing code');
+    }
     const updated = await this.prisma.device.update({
       where: { id: device.id },
       data: {
         ownerId: userId,
         name: dto.name ?? device.name,
+        pairedAt: new Date(),
+        pairingCode: null,
       },
     });
 
@@ -117,7 +150,6 @@ export class DevicesService {
           nickname: dto.plantNickname ?? null,
           plantedAt: new Date(),
           status: 'ACTIVE',
-          userId: userId,
         },
       });
     }
@@ -127,7 +159,8 @@ export class DevicesService {
 
   private computeGlobalStatus(
     device: { lastSeenAt: Date | null },
-    latestReading?: { timestamp: Date } | null,
+    latestReading?: { timestamp: Date; soilMoisture?: number; lightLevel?: number } | null,
+    plantCare?: { minMoisture?: number | null; maxMoisture?: number | null; minLight?: number | null; maxLight?: number | null } | null,
   ): 'OK' | 'ACTION_REQUIRED' | 'BAD' | 'OFFLINE' {
     const now = Date.now();
     if (!device.lastSeenAt) {
@@ -142,39 +175,39 @@ export class DevicesService {
       return 'ACTION_REQUIRED';
     }
 
-    const reading: any = latestReading;
-    const soilMoisture: number | undefined = reading.soilMoisture;
-    const lightLevel: number | undefined = reading.lightLevel;
+    const reading = latestReading;
+    const soilMoisture = reading.soilMoisture;
+    const lightLevel = reading.lightLevel;
 
-    // If any critical value missing, be cautious.
-    if (soilMoisture === undefined || lightLevel === undefined) {
-      return 'ACTION_REQUIRED';
-    }
+    const moistureMin = (plantCare?.minMoisture ?? this.MOISTURE_MIN);
+    const moistureMax = (plantCare?.maxMoisture ?? this.MOISTURE_MAX);
+    const lightMin = (plantCare?.minLight ?? this.LIGHT_MIN);
+    const lightMax = (plantCare?.maxLight ?? this.LIGHT_MAX);
 
-    // Generic ranges with tolerance. TODO: Replace with species-based thresholds from wiki using PlantInstance.speciesId
-    const moistureRange = this.MOISTURE_MAX - this.MOISTURE_MIN;
-    const lightRange = this.LIGHT_MAX - this.LIGHT_MIN;
-    const moistureMinTol = this.MOISTURE_MIN - moistureRange * this.RANGE_TOLERANCE_RATIO;
-    const moistureMaxTol = this.MOISTURE_MAX + moistureRange * this.RANGE_TOLERANCE_RATIO;
-    const lightMinTol = this.LIGHT_MIN - lightRange * this.RANGE_TOLERANCE_RATIO;
-    const lightMaxTol = this.LIGHT_MAX + lightRange * this.RANGE_TOLERANCE_RATIO;
+    const evalMetric = (value: number | undefined, min: number, max: number) => {
+      if (value === undefined || value === null) return 'missing' as const;
+      const range = max - min;
+      const margin = range * this.RANGE_TOLERANCE_RATIO;
+      const outerMin = min - margin;
+      const outerMax = max + margin;
+      if (value >= min && value <= max) return 'good' as const;
+      if (value >= outerMin && value <= outerMax) return 'slight' as const;
+      return 'bad' as const;
+    };
 
-    const moistureWithin = soilMoisture >= this.MOISTURE_MIN && soilMoisture <= this.MOISTURE_MAX;
-    const lightWithin = lightLevel >= this.LIGHT_MIN && lightLevel <= this.LIGHT_MAX;
+    const moistureStatus = evalMetric(soilMoisture, moistureMin, moistureMax);
+    const lightStatus = evalMetric(lightLevel, lightMin, lightMax);
 
-    const moistureSlight = !moistureWithin && soilMoisture >= moistureMinTol && soilMoisture <= moistureMaxTol;
-    const lightSlight = !lightWithin && lightLevel >= lightMinTol && lightLevel <= lightMaxTol;
-
-    const moistureFar = !moistureWithin && !moistureSlight;
-    const lightFar = !lightWithin && !lightSlight;
-
-    if (moistureWithin && lightWithin) {
-      return 'OK';
-    }
-    if (moistureFar || lightFar) {
+    if (moistureStatus === 'bad' || lightStatus === 'bad') {
       return 'BAD';
     }
-    return 'ACTION_REQUIRED';
+    if (moistureStatus === 'slight' || lightStatus === 'slight') {
+      return 'ACTION_REQUIRED';
+    }
+    if (moistureStatus === 'missing' && lightStatus === 'missing') {
+      return 'ACTION_REQUIRED';
+    }
+    return 'OK';
   }
 
   private computeNextMeasurementIntervalMinutes(
@@ -182,5 +215,10 @@ export class DevicesService {
   ): number {
     // TODO: This interval will be used when implementing device scheduling / polling endpoints (backend-driven requests).
     return globalStatus === 'OK' ? 60 : 30;
+  }
+
+  private generatePairingCode(): string {
+    const n = Math.floor(Math.random() * 1000000);
+    return String(n).padStart(6, '0');
   }
 }

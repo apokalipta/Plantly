@@ -1,0 +1,21 @@
+# Base docker-compose for local development
+# This defines the PostgreSQL service and a named volume.
+# Other services (backend, web) will be added later for a full multi-container setup.
+
+services:
+  db:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: plantly
+      POSTGRES_PASSWORD: plantly_password
+      POSTGRES_DB: plantly_dev
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
+    driver: local
+

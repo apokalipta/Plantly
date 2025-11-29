@@ -56,6 +56,7 @@ export class AuthService {
       throw new UnauthorizedException('Invalid refresh token');
     }
     const userId: string | undefined = payload?.sub;
+    const version: number | undefined = payload?.tokenVersion;
     if (!userId) {
       throw new UnauthorizedException('Invalid refresh token payload');
     }
@@ -63,12 +64,14 @@ export class AuthService {
     if (!user) {
       throw new UnauthorizedException('User not found');
     }
+    if (version === undefined || version !== user.tokenVersion) {
+      throw new UnauthorizedException('Refresh token invalidated');
+    }
     return this.generateTokens(user);
   }
 
-  async logout(userIdOrToken: any): Promise<void> {
-    // TODO: invalidate refresh token/session if implementing token store
-    return;
+  async logout(userId: string): Promise<void> {
+    await this.prisma.user.update({ where: { id: userId }, data: { tokenVersion: { increment: 1 } } });
   }
 
   async requestPasswordReset(dto: ForgotPasswordDto): Promise<void> {
@@ -77,14 +80,25 @@ export class AuthService {
   }
 
   async resetPassword(dto: ResetPasswordDto): Promise<void> {
-    // TODO: validate password reset token and update password
-    return;
+    // TODO: validate reset token properly (email flow). For now, assume token encodes userId as JWT.
+    const resetSecret = this.config.get<string>('JWT_RESET_TOKEN_SECRET') || 'TODO_RESET_SECRET';
+    let payload: any;
+    try {
+      payload = await this.jwtService.verifyAsync(dto.token, { secret: resetSecret });
+    } catch {
+      throw new BadRequestException('Invalid or expired reset token');
+    }
+    const userId: string | undefined = payload?.sub;
+    if (!userId) throw new BadRequestException('Invalid reset token payload');
+    const saltRounds = 10; // TODO: move to config
+    const newHash = await bcrypt.hash(dto.newPassword, saltRounds);
+    await this.prisma.user.update({ where: { id: userId }, data: { passwordHash: newHash, tokenVersion: { increment: 1 } } });
   }
 
-  private async generateTokens(user: { id: string; email: string }): Promise<TokenPairDto> {
+  private async generateTokens(user: { id: string; email: string; tokenVersion?: number }): Promise<TokenPairDto> {
     const accessSecret = this.config.get<string>('JWT_ACCESS_TOKEN_SECRET') || 'TODO_ACCESS_SECRET';
     const refreshSecret = this.config.get<string>('JWT_REFRESH_TOKEN_SECRET') || 'TODO_REFRESH_SECRET';
-    const payload = { sub: user.id, email: user.email };
+    const payload = { sub: user.id, email: user.email, tokenVersion: user.tokenVersion ?? 0 };
     const accessToken = await this.jwtService.signAsync(payload, {
       secret: accessSecret,
       expiresIn: '15m', // TODO: make configurable

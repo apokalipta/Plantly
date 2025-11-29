@@ -14,6 +14,7 @@ import { MeasurementsModule } from './modules/measurements/measurements.module';
 import { AlertsModule } from './modules/alerts/alerts.module';
 import { AchievementsModule } from './modules/achievements/achievements.module';
 import { DatabaseModule } from './database/database.module';
+import { DeviceTelemetryModule } from './modules/device-telemetry/device-telemetry.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { DatabaseModule } from './database/database.module';
     MeasurementsModule,
     AlertsModule,
     AchievementsModule,
+    DeviceTelemetryModule,
   ],
 })
 export class AppModule {}
