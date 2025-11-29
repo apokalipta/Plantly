@@ -15,3 +15,9 @@ export async function getPotAlerts(id: string): Promise<any[]> {
   return http(`/pots/${id}/alerts`, { method: 'GET' });
 }
 
+export async function getPotMeasurements(potId: string, limit: number = 50): Promise<any[]> {
+  // TODO: type properly MeasurementDto[]
+  const params = new URLSearchParams({ limit: String(limit) });
+  return http(`/pots/${potId}/measurements?${params.toString()}`, { method: 'GET' });
+}
+

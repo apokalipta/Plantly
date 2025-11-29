@@ -23,6 +23,13 @@
           <p class="muted">Lumière: {{ pot.latestMeasurement?.lightLevel ?? '—' }}</p>
           <p class="muted">Température: {{ pot.latestMeasurement?.temperature ?? '—' }}</p>
         </div>
+        <section class="card" style="margin-top: 1.5rem;">
+          <h2>Historique des mesures</h2>
+          <p class="muted">Dernières valeurs d'humidité du sol.</p>
+          <div v-if="loadingMeasurements">Chargement des mesures…</div>
+          <div v-else-if="errorMeasurements" style="color:#ef4444">{{ errorMeasurements }}</div>
+          <MeasurementsChart v-else :measurements="measurements" />
+        </section>
         <div style="margin-top:1rem">
           <h3>Alertes</h3>
           <p class="muted">TODO: afficher les alertes</p>
@@ -33,9 +40,11 @@
 </template>
 
 <script setup>
-import { onMounted, computed } from 'vue';
+import { onMounted, computed, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { usePotsStore } from '../stores/pots';
+import { getPotMeasurements } from '../api/potsApi';
+import MeasurementsChart from '@/components/MeasurementsChart.vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -45,6 +54,7 @@ const potId = computed(() => String(route.params.id || ''));
 onMounted(() => {
   if (potId.value) {
     potsStore.fetchPotById(potId.value);
+    loadMeasurements(potId.value);
   }
 });
 
@@ -56,4 +66,21 @@ function speciesName(plant) { return plant?.speciesName || plant?.speciesId || '
 const pot = computed(() => potsStore.selectedPot);
 const loading = computed(() => potsStore.loading);
 const error = computed(() => potsStore.error);
+
+const measurements = ref([]);
+const loadingMeasurements = ref(false);
+const errorMeasurements = ref(null);
+
+async function loadMeasurements(id) {
+  loadingMeasurements.value = true;
+  errorMeasurements.value = null;
+  try {
+    measurements.value = await getPotMeasurements(id, 50);
+  } catch (e) {
+    console.error(e);
+    errorMeasurements.value = 'Erreur lors du chargement des mesures';
+  } finally {
+    loadingMeasurements.value = false;
+  }
+}
 </script>
