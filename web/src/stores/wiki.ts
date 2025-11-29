@@ -7,8 +7,21 @@ export const useWikiStore = defineStore('wiki', {
     selectedPlant: null as any | null,
     loading: false,
     error: null as string | null,
+    favorites: [] as number[],
   }),
   actions: {
+    initFavorites() {
+      try {
+        const raw = localStorage.getItem('wikiFavorites');
+        this.favorites = raw ? JSON.parse(raw) : [];
+      } catch { this.favorites = []; }
+    },
+    toggleFavorite(id: number) {
+      const set = new Set(this.favorites);
+      if (set.has(id)) set.delete(id); else set.add(id);
+      this.favorites = Array.from(set);
+      try { localStorage.setItem('wikiFavorites', JSON.stringify(this.favorites)); } catch {}
+    },
     async fetchPlants(search: string = '') {
       this.loading = true;
       this.error = null;
@@ -37,4 +50,3 @@ export const useWikiStore = defineStore('wiki', {
     },
   },
 });
-

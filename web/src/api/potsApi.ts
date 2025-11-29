@@ -21,3 +21,14 @@ export async function getPotMeasurements(potId: string, limit: number = 50): Pro
   return http(`/pots/${potId}/measurements?${params.toString()}`, { method: 'GET' });
 }
 
+export async function linkPot(payload: {
+  deviceUid: string;
+  pairingCode: string;
+  name?: string;
+  speciesId?: number;
+  plantNickname?: string;
+}): Promise<any> {
+  // TODO: type properly PotDetails
+  return http('/pots/link', { method: 'POST', body: JSON.stringify(payload) });
+}
+

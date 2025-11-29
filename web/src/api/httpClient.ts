@@ -6,7 +6,10 @@ export async function http<T>(path: string, init?: RequestInit): Promise<T> {
   const url = `${baseURL}${path}`;
   const doFetch = async (): Promise<Response> => {
     const headers = new Headers(init?.headers);
-    headers.set('Content-Type', 'application/json');
+    const bodyIsFormData = typeof FormData !== 'undefined' && init?.body instanceof FormData;
+    if (!headers.has('Content-Type') && !bodyIsFormData) {
+      headers.set('Content-Type', 'application/json');
+    }
     const token = localStorage.getItem('accessToken');
     if (token && !headers.has('Authorization')) headers.set('Authorization', `Bearer ${token}`);
     return fetch(url, { ...init, headers });
