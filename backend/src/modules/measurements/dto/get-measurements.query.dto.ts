@@ -1,8 +1,5 @@
+// DTO de requête: paramètres de filtre pour les mesures.
 import { IsOptional, IsISO8601, IsInt, Min } from 'class-validator';
-
-/**
- * Query parameters for fetching measurements.
- */
 export class GetMeasurementsQueryDto {
   @IsOptional()
   @IsISO8601()

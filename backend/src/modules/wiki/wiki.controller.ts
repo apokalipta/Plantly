@@ -1,3 +1,4 @@
+// Contrôleur wiki: liste et détails des espèces de plantes.
 import { Controller, Get, Param, Query, NotFoundException, ParseIntPipe } from '@nestjs/common';
 import { WikiService } from './wiki.service';
 import { ListPlantsQueryDto } from './dto/list-plants.query.dto';
@@ -10,6 +11,7 @@ import { ApiTags, ApiOperation, ApiOkResponse, ApiNotFoundResponse } from '@nest
 export class WikiController {
   constructor(private readonly wikiService: WikiService) {}
 
+  // Liste/recherche d'espèces
   @Get('plants')
   @ApiOperation({ summary: 'List/search plant species' })
   @ApiOkResponse({ type: PlantSpeciesListItemDto, isArray: true, schema: { example: [ { id: 12, commonName: 'Basilic', latinName: 'Ocimum basilicum', descriptionShort: 'Plante aromatique facile à cultiver.' } ] } })
@@ -17,6 +19,7 @@ export class WikiController {
     return this.wikiService.listPlantSpecies(query);
   }
 
+  // Détails d'une espèce (avec infos de soin)
   @Get('plants/:id')
   @ApiOperation({ summary: 'Get plant species details with care info' })
   @ApiOkResponse({ type: PlantSpeciesDetailsDto, schema: { example: { id: 12, commonName: 'Basilic', latinName: 'Ocimum basilicum', descriptionShort: 'Plante aromatique.', imageUrl: 'https://mycdn/plants/basil.jpg', care: { minMoisture: 30, maxMoisture: 70, minLight: 200, maxLight: 1000, wateringIntervalDays: 3, recommendedTemperatureMin: 18, recommendedTemperatureMax: 26, careTips: 'Gardez le sol légèrement humide.' } } } })

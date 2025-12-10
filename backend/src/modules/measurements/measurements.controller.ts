@@ -1,3 +1,4 @@
+// Contrôleur des mesures: liste et dernier relevé pour un pot.
 import { Controller, Get, Param, Query, UseGuards } from '@nestjs/common';
 import { MeasurementsService } from './measurements.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
@@ -12,6 +13,7 @@ import { ApiTags, ApiBearerAuth, ApiOkResponse, ApiOperation, ApiNotFoundRespons
 export class MeasurementsController {
   constructor(private readonly measurementsService: MeasurementsService) {}
 
+  // Liste des mesures (filtrage par période/limite)
   @UseGuards(JwtAuthGuard)
   @Get()
   @ApiOperation({ summary: 'List measurements for a pot' })
@@ -25,6 +27,7 @@ export class MeasurementsController {
     return this.measurementsService.getMeasurementsForPot(user?.userId, potId, query);
   }
 
+  // Dernier relevé pour un pot
   @UseGuards(JwtAuthGuard)
   @Get('latest')
   @ApiOperation({ summary: 'Get latest measurement for a pot' })

@@ -1,3 +1,4 @@
+// Service télémétrie: ingestion, validations essentielles, persistance et mise à jour des alertes.
 import { Injectable, UnauthorizedException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
 import { AlertsService } from '../alerts/alerts.service';
@@ -7,6 +8,7 @@ import * as crypto from 'crypto';
 
 @Injectable()
 export class DeviceTelemetryService {
+  // Injections
   constructor(private readonly prisma: PrismaService, private readonly alerts: AlertsService) {}
 
   async handleTelemetry(
@@ -15,11 +17,13 @@ export class DeviceTelemetryService {
     signature: string,
     dto: TelemetryDto,
   ): Promise<{ status: string }> {
+    // Vérifier device + horodatage + signature, puis persister et mettre à jour le statut
     const device = await this.prisma.device.findUnique({ where: { deviceUid } });
     if (!device) {
       throw new UnauthorizedException('Unknown device UID');
     }
 
+    // Valider horodatage (±5 min)
     const parsedHeaderTs = this.parseTimestamp(headerTimestamp);
     if (!parsedHeaderTs) {
       throw new BadRequestException('Invalid timestamp header');
@@ -30,8 +34,8 @@ export class DeviceTelemetryService {
       throw new UnauthorizedException('Timestamp too far from server time');
     }
 
+    // Vérifier signature HMAC (placeholder)
     // TODO: Retrieve real secret (not hashed) to compute HMAC. Current schema stores deviceSecretHash.
-    // For now, prepare structure and bypass strict verification with a TODO.
     const payloadString = JSON.stringify(dto) + headerTimestamp;
     const secret = 'TODO_DEVICE_SECRET'; // TODO: replace with real secret management
     const expected = crypto.createHmac('sha256', secret).update(payloadString).digest('hex');
@@ -41,11 +45,13 @@ export class DeviceTelemetryService {
       throw new UnauthorizedException('Invalid signature');
     }
 
+    // Valider timestamp de la mesure
     const readingTimestamp = this.parseTimestamp(dto.timestamp);
     if (!readingTimestamp) {
       throw new BadRequestException('Invalid telemetry timestamp');
     }
 
+    // Persister lecture
     await this.prisma.sensorReading.create({
       data: {
         deviceId: device.id,
@@ -56,11 +62,13 @@ export class DeviceTelemetryService {
       },
     });
 
+    // Mettre à jour lastSeenAt
     await this.prisma.device.update({
       where: { id: device.id },
       data: { lastSeenAt: new Date() },
     });
 
+    // Calculer statut global + synchroniser alertes
     const plant = await this.prisma.plantInstance.findFirst({
       where: { deviceId: device.id, status: 'ACTIVE' },
       orderBy: { plantedAt: 'desc' },
@@ -81,9 +89,11 @@ export class DeviceTelemetryService {
       await this.alerts.resolveAllForDevice(device.id);
     }
 
+    // Confirmer
     return { status: 'ok' };
   }
 
+  // Parse timestamp (ISO ou epoch ms)
   private parseTimestamp(ts: string): Date | null {
     if (!ts) return null;
     // Try ISO 8601

@@ -10,7 +10,7 @@
       </div>
       <div class="mk-card" style="margin-top:1rem">
         <p>{{ plant.descriptionShort }}</p>
-        <img v-if="plant.imageUrl" :src="plant.imageUrl" alt="image" style="margin-top:0.75rem; max-width:100%; border-radius:12px;" />
+        <img v-if="plant.imageUrl" :src="resolveImageUrl(plant.imageUrl)" alt="image" style="margin-top:0.75rem; max-width:100%; border-radius:12px;" />
       </div>
       <div class="mk-card" v-if="plant.care" style="margin-top:1rem">
         <h2>Conseils de soin</h2>
@@ -33,6 +33,15 @@ const route = useRoute();
 const router = useRouter();
 const wiki = useWikiStore();
 const id = computed(() => (typeof route.params.id === 'string' ? route.params.id : ''));
+
+function resolveImageUrl(u) {
+  const base = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
+  const root = base.endsWith('/api') ? base.slice(0, -4) : base;
+  if (!u) return '';
+  if (/^https?:\/\//.test(u)) return u;
+  if (u.startsWith('/')) return `${root}${u}`;
+  return u;
+}
 
 onMounted(() => { if (id.value) wiki.fetchPlantById(id.value); });
 

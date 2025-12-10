@@ -1,6 +1,4 @@
-/**
- * Response DTO representing a user's pot in a list.
- */
+// DTO de réponse: pot de l'utilisateur dans une liste.
 export class ListPotsResponseDto {
   id!: string;
   name!: string;

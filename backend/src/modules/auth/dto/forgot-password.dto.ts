@@ -1,8 +1,5 @@
+// DTO mot de passe oublié: demande d'email de réinitialisation.
 import { IsEmail } from 'class-validator';
-
-/**
- * DTO to request a password reset email.
- */
 export class ForgotPasswordDto {
   @IsEmail()
   email!: string;

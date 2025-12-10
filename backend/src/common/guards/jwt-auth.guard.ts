@@ -1,3 +1,4 @@
+// Garde JWT: s'appuie sur la stratégie 'jwt' de Passport.
 import { Injectable } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 

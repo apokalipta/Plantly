@@ -41,7 +41,7 @@ async function main() {
       commonName: 'Basilic',
       latinName: 'Ocimum basilicum',
       descriptionShort: 'Plante aromatique facile à cultiver.',
-      imageUrl: null,
+      imageUrl: '/static/plants/basilic.png',
       care: {
         minMoisture: 30.0,
         maxMoisture: 70.0,
@@ -89,7 +89,7 @@ async function main() {
       commonName: 'Basilic',
       latinName: 'Ocimum basilicum',
       descriptionShort: 'Plante aromatique facile à cultiver, idéale pour l’intérieur ou un balcon ensoleillé.',
-      imageUrl: null,
+      imageUrl: '/static/plants/basilic.png',
       care: {
         minMoisture: 30.0,
         maxMoisture: 70.0,
@@ -220,7 +220,7 @@ async function main() {
   for (const s of wikiSpecies) {
     const species = await prisma.plantSpecies.upsert({
       where: { commonName: s.commonName },
-      update: {},
+      update: { imageUrl: s.imageUrl },
       create: {
         commonName: s.commonName,
         latinName: s.latinName,

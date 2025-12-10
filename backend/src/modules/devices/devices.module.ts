@@ -1,3 +1,4 @@
+// Module des appareils/pots: expose contrôleurs et service avec accès base.
 import { Module } from '@nestjs/common';
 import { DevicesController } from './devices.controller';
 import { DevicesService } from './devices.service';

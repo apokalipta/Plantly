@@ -1,3 +1,4 @@
+// Service des appareils/pots: recherche, détails, appairage et statut global.
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { ListPotsResponseDto } from './dto/list-pots.response.dto';
 import { PotDetailsResponseDto } from './dto/pot-details.response.dto';
@@ -16,11 +17,13 @@ export class DevicesService {
   private readonly RANGE_TOLERANCE_RATIO = 0.1; // 10% tolerance
 
   async findUserPots(userId: string): Promise<ListPotsResponseDto[]> {
+    // Récupère les appareils de l'utilisateur
     const devices = await this.prisma.device.findMany({
       where: { ownerId: userId },
       orderBy: { createdAt: 'desc' },
     });
 
+    // Compose la réponse avec dernier relevé et statut global
     const results = await Promise.all(
       devices.map(async (d: any) => {
         const latest = await this.prisma.sensorReading.findFirst({
@@ -52,11 +55,13 @@ export class DevicesService {
   }
 
   async findUserPotById(userId: string, potId: string): Promise<PotDetailsResponseDto> {
+    // Vérifie la possession du pot
     const device = await this.prisma.device.findFirst({ where: { id: potId, ownerId: userId } });
     if (!device) {
       throw new NotFoundException('Pot not found');
     }
 
+    // Récupère plante active et dernier relevé
     const plant = await this.prisma.plantInstance.findFirst({
       where: { deviceId: device.id, status: 'ACTIVE' },
       orderBy: { plantedAt: 'desc' },
@@ -67,6 +72,7 @@ export class DevicesService {
       orderBy: { timestamp: 'desc' },
     });
 
+    // Calcule le statut global à partir des seuils
     const plantCare = plant
       ? await this.prisma.plantCare.findUnique({ where: { speciesId: plant.speciesId } })
       : null;
@@ -74,6 +80,7 @@ export class DevicesService {
     const nextMeasurementIntervalMinutes = this.computeNextMeasurementIntervalMinutes(globalStatus);
     // TODO: expose nextMeasurementIntervalMinutes in the API or use it for device scheduling endpoints later.
 
+    // Compose la réponse détaillée
     const details: PotDetailsResponseDto = {
       id: device.id,
       name: device.name,
@@ -103,10 +110,12 @@ export class DevicesService {
   }
 
   async provisionDevice(dto: ProvisionDeviceDto): Promise<{ deviceUid: string; pairingCode: string; name: string }> {
+    // Crée un nouvel appareil si l'UID est libre
     const existing = await this.prisma.device.findUnique({ where: { deviceUid: dto.deviceUid } });
     if (existing) {
       throw new BadRequestException('Device UID already exists');
     }
+    // Génère un code d'appairage et persiste
     const code = this.generatePairingCode();
     const created = await this.prisma.device.create({
       data: {
@@ -122,6 +131,7 @@ export class DevicesService {
   }
 
   async linkPotToUser(userId: string, dto: LinkPotDto): Promise<PotDetailsResponseDto> {
+    // Vérifie l'existence de l'appareil et disponibilités
     const device = await this.prisma.device.findUnique({ where: { deviceUid: dto.deviceUid } });
     if (!device) {
       throw new NotFoundException('Device not found for provided UID');
@@ -129,9 +139,11 @@ export class DevicesService {
     if (device.ownerId) {
       throw new BadRequestException('Device already paired');
     }
+    // Valide le code d'appairage
     if (!dto.pairingCode || device.pairingCode !== dto.pairingCode) {
       throw new BadRequestException('Invalid pairing code');
     }
+    // Lie l'appareil à l'utilisateur et met à jour les métadonnées
     const updated = await this.prisma.device.update({
       where: { id: device.id },
       data: {
@@ -142,6 +154,7 @@ export class DevicesService {
       },
     });
 
+    // Crée une instance de plante si une espèce est fournie
     if (dto.speciesId) {
       await this.prisma.plantInstance.create({
         data: {
@@ -162,6 +175,7 @@ export class DevicesService {
     latestReading?: { timestamp: Date; soilMoisture?: number; lightLevel?: number } | null,
     plantCare?: { minMoisture?: number | null; maxMoisture?: number | null; minLight?: number | null; maxLight?: number | null } | null,
   ): 'OK' | 'ACTION_REQUIRED' | 'BAD' | 'OFFLINE' {
+    // Statut basé sur l'activité et les métriques (humidité/lumière)
     const now = Date.now();
     if (!device.lastSeenAt) {
       return 'OFFLINE';
@@ -213,11 +227,13 @@ export class DevicesService {
   private computeNextMeasurementIntervalMinutes(
     globalStatus: 'OK' | 'ACTION_REQUIRED' | 'BAD' | 'OFFLINE'
   ): number {
+    // Intervalle de mesure recommandé selon le statut global
     // TODO: This interval will be used when implementing device scheduling / polling endpoints (backend-driven requests).
     return globalStatus === 'OK' ? 60 : 30;
   }
 
   private generatePairingCode(): string {
+    // Code à 6 chiffres, zéro‑pad
     const n = Math.floor(Math.random() * 1000000);
     return String(n).padStart(6, '0');
   }

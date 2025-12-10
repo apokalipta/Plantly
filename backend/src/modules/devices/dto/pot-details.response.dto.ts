@@ -1,6 +1,4 @@
-/**
- * Detailed response DTO for a single pot.
- */
+// DTO de réponse détaillée pour un pot.
 export class PotDetailsResponseDto {
   id!: string;
   name!: string;
@@ -9,10 +7,10 @@ export class PotDetailsResponseDto {
   globalStatus!: 'OK' | 'ACTION_REQUIRED' | 'BAD' | 'OFFLINE';
   plant?: {
     id: string;
-    speciesId: number; // From separate wiki schema
+    speciesId: number; // Référence au wiki des plantes
     nickname?: string;
     plantedAt: Date;
-    status: string; // e.g., PlantStatus
+    status: string; // Statut (ex: PlantStatus)
   };
   latestMeasurement?: {
     timestamp: Date;

@@ -1,2 +1,2 @@
-// TODO: add wiki DTOs when schema is defined
+// Regroupement des DTO du wiki (à compléter si nécessaire)
 

@@ -1,3 +1,4 @@
+// Module wiki: expose contrôleur et service avec accès base.
 import { Module } from '@nestjs/common';
 import { DatabaseModule } from '../../database/database.module';
 import { WikiController } from './wiki.controller';

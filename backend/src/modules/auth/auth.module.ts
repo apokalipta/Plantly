@@ -1,3 +1,4 @@
+// Module d'authentification: assemble contrôleur, service, JWT et configuration.
 import { Module } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
@@ -11,6 +12,7 @@ import { DatabaseModule } from '../../database/database.module';
     ConfigModule,
     DatabaseModule,
     JwtModule.register({
+      // Configuration de signature pour le jeton d'accès
       secret: process.env.JWT_ACCESS_TOKEN_SECRET || 'TODO_SECRET',
       signOptions: { expiresIn: '15m' },
       // TODO: configure refresh tokens and more JWT options

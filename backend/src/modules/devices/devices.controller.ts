@@ -1,3 +1,4 @@
+// Contrôleurs des pots et appareils: endpoints utilisateur et provisionnement.
 import { Controller, Get, Post, Body, Param, UseGuards } from '@nestjs/common';
 import { DevicesService } from './devices.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
@@ -14,6 +15,7 @@ import { ApiTags, ApiBearerAuth, ApiOkResponse, ApiOperation, ApiBadRequestRespo
 export class DevicesController {
   constructor(private readonly devicesService: DevicesService) {}
 
+  // Liste des pots de l'utilisateur courant
   @UseGuards(JwtAuthGuard)
   @Get()
   @ApiOperation({ summary: 'List pots for current user' })
@@ -22,6 +24,7 @@ export class DevicesController {
     return this.devicesService.findUserPots(user?.userId);
   }
 
+  // Détails d'un pot (vérifie la possession)
   @UseGuards(JwtAuthGuard)
   @Get(':id')
   @ApiOperation({ summary: 'Get pot details' })
@@ -31,6 +34,7 @@ export class DevicesController {
     return this.devicesService.findUserPotById(user?.userId, potId);
   }
 
+  // Lier un pot à l'utilisateur via code d'appairage
   @UseGuards(JwtAuthGuard)
   @Post('link')
   @ApiOperation({ summary: 'Link a pot to the current user' })
@@ -49,6 +53,7 @@ export class DevicesController {
 export class DevicesProvisionController {
   constructor(private readonly devicesService: DevicesService) {}
 
+  // Provisionner un appareil (génère un code d'appairage)
   @Post('provision')
   @ApiOperation({ summary: 'Provision a device (admin-only)' })
   @ApiBody({ type: ProvisionDeviceDto, examples: { example: { value: { deviceUid: 'PLANT-ABC-001', name: 'Kitchen Pot' } } } })

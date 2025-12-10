@@ -1,3 +1,4 @@
+// DTO de provisionnement d'appareil.
 import { IsOptional, IsString } from 'class-validator';
 
 export class ProvisionDeviceDto {

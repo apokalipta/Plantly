@@ -1,3 +1,4 @@
+// Service d'authentification: gestion des comptes, jetons, et réinitialisation.
 import { Injectable, BadRequestException, UnauthorizedException } from '@nestjs/common';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
@@ -19,10 +20,12 @@ export class AuthService {
   ) {}
 
   async register(dto: RegisterDto): Promise<TokenPairDto> {
+    // Vérifie l'unicité de l'email
     const existing = await this.prisma.user.findUnique({ where: { email: dto.email } });
     if (existing) {
       throw new BadRequestException('Email already registered');
     }
+    // Hachage du mot de passe puis création de l'utilisateur
     const saltRounds = 10; // TODO: move to config
     const passwordHash = await bcrypt.hash(dto.password, saltRounds);
     const user = await this.prisma.user.create({
@@ -32,14 +35,17 @@ export class AuthService {
         emailVerified: false,
       },
     });
+    // Génère et renvoie les jetons
     return this.generateTokens(user);
   }
 
   async login(dto: LoginDto): Promise<TokenPairDto> {
+    // Recherche de l'utilisateur par email
     const user = await this.prisma.user.findUnique({ where: { email: dto.email } });
     if (!user) {
       throw new UnauthorizedException('Invalid credentials');
     }
+    // Compare le mot de passe et renvoie les jetons
     const match = await bcrypt.compare(dto.password, user.passwordHash);
     if (!match) {
       throw new UnauthorizedException('Invalid credentials');
@@ -48,6 +54,7 @@ export class AuthService {
   }
 
   async refreshTokens(dto: RefreshTokenDto): Promise<TokenPairDto> {
+    // Vérifie le refresh token et récupère le payload
     const refreshSecret = this.config.get<string>('JWT_REFRESH_TOKEN_SECRET') || 'TODO_REFRESH_SECRET';
     let payload: any;
     try {
@@ -55,6 +62,7 @@ export class AuthService {
     } catch {
       throw new UnauthorizedException('Invalid refresh token');
     }
+    // Valide l'utilisateur et la version du token
     const userId: string | undefined = payload?.sub;
     const version: number | undefined = payload?.tokenVersion;
     if (!userId) {
@@ -67,19 +75,23 @@ export class AuthService {
     if (version === undefined || version !== user.tokenVersion) {
       throw new UnauthorizedException('Refresh token invalidated');
     }
+    // Génère de nouveaux jetons
     return this.generateTokens(user);
   }
 
   async logout(userId: string): Promise<void> {
+    // Invalide les refresh tokens en incrémentant la version
     await this.prisma.user.update({ where: { id: userId }, data: { tokenVersion: { increment: 1 } } });
   }
 
   async requestPasswordReset(dto: ForgotPasswordDto): Promise<void> {
+    // Déclenche l'envoi d'un lien de réinitialisation (implémentation à venir)
     // TODO: send reset email or push; do not reveal user existence
     return;
   }
 
   async resetPassword(dto: ResetPasswordDto): Promise<void> {
+    // Valide le jeton de réinitialisation et met à jour le mot de passe
     // TODO: validate reset token properly (email flow). For now, assume token encodes userId as JWT.
     const resetSecret = this.config.get<string>('JWT_RESET_TOKEN_SECRET') || 'TODO_RESET_SECRET';
     let payload: any;
@@ -96,6 +108,7 @@ export class AuthService {
   }
 
   private async generateTokens(user: { id: string; email: string; tokenVersion?: number }): Promise<TokenPairDto> {
+    // Construit le payload et signe les jetons d'accès et de rafraîchissement
     const accessSecret = this.config.get<string>('JWT_ACCESS_TOKEN_SECRET') || 'TODO_ACCESS_SECRET';
     const refreshSecret = this.config.get<string>('JWT_REFRESH_TOKEN_SECRET') || 'TODO_REFRESH_SECRET';
     const payload = { sub: user.id, email: user.email, tokenVersion: user.tokenVersion ?? 0 };

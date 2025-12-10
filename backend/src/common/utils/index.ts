@@ -1,3 +1,3 @@
-// TODO: add shared utility functions
+// Utilitaires partagés: placer les fonctions communes au projet ici.
 export const noop = () => {};
 

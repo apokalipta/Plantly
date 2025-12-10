@@ -1,3 +1,4 @@
+// DTO détails espèce de plante (avec conseils de soin).
 export class PlantSpeciesDetailsDto {
   id!: number;
   commonName!: string;

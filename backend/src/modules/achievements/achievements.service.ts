@@ -1,12 +1,15 @@
+// Service succès: définitions + statut utilisateur (mapping DTO).
 import { Injectable } from '@nestjs/common';
 import { AchievementStatusDto } from './dto/achievement-status.dto';
 import { PrismaService } from '../../database/prisma.service';
 
 @Injectable()
 export class AchievementsService {
+  // Prisma
   constructor(private readonly prisma: PrismaService) {}
 
   async getUserAchievements(userId: string): Promise<AchievementStatusDto[]> {
+    // Définitions + unlocks utilisateur
     const achievements = await this.prisma.achievement.findMany({
       include: {
         userAchievements: {
@@ -16,6 +19,7 @@ export class AchievementsService {
       orderBy: { createdAt: 'asc' },
     });
 
+    // Mapping DTO
     return achievements.map((a: any) => {
       const unlocked = a.userAchievements && a.userAchievements.length > 0;
       const unlockedAt = unlocked ? a.userAchievements[0].unlockedAt : null;
@@ -34,6 +38,7 @@ export class AchievementsService {
   }
 
   async listAllAchievements(): Promise<AchievementStatusDto[]> {
+    // Définitions seules
     const achievements = await this.prisma.achievement.findMany({ orderBy: { createdAt: 'asc' } });
     return achievements.map((a: any) => ({
       id: a.id,

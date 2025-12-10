@@ -1,6 +1,4 @@
-/**
- * DTO representing a sensor measurement.
- */
+// DTO représentant un relevé capteur.
 export class MeasurementDto {
   timestamp!: Date;
   soilMoisture?: number;

@@ -1,3 +1,4 @@
+// Stratégie JWT: extrait, vérifie et valide l'utilisateur à chaque requête protégée.
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
@@ -7,6 +8,7 @@ import { PrismaService } from '../../database/prisma.service';
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
   constructor(private readonly prisma: PrismaService, configService: ConfigService) {
+    // Configuration de l'extraction et du secret du JWT
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
@@ -15,6 +17,7 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
   }
 
   async validate(payload: any) {
+    // Vérifie l'identité et la version de jeton de l'utilisateur
     const userId: string | undefined = payload?.sub;
     if (!userId) throw new UnauthorizedException();
     const user = await this.prisma.user.findUnique({ where: { id: userId } });

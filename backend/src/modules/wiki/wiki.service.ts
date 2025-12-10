@@ -1,3 +1,4 @@
+// Service wiki: recherche et détails des espèces (avec infos de soin).
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { ListPlantsQueryDto } from './dto/list-plants.query.dto';
 import { PlantSpeciesListItemDto } from './dto/plant-species-list-item.dto';
@@ -10,6 +11,7 @@ export class WikiService {
   constructor(private readonly prisma: PrismaService) {}
 
   async listPlantSpecies(query: ListPlantsQueryDto): Promise<PlantSpeciesListItemDto[]> {
+    // Prépare le filtre de recherche
     const search = query.search?.trim();
     const where = search
       ? {
@@ -19,6 +21,7 @@ export class WikiService {
           ],
         }
       : undefined;
+    // Interroge la base puis mappe vers DTO liste
     const rows = await this.prisma.plantSpecies.findMany({ where, orderBy: { commonName: 'asc' } });
     return rows.map((s: any) => ({
       id: s.id,
@@ -29,11 +32,13 @@ export class WikiService {
   }
 
   async getPlantSpeciesById(id: number): Promise<PlantSpeciesDetailsDto> {
+    // Récupère l'espèce et ses infos de soin
     const s = await this.prisma.plantSpecies.findUnique({
       where: { id },
       include: { care: true },
     });
     if (!s) throw new NotFoundException('Plant species not found');
+    // Mappe vers DTO détaillé
     return {
       id: s.id,
       commonName: s.commonName,

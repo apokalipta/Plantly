@@ -1,3 +1,4 @@
+// Module paramètres utilisateur: expose contrôleur et service.
 import { Module } from '@nestjs/common';
 import { UserSettingsController } from './user-settings.controller';
 import { UserSettingsService } from './user-settings.service';

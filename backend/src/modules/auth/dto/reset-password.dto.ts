@@ -1,8 +1,5 @@
+// DTO de réinitialisation: nouveau mot de passe via jeton.
 import { IsString, MinLength } from 'class-validator';
-
-/**
- * DTO for resetting password using a token.
- */
 export class ResetPasswordDto {
   @IsString()
   token!: string;

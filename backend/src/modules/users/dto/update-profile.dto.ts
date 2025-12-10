@@ -1,7 +1,7 @@
+// DTO de mise à jour du profil utilisateur.
 import { IsOptional, IsString } from 'class-validator';
 
 export class UpdateProfileDto {
-  // TODO: extend based on requirements
   @IsOptional()
   @IsString()
   displayName?: string;
