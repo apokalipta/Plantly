@@ -5,6 +5,9 @@ import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { ListAlertsQueryDto, AlertDto } from './dto';
 import { ApiBearerAuth, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+// Intention: Exposer les endpoints REST pour lister et résoudre les alertes d’un pot
+// Objectif: Restreindre l’accès via JWT et retourner des DTO cohérents
+// Logique: Vérification de l’utilisateur courant et délégation au service d’alertes
 
 // Doc Swagger + Bearer
 @ApiTags('alerts')

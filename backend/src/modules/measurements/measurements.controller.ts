@@ -6,6 +6,9 @@ import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { GetMeasurementsQueryDto } from './dto/get-measurements.query.dto';
 import { MeasurementDto } from './dto/measurement.dto';
 import { ApiTags, ApiBearerAuth, ApiOkResponse, ApiOperation, ApiNotFoundResponse } from '@nestjs/swagger';
+// Intention: Endpoints de lecture des mesures (liste et dernière)
+// Objectif: Garantir l’accès propriétaire et fournir des DTO simples
+// Logique: Guard JWT, décorateur CurrentUser, délégation au service
 
 @ApiTags('measurements')
 @ApiBearerAuth()

@@ -1,4 +1,7 @@
 /// <reference types="vite/client" />
+// Intention: Fournir un client HTTP minimal avec gestion des jetons et refresh
+// Objectif: Centraliser l’injection du Bearer et relancer la requête après 401
+// Logique: Détermination de baseURL, ajout d’Authorization et flux de refresh avec redirection sûre
 let base = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
 const baseURL = base.endsWith('/api') ? base : `${base}/api`;
 
@@ -59,5 +62,6 @@ function handleRefreshFailure(): false {
   if (!current.startsWith('/login')) {
     try { window.location.assign(`/login?redirect=${encodeURIComponent(current)}`); } catch {}
   }
+  // Sécurité: en cas d’échec refresh, on purge et on redirige vers login
   return false;
 }

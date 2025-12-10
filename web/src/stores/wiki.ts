@@ -1,5 +1,8 @@
 import { defineStore } from 'pinia';
 import * as wikiApi from '../api/wikiApi';
+// Intention: Store du wiki pour lister et consulter les fiches plantes
+// Objectif: Gérer favoris, état de chargement et erreurs
+// Logique: Persistance locale des favoris et appels API typés
 
 export const useWikiStore = defineStore('wiki', {
   state: () => ({

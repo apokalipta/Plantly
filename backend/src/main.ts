@@ -6,6 +6,9 @@ import { AppModule } from './app.module';
 import { BadRequestException, ValidationPipe } from '@nestjs/common';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+// Intention: Point d’entrée de l’API Nest
+// Objectif: Configurer les sécurités globales (CORS, validation), documentation et démarrage
+// Logique: Pipes globaux avec whitelist, Swagger en dev, préfixe /api et port configurable
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
@@ -35,6 +38,7 @@ async function bootstrap() {
         new BadRequestException({ type: 'VALIDATION_ERROR', errors }),
     })
   );
+  // Sécurité: empêche les propriétés inconnues et force la transformation des DTO
   app.useGlobalFilters(new HttpExceptionFilter());
 
   const config = new DocumentBuilder()
@@ -46,6 +50,7 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('docs', app, document);
   // TODO: restrict Swagger in production (e.g., behind auth or disabled)
+  // Intention: exposer la doc pour faciliter les intégrations; à restreindre en prod
 
   // TODO: Enable HTTPS in production with proper certificates
   const port = process.env.PORT ? Number(process.env.PORT) : 3000;

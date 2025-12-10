@@ -1,6 +1,9 @@
 // Service Prisma: gère la connexion à la base et l'arrêt propre.
 import { Injectable, OnModuleInit, INestApplication } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
+// Intention: Adapter Prisma à Nest (cycle de vie et configuration)
+// Objectif: Gérer la connexion et la fermeture propre de l’application
+// Logique: Lecture de DATABASE_URL et hooks de shutdown pour relâcher les ressources
 
 @Injectable()
 export class PrismaService extends PrismaClient implements OnModuleInit {

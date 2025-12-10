@@ -20,6 +20,9 @@
 </template>
 
 <script setup>
+// Intention: Vue de connexion avec gestion des erreurs et redirection
+// Objectif: Authentifier l’utilisateur et stocker les jetons via le store
+// Logique: Soumission contrôlée, états de chargement et messages d’erreur
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '../stores/auth';

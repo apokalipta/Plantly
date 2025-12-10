@@ -1,5 +1,8 @@
 import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router';
 import { useAuthStore } from '../stores/auth';
+// Intention: Définir les routes et protéger celles nécessitant une authentification
+// Objectif: Rediriger vers /login lorsque l’utilisateur n’est pas authentifié
+// Logique: Liste de noms protégés et guard global beforeEach avec redirect
 
 const routes: Array<RouteRecordRaw> = [
   { path: '/', name: 'home', component: () => import('../views/HomeView.vue') },

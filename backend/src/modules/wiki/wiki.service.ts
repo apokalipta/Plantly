@@ -28,6 +28,8 @@ export class WikiService {
       commonName: s.commonName,
       latinName: s.latinName ?? undefined,
       descriptionShort: s.descriptionShort ?? undefined,
+      code: s.code ?? undefined,
+      imageUrl: s.imageUrl ?? undefined,
     }));
   }
 
@@ -39,22 +41,24 @@ export class WikiService {
     });
     if (!s) throw new NotFoundException('Plant species not found');
     // Mappe vers DTO détaillé
+    const sp: any = s as any;
     return {
-      id: s.id,
-      commonName: s.commonName,
-      latinName: s.latinName ?? undefined,
-      descriptionShort: s.descriptionShort ?? undefined,
-      imageUrl: s.imageUrl ?? undefined,
-      care: s.care
+      id: sp.id,
+      commonName: sp.commonName,
+      latinName: sp.latinName ?? undefined,
+      descriptionShort: sp.descriptionShort ?? undefined,
+      imageUrl: sp.imageUrl ?? undefined,
+      code: sp.code ?? undefined,
+      care: sp.care
         ? {
-            minMoisture: s.care.minMoisture ?? undefined,
-            maxMoisture: s.care.maxMoisture ?? undefined,
-            minLight: s.care.minLight ?? undefined,
-            maxLight: s.care.maxLight ?? undefined,
-            wateringIntervalDays: s.care.wateringIntervalDays ?? undefined,
-            recommendedTemperatureMin: s.care.recommendedTemperatureMin ?? undefined,
-            recommendedTemperatureMax: s.care.recommendedTemperatureMax ?? undefined,
-            careTips: s.care.careTips ?? undefined,
+            minMoisture: sp.care.minMoisture ?? undefined,
+            maxMoisture: sp.care.maxMoisture ?? undefined,
+            minLight: sp.care.minLight ?? undefined,
+            maxLight: sp.care.maxLight ?? undefined,
+            wateringIntervalDays: sp.care.wateringIntervalDays ?? undefined,
+            recommendedTemperatureMin: sp.care.recommendedTemperatureMin ?? undefined,
+            recommendedTemperatureMax: sp.care.recommendedTemperatureMax ?? undefined,
+            careTips: sp.care.careTips ?? undefined,
           }
         : {},
     };

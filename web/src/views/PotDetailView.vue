@@ -61,6 +61,9 @@
 </template>
 
 <script setup>
+// Intention: Vue détail d’un pot avec mesures et alertes
+// Objectif: Charger les données par ID route et offrir navigation/retour
+// Logique: Hooks de route, stores/API et états de chargement/erreur
 import { onMounted, computed, ref } from 'vue';
 import { useRoute, useRouter, onBeforeRouteUpdate } from 'vue-router';
 import { usePotsStore } from '../stores/pots';

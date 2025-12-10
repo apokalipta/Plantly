@@ -1,4 +1,7 @@
 import { http } from './httpClient';
+// Intention: Encapsuler les appels API liés au profil utilisateur
+// Objectif: Exposer des fonctions simples pour lecture/écriture des données de profil
+// Logique: Requêtes HTTP typées avec chemins stables sous /users et /auth
 
 export async function getMe(): Promise<any> {
   return http('/users/me', { method: 'GET' });

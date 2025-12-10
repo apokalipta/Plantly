@@ -1,9 +1,8 @@
-// DTO de mise à jour du profil utilisateur.
-import { IsOptional, IsString } from 'class-validator';
+import { IsOptional, IsString, MinLength } from 'class-validator';
 
 export class UpdateProfileDto {
   @IsOptional()
   @IsString()
-  displayName?: string;
+  @MinLength(3)
+  username?: string;
 }
-

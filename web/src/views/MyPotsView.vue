@@ -20,6 +20,9 @@
 </template>
 
 <script setup>
+// Intention: Afficher la liste des pots de l’utilisateur et leurs statuts
+// Objectif: Charger depuis le store et offrir navigation vers le détail
+// Logique: onMounted -> fetch, gestion des états UI et routing
 import { onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { usePotsStore } from '../stores/pots';

@@ -5,6 +5,7 @@ export class PlantSpeciesDetailsDto {
   latinName?: string;
   descriptionShort?: string;
   imageUrl?: string;
+  code?: string;
   care!: {
     minMoisture?: number;
     maxMoisture?: number;
@@ -16,4 +17,3 @@ export class PlantSpeciesDetailsDto {
     careTips?: string;
   };
 }
-

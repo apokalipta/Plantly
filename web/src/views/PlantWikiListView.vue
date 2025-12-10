@@ -24,6 +24,9 @@
 </template>
 
 <script setup>
+// Intention: Liste des plantes du wiki avec favoris et recherche
+// Objectif: Charger et trier, mise en avant des favoris
+// Logique: Store wiki, watch sur recherche et navigation vers le détail
 import { ref, onMounted, watch, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { useWikiStore } from '../stores/wiki';

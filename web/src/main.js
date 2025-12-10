@@ -4,6 +4,9 @@ import router from './router/index.ts';
 import App from './App.vue';
 import './assets/styles.css';
 import { useAuthStore } from './stores/auth';
+// Intention: Initialiser l’application Vue (Pinia + Router) et l’état d’auth
+// Objectif: Restaurer les jetons depuis le storage dès le démarrage
+// Logique: Créer l’app, enregistrer Pinia/Router, puis initFromStorage avant mount
 
 const app = createApp(App);
 const pinia = createPinia();

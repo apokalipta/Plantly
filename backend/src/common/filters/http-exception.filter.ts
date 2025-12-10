@@ -1,5 +1,8 @@
 // Filtre d'exceptions HTTP: uniformise les réponses d'erreur (validation incluse).
 import { ArgumentsHost, BadRequestException, Catch, ExceptionFilter, HttpException, HttpStatus } from '@nestjs/common';
+// Intention: Normaliser les réponses d’erreur HTTP, y compris la validation
+// Objectif: Retourner un format stable pour le frontend et journaliser les erreurs inattendues
+// Logique: Détection des erreurs de validation, extraction des détails et fallback 500
 
 @Catch()
 export class HttpExceptionFilter implements ExceptionFilter {
@@ -50,4 +53,3 @@ export class HttpExceptionFilter implements ExceptionFilter {
     });
   }
 }
-

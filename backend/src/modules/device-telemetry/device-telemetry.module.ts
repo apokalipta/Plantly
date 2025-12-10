@@ -4,11 +4,10 @@ import { DeviceTelemetryController } from './device-telemetry.controller';
 import { DeviceTelemetryService } from './device-telemetry.service';
 import { DatabaseModule } from '../../database/database.module';
 import { AlertsModule } from '../alerts/alerts.module';
+import { AchievementsModule } from '../achievements/achievements.module';
 
 @Module({
-  // Dépendances
-  imports: [DatabaseModule, AlertsModule],
-  // Contrôleur
+  imports: [DatabaseModule, AlertsModule, AchievementsModule],
   controllers: [DeviceTelemetryController],
   // Service
   providers: [DeviceTelemetryService],

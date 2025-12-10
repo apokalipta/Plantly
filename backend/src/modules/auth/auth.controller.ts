@@ -10,6 +10,9 @@ import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { TokenPairDto } from './dto/token-pair.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
+// Intention: Endpoints d’authentification (register/login/refresh/logout/password)
+// Objectif: Encapsuler le flux JWT et les opérations de sécurité
+// Logique: Corps JSON validés, guard sur endpoints sensibles, retour de paires de jetons
 
 @ApiTags('auth')
 @Controller('auth')

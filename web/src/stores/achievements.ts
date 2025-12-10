@@ -1,5 +1,8 @@
 import { defineStore } from 'pinia';
 import * as achievementsApi from '../api/achievementsApi';
+// Intention: Store Pinia pour charger et exposer les succès utilisateur
+// Objectif: Gérer l’état de chargement/erreur et normaliser les données
+// Logique: Appel API unique et affectation sécurisée avec Array.isArray
 
 export const useAchievementsStore = defineStore('achievements', {
   state: () => ({
@@ -23,4 +26,3 @@ export const useAchievementsStore = defineStore('achievements', {
     },
   },
 });
-

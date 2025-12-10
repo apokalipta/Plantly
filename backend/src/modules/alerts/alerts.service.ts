@@ -2,6 +2,9 @@
 import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
 import { AlertDto, ListAlertsQueryDto } from './dto';
+// Intention: Gestion des alertes côté serveur (création, mise à jour, résolution)
+// Objectif: Protéger l’accès par ownership et éviter les doublons en cours
+// Logique: Requêtes Prisma ciblées, escalade de sévérité et résolution atomique
 
 @Injectable()
 export class AlertsService {

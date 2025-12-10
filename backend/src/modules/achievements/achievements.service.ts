@@ -2,6 +2,9 @@
 import { Injectable } from '@nestjs/common';
 import { AchievementStatusDto } from './dto/achievement-status.dto';
 import { PrismaService } from '../../database/prisma.service';
+// Intention: Lecture des succès et projection au format DTO
+// Objectif: Combiner définitions et statut utilisateur (déverrouillé)
+// Logique: Jointure logique via include et mapping des champs optionnels
 
 @Injectable()
 export class AchievementsService {

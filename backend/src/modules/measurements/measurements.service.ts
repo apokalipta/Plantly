@@ -3,6 +3,9 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { GetMeasurementsQueryDto } from './dto/get-measurements.query.dto';
 import { MeasurementDto } from './dto/measurement.dto';
 import { PrismaService } from '../../database/prisma.service';
+// Intention: Accéder aux séries temporelles de mesures des appareils
+// Objectif: Filtrer par pot propriétaire et exposer des DTO
+// Logique: Requêtes ordonnées par timestamp et mapping des valeurs facultatives
 
 @Injectable()
 export class MeasurementsService {

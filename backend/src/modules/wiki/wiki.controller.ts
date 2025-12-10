@@ -1,6 +1,9 @@
 // Contrôleur wiki: liste et détails des espèces de plantes.
 import { Controller, Get, Param, Query, NotFoundException, ParseIntPipe } from '@nestjs/common';
 import { WikiService } from './wiki.service';
+// Intention: Endpoints publics du wiki des plantes
+// Objectif: Proposer liste et détails avec infos de soin
+// Logique: Délégation au service et gestion 404 quand l’espèce est absente
 import { ListPlantsQueryDto } from './dto/list-plants.query.dto';
 import { PlantSpeciesListItemDto } from './dto/plant-species-list-item.dto';
 import { PlantSpeciesDetailsDto } from './dto/plant-species-details.dto';

@@ -3,6 +3,9 @@ import { Body, Controller, Headers, Post } from '@nestjs/common';
 import { DeviceTelemetryService } from './device-telemetry.service';
 import { TelemetryDto } from './dto/telemetry.dto';
 import { ApiTags, ApiOperation, ApiBody, ApiOkResponse, ApiUnauthorizedResponse, ApiBadRequestResponse } from '@nestjs/swagger';
+// Intention: Point d’entrée d’ingestion des télémétries des appareils
+// Objectif: Exiger des en-têtes d’authentification HMAC et un payload valide
+// Logique: Déléguer la validation profonde et l’écriture au service dédié
 
 // Doc Swagger (tag)
 @ApiTags('device-telemetry')
@@ -47,4 +50,3 @@ export class DeviceTelemetryController {
     return this.service.handleTelemetry(deviceUid, headerTimestamp, signature, dto);
   }
 }
-

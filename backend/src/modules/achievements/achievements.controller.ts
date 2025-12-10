@@ -5,6 +5,9 @@ import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { AchievementStatusDto } from './dto/achievement-status.dto';
 import { ApiTags, ApiBearerAuth, ApiOkResponse, ApiOperation } from '@nestjs/swagger';
+// Intention: Endpoints pour consulter les succès (utilisateur et catalogue)
+// Objectif: Protéger l’accès utilisateur et rendre un format homogène
+// Logique: Guard JWT sur /me, route publique pour catalogue
 
 // Doc Swagger (tag)
 @ApiTags('achievements')

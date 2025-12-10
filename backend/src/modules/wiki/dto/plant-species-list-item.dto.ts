@@ -4,5 +4,6 @@ export class PlantSpeciesListItemDto {
   commonName!: string;
   latinName?: string;
   descriptionShort?: string;
+  code?: string;
+  imageUrl?: string | null;
 }
-

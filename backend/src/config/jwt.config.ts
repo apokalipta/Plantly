@@ -1,5 +1,8 @@
 // Configuration JWT: secrets d'accès et de rafraîchissement.
 import { registerAs } from '@nestjs/config';
+// Intention: Configurer les secrets JWT (access/refresh)
+// Objectif: Centraliser la lecture sécurisée des clés et options
+// Logique: Exposition via ConfigService, à compléter avec issuer/audience/exp
 
 export const JwtConfig = registerAs('jwt', () => ({
   // Secret pour signer le jeton d'accès

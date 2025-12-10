@@ -5,10 +5,15 @@ import { PotDetailsResponseDto } from './dto/pot-details.response.dto';
 import { LinkPotDto } from './dto/link-pot.dto';
 import { ProvisionDeviceDto } from './dto/provision-device.dto';
 import { PrismaService } from '../../database/prisma.service';
+import { AchievementsEngineService } from '../../achievements/achievements-engine.service';
+import { AchievementEventType } from '../../achievements/AchievementEventType';
+// Intention: Gérer le cycle de vie des appareils/pots (provision, liaison, statut)
+// Objectif: Calculer un statut global et exposer des DTO pour le frontend
+// Logique: Lecture des dernières mesures, soins de l’espèce et seuils tolérants
 
 @Injectable()
 export class DevicesService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService, private readonly achievements: AchievementsEngineService) {}
 
   private readonly MOISTURE_MIN = 30;
   private readonly MOISTURE_MAX = 70;
@@ -166,6 +171,8 @@ export class DevicesService {
         },
       });
     }
+
+    await this.achievements.onEvent(userId, AchievementEventType.DEVICE_PAIRED, { deviceId: updated.id });
 
     return this.findUserPotById(userId, updated.id);
   }

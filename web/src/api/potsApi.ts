@@ -1,4 +1,7 @@
 import { http } from './httpClient';
+// Intention: Gérer les appels relatifs aux pots (liste, détails, mesures)
+// Objectif: Centraliser les accès côté frontend et clarifier les types attendus
+// Logique: GET/POST vers endpoints /pots avec pagination/limites et liaison
 
 export async function getMyPots(): Promise<any[]> {
   // TODO: type properly PotSummary[]

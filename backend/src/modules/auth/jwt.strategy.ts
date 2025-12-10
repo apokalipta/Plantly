@@ -4,6 +4,9 @@ import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { PrismaService } from '../../database/prisma.service';
+// Intention: Valider les JWT et injecter l’utilisateur courant
+// Objectif: Refuser les jetons expirés/invalides et vérifier tokenVersion
+// Logique: Extraction du Bearer, lookup Prisma et synchronisation avec invalidations
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {

@@ -25,6 +25,9 @@
 </template>
 
 <script setup>
+// Intention: Détail d’une espèce du wiki avec conseils de soin
+// Objectif: Charger par ID route et afficher image/infos
+// Logique: Hooks de route et store wiki pour gérer l’état et la navigation
 import { onMounted, computed } from 'vue';
 import { useRoute, useRouter, onBeforeRouteUpdate } from 'vue-router';
 import { useWikiStore } from '../stores/wiki';

@@ -1,5 +1,8 @@
 import { defineStore } from 'pinia';
 import * as authApi from '../api/authApi';
+// Intention: Store Pinia pour l’authentification (tokens et email utilisateur)
+// Objectif: Encapsuler les actions login/register/logout et l’état d’auth
+// Logique: Persistance locale des jetons, getters pour isAuthenticated
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
@@ -26,7 +29,16 @@ export const useAuthStore = defineStore('auth', {
       localStorage.setItem('userEmail', email);
     },
     async register(email: string, password: string) {
-      const res = await authApi.register({ email, password });
+      const res = await authApi.register({ email, password, username: `user-${Math.random().toString(36).slice(2,8)}` });
+      this.accessToken = res.accessToken;
+      this.refreshToken = res.refreshToken;
+      this.userEmail = email;
+      localStorage.setItem('accessToken', res.accessToken);
+      localStorage.setItem('refreshToken', res.refreshToken);
+      localStorage.setItem('userEmail', email);
+    },
+    async registerWithUsername(email: string, password: string, username: string) {
+      const res = await authApi.register({ email, password, username });
       this.accessToken = res.accessToken;
       this.refreshToken = res.refreshToken;
       this.userEmail = email;

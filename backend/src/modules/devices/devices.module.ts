@@ -3,9 +3,10 @@ import { Module } from '@nestjs/common';
 import { DevicesController } from './devices.controller';
 import { DevicesService } from './devices.service';
 import { DatabaseModule } from '../../database/database.module';
+import { AchievementsModule } from '../achievements/achievements.module';
 
 @Module({
-  imports: [DatabaseModule],
+  imports: [DatabaseModule, AchievementsModule],
   controllers: [DevicesController],
   providers: [DevicesService],
 })

@@ -37,4 +37,6 @@ export const usePotsStore = defineStore('pots', {
     },
   },
 });
-
+// Intention: Store Pinia pour gérer la liste et les détails des pots
+// Objectif: Centraliser les appels et l’état (chargement, erreurs)
+// Logique: Méthodes asynchrones appelant potsApi avec gestion d’erreurs

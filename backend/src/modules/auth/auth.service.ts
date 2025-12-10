@@ -10,6 +10,9 @@ import { PrismaService } from '../../database/prisma.service';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
+// Intention: Gérer l’inscription, la connexion et la rotation des jetons
+// Objectif: Sécuriser l’accès avec JWT (access/refresh) et invalidation via tokenVersion
+// Logique: Vérifications de doublons, hash des mots de passe, signature contrôlée par configuration
 
 @Injectable()
 export class AuthService {
@@ -25,15 +28,22 @@ export class AuthService {
     if (existing) {
       throw new BadRequestException('Email already registered');
     }
-    // Hachage du mot de passe puis création de l'utilisateur
+    if (!dto.username || dto.username.length < 3) {
+      throw new BadRequestException('Username too short');
+    }
+    const usernameExists = await this.prisma.user.findFirst({ where: { username: dto.username } as any });
+    if (usernameExists) {
+      throw new BadRequestException('Username already taken');
+    }
     const saltRounds = 10; // TODO: move to config
     const passwordHash = await bcrypt.hash(dto.password, saltRounds);
     const user = await this.prisma.user.create({
       data: {
         email: dto.email,
+        username: dto.username,
         passwordHash,
         emailVerified: false,
-      },
+      } as any,
     });
     // Génère et renvoie les jetons
     return this.generateTokens(user);
@@ -75,7 +85,7 @@ export class AuthService {
     if (version === undefined || version !== user.tokenVersion) {
       throw new UnauthorizedException('Refresh token invalidated');
     }
-    // Génère de nouveaux jetons
+    // Sécurité: tokenVersion invalide tous les refresh précédents (logout global)
     return this.generateTokens(user);
   }
 
@@ -105,6 +115,7 @@ export class AuthService {
     const saltRounds = 10; // TODO: move to config
     const newHash = await bcrypt.hash(dto.newPassword, saltRounds);
     await this.prisma.user.update({ where: { id: userId }, data: { passwordHash: newHash, tokenVersion: { increment: 1 } } });
+    // Sécurité: invalider les sessions après réinitialisation en incrémentant tokenVersion
   }
 
   private async generateTokens(user: { id: string; email: string; tokenVersion?: number }): Promise<TokenPairDto> {
