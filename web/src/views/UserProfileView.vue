@@ -1,75 +1,75 @@
 <template>
-  <div class="page-container">
-    <div class="card" style="max-width:760px; margin:0 auto;">
-      <h1>profile</h1>
-      <div v-if="toastMessage" class="mk-card" style="background:#d1fae5; color:#064e3b; border:1px solid #a7f3d0; margin-top:0.5rem;">
-        {{ toastMessage }}
-      </div>
-      <div v-if="toastError" class="mk-card" style="background:#fee2e2; color:#7f1d1d; border:1px solid #fecaca; margin-top:0.5rem;">
-        {{ toastError }}
-      </div>
-      <div style="display:flex; gap:1rem; align-items:center; margin-top:0.75rem;">
-        <div style="width:80px; height:80px; border-radius:50%; background:#1f2937; overflow:hidden; display:flex; align-items:center; justify-content:center;">
-          <img v-if="avatarPreview" :src="avatarPreview" alt="avatar" style="width:100%; height:100%; object-fit:cover;" />
-          <span v-else class="muted">A</span>
-        </div>
-        <div style="flex:1;">
-          <p class="muted" style="margin:0 0 0.25rem 0">{{ displayedUsername || localUsername }}</p>
-          <button class="btn" @click="openAvatarModal">Change profile picture</button>
-        </div>
-      </div>
+  <section class="section">
+    <div class="container">
+      <div class="row justify-content-center">
+        <div class="col-lg-8">
+          <div class="card card-static shadow border-0 p-4">
+            <h1 class="mb-3">Profil</h1>
+            <div v-if="toastMessage" class="alert alert-success">{{ toastMessage }}</div>
+            <div v-if="toastError" class="alert alert-danger">{{ toastError }}</div>
 
-      <div style="margin-top:1rem;">
-        <label>Nom d’utilisateur</label>
-        <input v-model="formUsername" type="text" placeholder="Votre nom" style="width:100%; padding:0.5rem; border-radius:8px; border:1px solid #1f2937; background:#0f172a; color:#e5e7eb;" />
-      </div>
-
-      <div style="display:flex; gap:0.5rem; margin-top:0.75rem;">
-        <button class="btn" @click="saveProfile" :disabled="saving">Enregistrer</button>
-        <button class="btn" @click="logout">Se déconnecter</button>
-      </div>
-
-      <div style="margin-top:1.25rem;">
-        <h2>Mot de passe</h2>
-        <p class="muted">Changer le mot de passe.</p>
-        <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:0.75rem; margin-top:0.5rem;">
-          <input v-model="currentPassword" type="password" placeholder="Mot de passe actuel" style="padding:0.5rem; border-radius:8px; border:1px solid #1f2937; background:#0f172a; color:#e5e7eb;" />
-          <input v-model="newPassword" type="password" placeholder="Nouveau mot de passe" style="padding:0.5rem; border-radius:8px; border:1px solid #1f2937; background:#0f172a; color:#e5e7eb;" />
-          <input v-model="confirmPassword" type="password" placeholder="Confirmer" style="padding:0.5rem; border-radius:8px; border:1px solid #1f2937; background:#0f172a; color:#e5e7eb;" />
-        </div>
-        <button class="btn" style="margin-top:0.5rem" @click="changePassword" :disabled="savingPw">Changer le mot de passe</button>
-        <p v-if="messagePw" :style="{ color: pwError ? '#ef4444' : '#22c55e', marginTop: '0.5rem' }">{{ messagePw }}</p>
-      </div>
-
-      <div style="margin-top:1.25rem">
-        <h2>Succès</h2>
-        <p class="muted">Consultez vos succès débloqués et objectifs.</p>
-        <router-link :to="{ name: 'achievements' }"><button class="btn">Voir mes succès</button></router-link>
-      </div>
-
-      <div v-if="showAvatarModal" style="position:fixed; inset:0; background:rgba(0,0,0,0.6); display:flex; align-items:center; justify-content:center; z-index:50;">
-        <div class="card" style="width:420px; background:#0f172a; border:1px solid #1f2937; border-radius:12px; padding:1rem;">
-          <h3 style="margin-top:0;">Change profile picture</h3>
-          <div style="display:flex; gap:1rem; align-items:center; margin:0.75rem 0;">
-            <div style="width:80px; height:80px; border-radius:50%; background:#1f2937; overflow:hidden; display:flex; align-items:center; justify-content:center;">
-              <img v-if="modalPreview" :src="modalPreview" alt="preview" style="width:100%; height:100%; object-fit:cover;" />
-              <span v-else class="muted">A</span>
+            <div class="d-flex align-items-center mb-3">
+              <div class="rounded-circle bg-light d-flex align-items-center justify-content-center" style="width:80px; height:80px; overflow:hidden;">
+                <img v-if="avatarPreview" :src="avatarPreview" alt="avatar" style="width:100%; height:100%; object-fit:cover;" />
+                <span v-else class="text-muted">A</span>
+              </div>
+              <div class="ml-3 flex-fill">
+                <p class="text-muted mb-1">{{ displayedUsername || localUsername }}</p>
+                <button class="btn btn-outline-primary btn-standard" @click="openAvatarModal">Changer la photo</button>
+              </div>
             </div>
-            <div style="flex:1;">
-              <input type="file" accept="image/*" @change="onModalFileChange" style="width:100%; padding:0.5rem; border-radius:8px; border:1px solid #1f2937; background:#0f172a; color:#e5e7eb;" />
+
+            <div class="form-group">
+              <label>Nom d’utilisateur</label>
+              <input v-model="formUsername" type="text" placeholder="Votre nom" class="form-control" />
             </div>
-          </div>
-          <div style="display:flex; gap:0.5rem; justify-content:flex-end;">
-            <button class="btn" @click="confirmAvatarChange" :disabled="modalSaving || !modalSelectedFile">Confirm</button>
-            <button class="btn" @click="closeAvatarModal" :disabled="modalSaving">Cancel</button>
-          </div>
-          <div v-if="modalError" class="mk-card" style="background:#fee2e2; color:#7f1d1d; border:1px solid #fecaca; margin-top:0.5rem;">
-            {{ modalError }}
+            <div class="d-flex gap-2 mb-3">
+              <button class="btn btn-primary btn-standard" @click="saveProfile" :disabled="saving">Enregistrer</button>
+              <button class="btn btn-secondary btn-standard" @click="logout">Se déconnecter</button>
+            </div>
+
+            <div class="mt-3">
+              <h2 class="h5">Mot de passe</h2>
+              <p class="text-muted">Changer le mot de passe.</p>
+              <div class="row">
+                <div class="col-md-4 mb-2"><input v-model="currentPassword" type="password" placeholder="Mot de passe actuel" class="form-control" /></div>
+                <div class="col-md-4 mb-2"><input v-model="newPassword" type="password" placeholder="Nouveau mot de passe" class="form-control" /></div>
+                <div class="col-md-4 mb-2"><input v-model="confirmPassword" type="password" placeholder="Confirmer" class="form-control" /></div>
+              </div>
+              <button class="btn btn-outline-primary btn-standard mt-2" @click="changePassword" :disabled="savingPw">Changer le mot de passe</button>
+              <p v-if="messagePw" :class="pwError ? 'text-danger' : 'text-success'" class="mt-2">{{ messagePw }}</p>
+            </div>
+
+            <div class="mt-3">
+              <h2 class="h5">Succès</h2>
+              <p class="text-muted">Consultez vos succès débloqués et objectifs.</p>
+              <router-link :to="{ name: 'achievements' }" class="btn btn-info btn-sm">Voir mes succès</router-link>
+            </div>
           </div>
         </div>
       </div>
     </div>
-  </div>
+
+    <div v-if="showAvatarModal" class="position-fixed" style="inset:0; background:rgba(0,0,0,0.6); display:flex; align-items:center; justify-content:center; z-index:1050;">
+      <div class="card shadow border-0 p-3" style="width:420px;">
+        <h3 class="mb-3">Changer la photo</h3>
+        <div class="d-flex align-items-center mb-3">
+          <div class="rounded-circle bg-light d-flex align-items-center justify-content-center" style="width:80px; height:80px; overflow:hidden;">
+            <img v-if="modalPreview" :src="modalPreview" alt="preview" style="width:100%; height:100%; object-fit:cover;" />
+            <span v-else class="text-muted">A</span>
+          </div>
+          <div class="ml-3 flex-fill">
+            <input type="file" accept="image/*" @change="onModalFileChange" class="form-control" />
+          </div>
+        </div>
+        <div class="d-flex justify-content-end gap-2">
+          <button class="btn btn-primary btn-standard" @click="confirmAvatarChange" :disabled="modalSaving || !modalSelectedFile">Confirmer</button>
+          <button class="btn btn-secondary btn-standard" @click="closeAvatarModal" :disabled="modalSaving">Annuler</button>
+        </div>
+        <div v-if="modalError" class="alert alert-danger mt-2">{{ modalError }}</div>
+      </div>
+    </div>
+  </section>
 </template>
 
 <script setup>

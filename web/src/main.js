@@ -2,7 +2,7 @@ import { createApp } from 'vue';
 import { createPinia } from 'pinia';
 import router from './router/index.ts';
 import App from './App.vue';
-import './assets/styles.css';
+// Argon styles are loaded via CDN in index.html; remove old global styles
 import { useAuthStore } from './stores/auth';
 // Intention: Initialiser l’application Vue (Pinia + Router) et l’état d’auth
 // Objectif: Restaurer les jetons depuis le storage dès le démarrage

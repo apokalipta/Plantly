@@ -1,22 +1,28 @@
 <template>
-  <section class="mk-container">
-    <h1 style="margin-bottom: 1rem">Wiki des plantes</h1>
-    <div class="card" style="margin-bottom:1rem">
-      <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
-        <input v-model="search" type="text" placeholder="Rechercher une plante" style="flex:1; min-width:240px; padding:0.5rem; border-radius:8px; border:1px solid #1f2937; background:#0f172a; color:#e5e7eb;" />
-        <button class="btn" @click="onSearch">Rechercher</button>
+  <section class="section">
+    <div class="container">
+      <h1 class="mb-3">Wiki des plantes</h1>
+      <div class="card shadow border-0 p-3 mb-3">
+        <form @submit.prevent="onSearch" class="form-row align-items-center">
+          <div class="col-sm-9 mb-2">
+            <input v-model="search" type="text" placeholder="Rechercher une plante" class="form-control" />
+          </div>
+          <div class="col-sm-3 mb-2 text-right">
+            <button class="btn btn-primary btn-standard btn-block" type="submit">Rechercher</button>
+          </div>
+        </form>
       </div>
-    </div>
-    <div v-if="loading">Chargement…</div>
-    <div v-else-if="error" style="color:#ef4444">{{ error }}</div>
-    <div v-else>
-      <div class="mk-grid">
-        <div v-for="p in displayPlants" :key="p.id" class="mk-card" style="position:relative;">
-          <button class="fav-toggle" :class="{ 'fav-on': (favorites || []).includes(p.id) }" @click="wiki.toggleFavorite(p.id)" aria-label="Basculer favori">★</button>
-          <h2>{{ p.commonName }}</h2>
-          <p class="muted"><i>{{ p.latinName }}</i></p>
-          <p class="muted" style="margin-top:0.5rem">{{ p.descriptionShort }}</p>
-          <button class="btn" style="margin-top:0.75rem" @click="open(p.id)">Voir la fiche</button>
+      <div v-if="loading">Chargement…</div>
+      <div v-else-if="error" class="text-danger">{{ error }}</div>
+      <div v-else class="row">
+        <div v-for="p in displayPlants" :key="p.id" class="col-md-6 col-lg-4 mb-3">
+          <div class="card shadow border-0 p-3 h-100 position-relative d-flex flex-column">
+            <button class="btn btn-sm btn-outline-warning position-absolute" style="top:8px; right:8px;" :class="{ 'active': (favorites || []).includes(p.id) }" @click="wiki.toggleFavorite(p.id)" aria-label="Basculer favori">★</button>
+            <h2 class="h5">{{ p.commonName }}</h2>
+            <p class="text-muted"><i>{{ p.latinName }}</i></p>
+            <p class="text-muted">{{ p.descriptionShort }}</p>
+            <button class="btn btn-outline-primary btn-standard mt-auto" @click="open(p.id)">Voir la fiche</button>
+          </div>
         </div>
       </div>
     </div>

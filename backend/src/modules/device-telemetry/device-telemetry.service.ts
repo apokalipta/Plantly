@@ -5,15 +5,14 @@ import { AlertsService } from '../alerts/alerts.service';
 import { AchievementsEngineService } from '../../achievements/achievements-engine.service';
 import { AchievementEventType } from '../../achievements/AchievementEventType';
 import { TelemetryDto } from './dto/telemetry.dto';
-import * as crypto from 'crypto';
+import { HmacService } from '../../security/hmac.service';
 // Intention: Ingestion sécurisée et robuste des télémétries des appareils
 // Objectif: Authentifier la source, valider la charge utile et déclencher des alertes pertinentes
 // Logique: Vérification HMAC, contrôle des horodatages, enregistrement, puis évaluation des seuils
 
 @Injectable()
 export class DeviceTelemetryService {
-  // Injections
-  constructor(private readonly prisma: PrismaService, private readonly alerts: AlertsService, private readonly achievements: AchievementsEngineService) {}
+  constructor(private readonly prisma: PrismaService, private readonly alerts: AlertsService, private readonly achievements: AchievementsEngineService, private readonly hmac?: HmacService) {}
 
   async handleTelemetry(
     deviceUid: string,
@@ -28,25 +27,10 @@ export class DeviceTelemetryService {
     }
 
     // Valider horodatage (±5 min)
-    const parsedHeaderTs = this.parseTimestamp(headerTimestamp);
-    if (!parsedHeaderTs) {
-      throw new BadRequestException('Invalid timestamp header');
-    }
-    const now = Date.now();
-    const skewMs = 5 * 60 * 1000; // TODO: configure allowed time skew
-    if (Math.abs(now - parsedHeaderTs.getTime()) > skewMs) {
-      throw new UnauthorizedException('Timestamp too far from server time');
-    }
+    const hmacSvc = this.hmac ?? new HmacService();
+    const parsedHeaderTs = hmacSvc.verifyTimestamp(headerTimestamp, 2 * 60 * 1000);
 
-    // Vérifier signature HMAC (placeholder)
-    // TODO: Retrieve real secret (not hashed) to compute HMAC. Current schema stores deviceSecretHash.
-    const payloadString = JSON.stringify(dto) + headerTimestamp;
-    const hmacKey = String((device as any).deviceSecretHash || '');
-    const expected = crypto.createHmac('sha256', hmacKey).update(payloadString).digest('hex');
-    const provided = (signature || '').toLowerCase();
-    if (expected !== provided) {
-      throw new UnauthorizedException('Invalid signature');
-    }
+    hmacSvc.verifySignature(String((device as any).deviceSecretHash || ''), dto, headerTimestamp, signature);
     // Sécurité: le HMAC protège contre l’altération; la clé doit rester secrète côté appareil/serveur
 
     // Valider timestamp de la mesure
@@ -103,45 +87,19 @@ export class DeviceTelemetryService {
       orderBy: { plantedAt: 'desc' },
     });
     const plantCare = plant ? await this.prisma.plantCare.findUnique({ where: { speciesId: plant.speciesId } }) : null;
-    const latestReading = {
+    const latestReading: { timestamp: Date; soilMoisture?: number; lightLevel?: number } = {
       timestamp: readingTimestamp,
       soilMoisture: dto.soilMoisture,
       lightLevel: dto.lightLevel,
-    } as any;
-    const status = this.computeStatus(device as any, latestReading as any, plantCare as any);
+    };
+    const status = this.computeStatus({ lastSeenAt: device.lastSeenAt }, latestReading, plantCare);
     if (status === 'OK') {
       await this.alerts.resolveAllForDevice(device.id);
     } else {
-      // Intention: produire des alertes ciblées selon l’écart aux seuils de soin
-      const moistureMin = (plantCare?.minMoisture ?? 30) as number;
-      const moistureMax = (plantCare?.maxMoisture ?? 70) as number;
-      const lightMin = (plantCare?.minLight ?? 200) as number;
-      const lightMax = (plantCare?.maxLight ?? 1000) as number;
-      const sm = dto.soilMoisture;
-      const ll = dto.lightLevel;
-      if (typeof sm === 'number') {
-        if (sm < moistureMin) {
-          await this.alerts.createOrUpdate(device.id, plant ? plant.id : null, 'WATER_NEEDED', status === 'BAD' ? 'CRITICAL' : 'WARNING');
-        } else if (sm > moistureMax) {
-          await this.alerts.createOrUpdate(device.id, plant ? plant.id : null, 'OTHER', status === 'BAD' ? 'CRITICAL' : 'WARNING');
-        }
-      }
-      if (typeof ll === 'number') {
-        if (ll < lightMin) {
-          await this.alerts.createOrUpdate(device.id, plant ? plant.id : null, 'LIGHT_TOO_LOW', status === 'BAD' ? 'CRITICAL' : 'WARNING');
-        } else if (ll > lightMax) {
-          await this.alerts.createOrUpdate(device.id, plant ? plant.id : null, 'LIGHT_TOO_HIGH', status === 'BAD' ? 'CRITICAL' : 'WARNING');
-        }
-      }
+      await this.evaluateAlerts(device.id, plant ? String(plant.id) : null, status, plantCare, dto.soilMoisture, dto.lightLevel);
     }
 
-    if (typeof dto.batteryLevel === 'number') {
-      if (dto.batteryLevel <= 10) {
-        await this.alerts.createOrUpdate(device.id, plant ? plant.id : null, 'BATTERY_LOW', 'CRITICAL');
-      } else if (dto.batteryLevel < 20) {
-        await this.alerts.createOrUpdate(device.id, plant ? plant.id : null, 'BATTERY_LOW', 'WARNING');
-      }
-    }
+    await this.syncBatteryAlerts(device.id, plant ? String(plant.id) : null, dto.batteryLevel);
 
     // Confirmer
     return { status: 'ok' };
@@ -152,12 +110,12 @@ export class DeviceTelemetryService {
     if (!ts) return null;
     // Try ISO 8601
     const iso = new Date(ts);
-    if (!isNaN(iso.getTime())) return iso;
+    if (!Number.isNaN(iso.getTime())) return iso;
     // Try epoch (ms)
     const num = Number(ts);
-    if (!isNaN(num)) {
+    if (!Number.isNaN(num)) {
       const d = new Date(num);
-      if (!isNaN(d.getTime())) return d;
+      if (!Number.isNaN(d.getTime())) return d;
     }
     return null;
   }
@@ -166,7 +124,7 @@ export class DeviceTelemetryService {
     device: { lastSeenAt: Date | null },
     latestReading?: { timestamp: Date; soilMoisture?: number; lightLevel?: number } | null,
     plantCare?: { minMoisture?: number | null; maxMoisture?: number | null; minLight?: number | null; maxLight?: number | null } | null,
-  ): 'OK' | 'ACTION_REQUIRED' | 'BAD' | 'OFFLINE' {
+  ): DeviceStatus {
     const MOISTURE_MIN = 30;
     const MOISTURE_MAX = 70;
     const LIGHT_MIN = 200;
@@ -199,8 +157,8 @@ export class DeviceTelemetryService {
       if (value >= outerMin && value <= outerMax) return 'slight' as const;
       return 'bad' as const;
     };
-    const moistureStatus = evalMetric(soilMoisture as any, moistureMin as any, moistureMax as any);
-    const lightStatus = evalMetric(lightLevel as any, lightMin as any, lightMax as any);
+    const moistureStatus = evalMetric(soilMoisture, moistureMin, moistureMax);
+    const lightStatus = evalMetric(lightLevel, lightMin, lightMax);
     if (moistureStatus === 'bad' || lightStatus === 'bad') {
       return 'BAD';
     }
@@ -212,4 +170,54 @@ export class DeviceTelemetryService {
     }
     return 'OK';
   }
+
+  private async evaluateAlerts(
+    deviceId: string,
+    plantId: string | null,
+    status: DeviceStatus,
+    plantCare: { minMoisture?: number | null; maxMoisture?: number | null; minLight?: number | null; maxLight?: number | null } | null,
+    soilMoisture?: number,
+    lightLevel?: number,
+  ): Promise<void> {
+    const severity = this.getSeverity(status);
+    const moistureMin = plantCare?.minMoisture ?? 30;
+    const moistureMax = plantCare?.maxMoisture ?? 70;
+    await this.createRangeAlert({ deviceId, plantId, value: soilMoisture, min: moistureMin, max: moistureMax, lowCode: 'WATER_NEEDED', highCode: 'OTHER', severity });
+    const lightMin = plantCare?.minLight ?? 200;
+    const lightMax = plantCare?.maxLight ?? 1000;
+    await this.createRangeAlert({ deviceId, plantId, value: lightLevel, min: lightMin, max: lightMax, lowCode: 'LIGHT_TOO_LOW', highCode: 'LIGHT_TOO_HIGH', severity });
+  }
+
+  private async syncBatteryAlerts(deviceId: string, plantId: string | null, battery?: number): Promise<void> {
+    if (typeof battery !== 'number') return;
+    if (battery <= 10) {
+      await this.alerts.createOrUpdate(deviceId, plantId, 'BATTERY_LOW', 'CRITICAL');
+    } else if (battery < 20) {
+      await this.alerts.createOrUpdate(deviceId, plantId, 'BATTERY_LOW', 'WARNING');
+    }
+  }
+
+  private getSeverity(status: DeviceStatus): 'CRITICAL' | 'WARNING' {
+    return status === 'BAD' ? 'CRITICAL' : 'WARNING';
+  }
+
+  private async createRangeAlert(opts: {
+    deviceId: string;
+    plantId: string | null;
+    value?: number;
+    min: number;
+    max: number;
+    lowCode: 'WATER_NEEDED' | 'LIGHT_TOO_LOW' | 'OTHER';
+    highCode: 'LIGHT_TOO_HIGH' | 'OTHER';
+    severity: 'CRITICAL' | 'WARNING';
+  }): Promise<void> {
+    const { deviceId, plantId, value, min, max, lowCode, highCode, severity } = opts;
+    if (typeof value !== 'number') return;
+    if (value < min) {
+      await this.alerts.createOrUpdate(deviceId, plantId, lowCode, severity);
+    } else if (value > max) {
+      await this.alerts.createOrUpdate(deviceId, plantId, highCode, severity);
+    }
+  }
 }
+type DeviceStatus = 'OK' | 'ACTION_REQUIRED' | 'BAD' | 'OFFLINE';

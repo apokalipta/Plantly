@@ -1,31 +1,33 @@
 <template>
-  <div class="page-container">
-    <div class="card" style="max-width: 640px; margin: 0 auto;">
-      <h1>Ajouter un pot</h1>
-      <form @submit.prevent="onSubmit" style="margin-top:1rem;">
-        <div style="margin-bottom:0.75rem;">
-          <label>UID de l’appareil</label>
-          <input v-model="deviceUid" type="text" placeholder="PLANT-ABC-001" style="width:100%; padding:0.5rem; border-radius:8px; border:1px solid #1f2937; background:#0f172a; color:#e5e7eb;" />
+  <section class="section">
+    <div class="container">
+      <div class="row justify-content-center">
+        <div class="col-lg-6">
+          <div class="card shadow border-0 p-4">
+            <h1 class="mb-3">Ajouter un pot</h1>
+            <form @submit.prevent="onSubmit">
+              <div class="form-group">
+                <label for="deviceUid">UID de l’appareil</label>
+                <input id="deviceUid" v-model="deviceUid" type="text" placeholder="PLANT-ABC-001" class="form-control" />
+              </div>
+              <div class="form-group">
+                <label for="pairingCode">Code d’appairage</label>
+                <input id="pairingCode" v-model="pairingCode" type="text" placeholder="123456" class="form-control" />
+              </div>
+              <div class="form-group">
+                <label for="name">Nom (optionnel)</label>
+                <input id="name" v-model="name" type="text" placeholder="Mon pot" class="form-control" />
+              </div>
+              <button class="btn btn-primary btn-standard btn-block" type="submit" :disabled="loading">Lier le pot</button>
+              <p v-if="errorMessage" class="text-danger mt-2">{{ errorMessage }}</p>
+              <p v-if="successMessage" class="text-success mt-2">{{ successMessage }}</p>
+              <p class="text-muted mt-3"><router-link to="/pots">← Retour à mes pots</router-link></p>
+            </form>
+          </div>
         </div>
-        <div style="margin-bottom:0.75rem;">
-          <label>Code d’appairage</label>
-          <input v-model="pairingCode" type="text" placeholder="123456" style="width:100%; padding:0.5rem; border-radius:8px; border:1px solid #1f2937; background:#0f172a; color:#e5e7eb;" />
-        </div>
-        <div style="margin-bottom:0.75rem;">
-          <label>Nom (optionnel)</label>
-          <input v-model="name" type="text" placeholder="Mon pot" style="width:100%; padding:0.5rem; border-radius:8px; border:1px solid #1f2937; background:#0f172a; color:#e5e7eb;" />
-        </div>
-        <button class="btn" type="submit" :disabled="loading" style="width:100%;">Lier le pot</button>
-      </form>
-
-      <p v-if="errorMessage" style="color:#ef4444; margin-top:0.75rem;">{{ errorMessage }}</p>
-      <p v-if="successMessage" style="color:#22c55e; margin-top:0.75rem;">{{ successMessage }}</p>
-
-      <p class="muted" style="margin-top:1rem;">
-        <router-link to="/pots">← Retour à mes pots</router-link>
-      </p>
+      </div>
     </div>
-  </div>
+  </section>
 </template>
 
 <script setup>

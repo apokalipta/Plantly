@@ -1,18 +1,22 @@
 <template>
-  <section class="mk-container">
-    <div style="display:flex; justify-content:space-between; align-items:center;">
-      <h1 style="margin-bottom: 1rem">Mes pots</h1>
-      <router-link to="/pots/new"><button class="mk-btn">Ajouter un pot</button></router-link>
-    </div>
-    <div v-if="loading">Chargement…</div>
-    <div v-else-if="error" style="color:#ef4444">{{ error }}</div>
-    <div v-else>
-      <div class="mk-grid">
-        <div v-for="pot in pots" :key="pot.id" class="mk-card">
-          <h2>{{ pot.name || 'Pot sans nom' }}</h2>
-          <p class="muted">Statut: <span class="mk-badge" :class="{ warn: pot.globalStatus === 'WARNING', crit: pot.globalStatus === 'CRITICAL' }">{{ pot.globalStatus || 'N/A' }}</span></p>
-          <p class="muted">Dernière activité: {{ formatDate(pot.lastSeenAt) }}</p>
-          <button class="mk-btn" @click="openPot(pot.id)">Voir le pot</button>
+  <section class="section">
+    <div class="container">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h1 class="mb-0">Mes pots</h1>
+        <router-link to="/pots/new" class="btn btn-primary btn-standard">Ajouter un pot</router-link>
+      </div>
+      <div v-if="loading">Chargement…</div>
+      <div v-else-if="error" class="text-danger">{{ error }}</div>
+      <div v-else class="row">
+        <div v-for="pot in pots" :key="pot.id" class="col-md-6 col-lg-4 mb-3">
+          <div class="card shadow border-0 p-3 h-100">
+            <h2 class="h5">{{ pot.name || 'Pot sans nom' }}</h2>
+            <p class="text-muted mb-1">Statut:
+              <span class="badge" :class="badgeClass(pot.globalStatus)">{{ pot.globalStatus || 'N/A' }}</span>
+            </p>
+            <p class="text-muted">Dernière activité: {{ formatDate(pot.lastSeenAt) }}</p>
+            <button class="btn btn-outline-primary btn-standard" @click="openPot(pot.id)">Voir le pot</button>
+          </div>
         </div>
       </div>
     </div>
@@ -42,5 +46,11 @@ function openPot(id) {
 
 function formatDate(d) {
   try { return d ? new Date(d).toLocaleString() : '—'; } catch { return '—'; }
+}
+
+function badgeClass(status) {
+  if (status === 'CRITICAL') return 'badge-danger';
+  if (status === 'WARNING') return 'badge-warning';
+  return 'badge-secondary';
 }
 </script>

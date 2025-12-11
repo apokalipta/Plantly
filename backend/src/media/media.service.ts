@@ -1,13 +1,18 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import * as fs from 'fs';
-import * as path from 'path';
-import * as crypto from 'crypto';
+import * as fs from 'node:fs';
+import * as path from 'node:path';
 import type { Express } from 'express';
+import { MediaSecurityService } from './media-security.service';
 
 @Injectable()
 export class MediaService {
-  constructor(private readonly config: ConfigService) {}
+  constructor(private readonly config: ConfigService, private readonly sec?: MediaSecurityService) {}
+
+  private readonly fallbackSec = new MediaSecurityService();
+  private get security(): MediaSecurityService {
+    return this.sec ?? this.fallbackSec;
+  }
 
   private get provider(): string {
     return this.config.get<string>('MEDIA_PROVIDER') || 'LOCAL';
@@ -25,12 +30,13 @@ export class MediaService {
     if (this.provider !== 'LOCAL') throw new BadRequestException('Unsupported media provider');
   }
 
-  private validateFile(file: Express.Multer.File, maxBytes: number) {
-    if (!file) throw new BadRequestException('File required');
-    const allowed = ['image/jpeg', 'image/png', 'image/webp'];
-    if (!allowed.includes(file.mimetype)) throw new BadRequestException('Unsupported file type');
-    if (file.size > maxBytes) throw new BadRequestException('File too large');
-    if (!file.buffer) throw new BadRequestException('File buffer missing');
+  private async validateAndSniff(file: Express.Multer.File, maxBytes: number): Promise<string> {
+    if (!file?.buffer) throw new BadRequestException('File required');
+    const sec = this.security;
+    sec.validateMime(file.mimetype);
+    sec.enforceMaxSize(file.size, maxBytes);
+    const actualMime = await sec.sniffActualMime(file.buffer, file.mimetype);
+    return actualMime;
   }
   // Intention: Validation minimale côté service pour éviter les fichiers dangereux
   // Objectif: Restreindre les types, tailles et garantir un buffer en mémoire
@@ -44,24 +50,25 @@ export class MediaService {
   }
 
   private buildUrl(relativePath: string): string {
-    const rel = relativePath.replace(/\\/g, '/');
+    const rel = relativePath.replaceAll('\\', '/');
     return `${this.baseUrl}/${rel}`;
   }
 
   private resolveLocalPath(relativePath: string): string {
-    return path.join(this.basePath, relativePath);
+    const safeRel = this.security.buildSafePath(relativePath);
+    return path.join(this.basePath, safeRel);
   }
   // Sécurité: on compose des chemins avec path.join pour éviter les traversals
 
   async saveUserAvatar(userId: string, file: Express.Multer.File): Promise<string> {
     this.ensureLocalProvider();
-    this.validateFile(file, 2 * 1024 * 1024);
-    const ext = this.extFromMime(file.mimetype);
-    const uuid = crypto.randomUUID();
+    const mime = await this.validateAndSniff(file, 3 * 1024 * 1024);
+    const ext = this.extFromMime(mime);
+    const uuid = this.security.sanitizeFilename();
     const rel = path.posix.join('users', userId, 'avatar', `${uuid}.${ext}`);
     const full = this.resolveLocalPath(rel);
-    await fs.promises.mkdir(path.dirname(full), { recursive: true });
-    await fs.promises.writeFile(full, file.buffer);
+    await this.security.ensureDirectoryExists(full);
+    await fs.promises.writeFile(full, file.buffer, { mode: 0o644 });
     const url = this.buildUrl(rel);
     return url;
   }
@@ -70,23 +77,17 @@ export class MediaService {
   // Logique: écriture atomique, dossier créé au besoin
 
   async savePlantImage(speciesCode: string, file: Express.Multer.File): Promise<string> {
-    this.ensureLocalProvider();
-    this.validateFile(file, 2 * 1024 * 1024);
-    const rel = path.posix.join('public', 'plants', speciesCode, `main.webp`);
-    const full = this.resolveLocalPath(rel);
-    await fs.promises.mkdir(path.dirname(full), { recursive: true });
-    await fs.promises.writeFile(full, file.buffer);
-    const url = this.buildUrl(rel);
-    return url;
+    return this.savePlantMainImage(speciesCode, file);
   }
 
   async savePlantMainImage(speciesCode: string, file: Express.Multer.File): Promise<string> {
     this.ensureLocalProvider();
-    this.validateFile(file, 3 * 1024 * 1024);
-    const rel = path.posix.join('public', 'plants', speciesCode, `main.webp`);
+    const mime = await this.validateAndSniff(file, 3 * 1024 * 1024);
+    const ext = this.extFromMime(mime);
+    const rel = path.posix.join('public', 'plants', speciesCode, `main.${ext}`);
     const full = this.resolveLocalPath(rel);
-    await fs.promises.mkdir(path.dirname(full), { recursive: true });
-    await fs.promises.writeFile(full, file.buffer);
+    await this.security.ensureDirectoryExists(full);
+    await fs.promises.writeFile(full, file.buffer, { mode: 0o644 });
     const url = this.buildUrl(rel);
     return url;
   }
@@ -96,12 +97,13 @@ export class MediaService {
 
   async savePotPhoto(potId: string, file: Express.Multer.File): Promise<string> {
     this.ensureLocalProvider();
-    this.validateFile(file, 3 * 1024 * 1024);
-    const ts = Date.now();
-    const rel = path.posix.join('pots', potId, 'photos', `${ts}.webp`);
+    const mime = await this.validateAndSniff(file, 3 * 1024 * 1024);
+    const ext = this.extFromMime(mime);
+    const uuid = this.security.sanitizeFilename();
+    const rel = path.posix.join('pots', potId, 'photos', `${uuid}.${ext}`);
     const full = this.resolveLocalPath(rel);
-    await fs.promises.mkdir(path.dirname(full), { recursive: true });
-    await fs.promises.writeFile(full, file.buffer);
+    await this.security.ensureDirectoryExists(full);
+    await fs.promises.writeFile(full, file.buffer, { mode: 0o644 });
     return this.buildUrl(rel);
   }
 }

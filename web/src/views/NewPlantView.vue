@@ -1,32 +1,35 @@
 <template>
-  <div class="page-container">
-    <div class="card" style="max-width: 640px; margin: 0 auto;">
-      <h1>Associer une plante</h1>
-      <p class="muted">Choisissez une espèce pour ce pot.</p>
-
-      <form @submit.prevent="onSubmit" style="margin-top:1rem;">
-        <div style="margin-bottom:0.75rem;">
-          <label>Espèce</label>
-          <select v-model="selectedSpeciesId" style="width:100%; padding:0.5rem; border-radius:8px; border:1px solid #1f2937; background:#0f172a; color:#e5e7eb;">
-            <option :value="null">Sélectionner…</option>
-            <option v-for="plant in wiki.plants" :key="plant.id" :value="plant.id">{{ plant.commonName }}</option>
-          </select>
+  <section class="section">
+    <div class="container">
+      <div class="row justify-content-center">
+        <div class="col-lg-6">
+          <div class="card shadow border-0 p-4">
+            <h1 class="mb-3">Associer une plante</h1>
+            <p class="text-muted">Choisissez une espèce pour ce pot.</p>
+            <form @submit.prevent="onSubmit" class="mt-3">
+              <div class="form-group">
+                <label for="species">Espèce</label>
+                <select id="species" v-model="selectedSpeciesId" class="form-control">
+                  <option :value="null">Sélectionner…</option>
+                  <option v-for="plant in wiki.plants" :key="plant.id" :value="plant.id">{{ plant.commonName }}</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="nickname">Surnom (optionnel)</label>
+                <input id="nickname" v-model="nickname" type="text" placeholder="Mon basilic" class="form-control" />
+              </div>
+              <button class="btn btn-primary btn-standard btn-block" type="submit" :disabled="loading">Associer</button>
+              <p v-if="errorMessage" class="text-danger mt-2">{{ errorMessage }}</p>
+              <p v-if="successMessage" class="text-success mt-2">{{ successMessage }}</p>
+              <p class="text-muted mt-3">
+                <router-link :to="{ name: 'pot-detail', params: { id: potId } }">← Retour au pot</router-link>
+              </p>
+            </form>
+          </div>
         </div>
-        <div style="margin-bottom:0.75rem;">
-          <label>Surnom (optionnel)</label>
-          <input v-model="nickname" type="text" placeholder="Mon basilic" style="width:100%; padding:0.5rem; border-radius:8px; border:1px solid #1f2937; background:#0f172a; color:#e5e7eb;" />
-        </div>
-        <button class="btn" type="submit" :disabled="loading" style="width:100%;">Associer</button>
-      </form>
-
-      <p v-if="errorMessage" style="color:#ef4444; margin-top:0.75rem;">{{ errorMessage }}</p>
-      <p v-if="successMessage" style="color:#22c55e; margin-top:0.75rem;">{{ successMessage }}</p>
-
-      <p class="muted" style="margin-top:1rem;">
-        <router-link :to="{ name: 'pot-detail', params: { id: potId } }">← Retour au pot</router-link>
-      </p>
+      </div>
     </div>
-  </div>
+  </section>
 </template>
 
 <script setup>

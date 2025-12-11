@@ -1,30 +1,36 @@
 <template>
-  <div class="mk-container">
-    <div class="mk-card" style="max-width: 520px; margin: 3rem auto;">
-      <h1 style="margin-bottom: 1rem">Inscription</h1>
-      <form @submit.prevent="submit">
-      <div style="margin-bottom: 0.75rem;">
-        <label>Email</label>
-        <input v-model="email" type="email" required style="width:100%; padding:0.5rem; border-radius:8px; border:1px solid #1f2937; background:#0f172a; color:#e5e7eb;" />
+  <section class="section section-shaped">
+    <div class="container">
+      <div class="row justify-content-center">
+        <div class="col-lg-5">
+          <div class="card shadow border-0 p-4">
+            <h1 class="mb-3">Inscription</h1>
+            <form @submit.prevent="submit">
+              <div class="form-group">
+                <label for="email">Email</label>
+                <input id="email" v-model="email" type="email" required class="form-control" />
+              </div>
+              <div class="form-group">
+                <label for="password">Mot de passe</label>
+                <input id="password" v-model="password" type="password" required class="form-control" />
+              </div>
+              <div class="form-group">
+                <label for="username">Nom d’utilisateur</label>
+                <input id="username" v-model="username" type="text" required class="form-control" />
+              </div>
+              <div class="form-group">
+                <label for="passwordConfirm">Confirmer le mot de passe</label>
+                <input id="passwordConfirm" v-model="passwordConfirm" type="password" required class="form-control" />
+              </div>
+                      <button class="btn btn-primary btn-standard btn-block" type="submit" :disabled="loading">Créer le compte</button>
+              <p v-if="errorMessage" class="text-danger mt-2">{{ errorMessage }}</p>
+              <p class="text-muted mt-2">Déjà inscrit ? <router-link to="/login">Se connecter</router-link></p>
+            </form>
+          </div>
+        </div>
       </div>
-      <div style="margin-bottom: 0.75rem;">
-        <label>Mot de passe</label>
-        <input v-model="password" type="password" required style="width:100%; padding:0.5rem; border-radius:8px; border:1px solid #1f2937; background:#0f172a; color:#e5e7eb;" />
-      </div>
-      <div style="margin-bottom: 0.75rem;">
-        <label>Nom d’utilisateur</label>
-        <input v-model="username" type="text" required style="width:100%; padding:0.5rem; border-radius:8px; border:1px solid #1f2937; background:#0f172a; color:#e5e7eb;" />
-      </div>
-      <div style="margin-bottom: 1rem;">
-        <label>Confirmer le mot de passe</label>
-        <input v-model="passwordConfirm" type="password" required style="width:100%; padding:0.5rem; border-radius:8px; border:1px solid #1f2937; background:#0f172a; color:#e5e7eb;" />
-      </div>
-      <button class="mk-btn" type="submit" :disabled="loading" style="width:100%;">Créer le compte</button>
-        <p v-if="errorMessage" style="color:#ef4444; margin-top:0.75rem;">{{ errorMessage }}</p>
-        <p class="muted" style="margin-top:0.75rem;">Déjà inscrit ? <router-link to="/login">Se connecter</router-link></p>
-      </form>
     </div>
-  </div>
+  </section>
 </template>
 
 <script setup>
@@ -34,7 +40,6 @@
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '../stores/auth';
-import * as authApi from '../api/authApi';
 
 const email = ref('');
 const password = ref('');

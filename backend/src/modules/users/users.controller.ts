@@ -1,11 +1,10 @@
-import { Controller, Get, Put, Body, Post, UseGuards, UploadedFile } from '@nestjs/common';
+import { Controller, Get, Put, Body, Post, UseGuards, UploadedFile, BadRequestException, UseInterceptors } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { MediaService } from '../../media/media.service';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { UseInterceptors } from '@nestjs/common';
 import { AchievementsEngineService } from '../../achievements/achievements-engine.service';
 import { AchievementEventType } from '../../achievements/AchievementEventType';
 import * as multer from 'multer';
@@ -33,8 +32,9 @@ export class UsersController {
 
   @UseGuards(JwtAuthGuard)
   @Post('me/avatar')
-  @UseInterceptors(FileInterceptor('avatar', { storage: multer.memoryStorage() }))
-  async uploadAvatar(@CurrentUser() user: any, @UploadedFile() file: any): Promise<{ status: string; url?: string }> {
+  @UseInterceptors(FileInterceptor('file', { storage: multer.memoryStorage() }))
+  async uploadAvatar(@CurrentUser() user: any, @UploadedFile() file: Express.Multer.File): Promise<{ status: string; url?: string }> {
+    if (!file) throw new BadRequestException('File required');
     const url = await this.media.saveUserAvatar(user?.userId, file);
     await this.usersService.updateProfile(user?.userId, { username: undefined });
     await this.prismaUpdateAvatar(user?.userId, url);
@@ -45,7 +45,8 @@ export class UsersController {
   @UseGuards(JwtAuthGuard)
   @Post('user/avatar')
   @UseInterceptors(FileInterceptor('file', { storage: multer.memoryStorage() }))
-  async uploadAvatarSimple(@CurrentUser() user: any, @UploadedFile() file: any): Promise<{ avatarUrl: string }> {
+  async uploadAvatarSimple(@CurrentUser() user: any, @UploadedFile() file: Express.Multer.File): Promise<{ avatarUrl: string }> {
+    if (!file) throw new BadRequestException('File required');
     const url = await this.media.saveUserAvatar(user?.userId, file);
     await this.prismaUpdateAvatar(user?.userId, url);
     return { avatarUrl: url };

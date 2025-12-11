@@ -2,7 +2,7 @@
   "compilerOptions": {
     "module": "commonjs",
     "target": "ES2019",
-    "lib": ["es2020"],
+    "lib": ["es2021"],
     "declaration": false,
     "sourceMap": true,
     "outDir": "dist",

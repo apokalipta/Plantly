@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import * as path from 'path';
+import * as path from 'node:path';
 import { AppConfig } from './config/app.config';
 import { DbConfig } from './config/db.config';
 import { JwtConfig } from './config/jwt.config';
@@ -29,7 +29,26 @@ import { DeviceTelemetryModule } from './modules/device-telemetry/device-telemet
       inject: [ConfigService],
       useFactory: (config: ConfigService) => {
         const basePath = config.get<string>('MEDIA_BASE_PATH') || path.join(process.cwd(), 'media');
-        return [{ rootPath: basePath, serveRoot: '/media' }];
+        return [{
+          rootPath: basePath,
+          serveRoot: '/media',
+          serveStaticOptions: {
+            dotfiles: 'ignore',
+            index: false,
+            setHeaders: (res, filePath) => {
+              res.setHeader('X-Content-Type-Options', 'nosniff');
+              res.setHeader('Content-Security-Policy', "default-src 'none'; img-src 'self' data:; style-src 'none'; script-src 'none'; object-src 'none'");
+              const rel = filePath.replace(basePath, '').replaceAll('\\', '/');
+              if (rel.includes('/public/plants/')) {
+                res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+              } else if (rel.includes('/users/')) {
+                res.setHeader('Cache-Control', 'private, no-transform');
+              } else {
+                res.setHeader('Cache-Control', 'no-store');
+              }
+            },
+          },
+        }];
       },
     }),
     DatabaseModule,

@@ -3,10 +3,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import * as multer from 'multer';
 import { PrismaService } from '../../database/prisma.service';
 import { MediaService } from '../../media/media.service';
-// Intention: Endpoint admin pour téléverser l’image principale d’une espèce
-// Objectif: Enregistrer l’URL d’image et normaliser le code espèce
-// Logique: Interceptor Multer mémoire, slugify, persistance via Prisma
-class AdminGuard { canActivate() { return true; } }
+import { AdminGuard } from '../../common/guards';
 
 interface PlantSpeciesCodeShape {
   id: number;
@@ -29,6 +26,7 @@ export class AdminPlantsController {
   @UseGuards(AdminGuard as any)
   @UseInterceptors(FileInterceptor('file', { storage: multer.memoryStorage() }))
   async uploadPlantImage(@Param('id') id: string, @UploadedFile() file: Express.Multer.File): Promise<PlantDtoResponse> {
+    if (!file) throw new BadRequestException('File required');
     const plant = await this.prisma.plantSpecies.findUnique({ where: { id: Number(id) } });
     if (!plant) throw new BadRequestException('Plant species not found');
     const sp = plant as unknown as PlantSpeciesCodeShape;
@@ -41,6 +39,6 @@ export class AdminPlantsController {
 
   private slugify(input: string | null): string {
     const s = (input || '').toLowerCase();
-    return s.replace(/[^a-z0-9\s-]/g, '').trim().replace(/\s+/g, '-');
+    return s.replaceAll(/[^a-z0-9\s-]/g, '').trim().replaceAll(/\s+/g, '-');
   }
 }

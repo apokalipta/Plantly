@@ -1,24 +1,26 @@
 <template>
-  <section class="mk-container">
-    <a href="#" @click.prevent="goBack" class="muted" style="display:inline-block; margin-bottom:0.5rem">← Retour au wiki</a>
-    <div v-if="loading">Chargement…</div>
-    <div v-else-if="error" style="color:#ef4444">{{ error }}</div>
-    <div v-else-if="plant">
-      <div class="mk-card" style="padding:1.25rem;">
-        <h1 style="margin-bottom:0.25rem">{{ plant.commonName }}</h1>
-        <p class="muted"><i>{{ plant.latinName }}</i></p>
-      </div>
-      <div class="mk-card" style="margin-top:1rem">
-        <p>{{ plant.descriptionShort }}</p>
-        <img v-if="plant.imageUrl" :src="resolveImageUrl(plant.imageUrl)" alt="image" style="margin-top:0.75rem; max-width:100%; border-radius:12px;" />
-      </div>
-      <div class="mk-card" v-if="plant.care" style="margin-top:1rem">
-        <h2>Conseils de soin</h2>
-        <p class="muted">Humidité: {{ plant.care.minMoisture }}–{{ plant.care.maxMoisture }}</p>
-        <p class="muted">Lumière: {{ plant.care.minLight }}–{{ plant.care.maxLight }}</p>
-        <p class="muted">Température: {{ plant.care.recommendedTemperatureMin }}–{{ plant.care.recommendedTemperatureMax }}</p>
-        <p class="muted">Arrosage: toutes {{ plant.care.wateringIntervalDays }} jours</p>
-        <p style="margin-top:0.5rem">{{ plant.care.careTips }}</p>
+  <section class="section">
+    <div class="container">
+      <a href="#" @click.prevent="goBack" class="text-muted d-inline-block mb-2">← Retour au wiki</a>
+      <div v-if="loading">Chargement…</div>
+      <div v-else-if="error" class="text-danger">{{ error }}</div>
+      <div v-else-if="plant">
+        <div class="card shadow border-0 p-3">
+          <h1 class="mb-1">{{ plant.commonName }}</h1>
+          <p class="text-muted"><i>{{ plant.latinName }}</i></p>
+        </div>
+        <div class="card shadow border-0 p-3 mt-3">
+          <p>{{ plant.descriptionShort }}</p>
+          <img v-if="plant.imageUrl" :src="resolveImageUrl(plant.imageUrl)" :alt="plant.commonName || 'Plante'" class="img-fluid rounded mt-2" />
+        </div>
+        <div class="card shadow border-0 p-3 mt-3" v-if="plant.care">
+          <h2 class="h5">Conseils de soin</h2>
+          <p class="text-muted mb-1">Humidité: {{ plant.care.minMoisture }}–{{ plant.care.maxMoisture }}</p>
+          <p class="text-muted mb-1">Lumière: {{ plant.care.minLight }}–{{ plant.care.maxLight }}</p>
+          <p class="text-muted mb-1">Température: {{ plant.care.recommendedTemperatureMin }}–{{ plant.care.recommendedTemperatureMax }}</p>
+          <p class="text-muted mb-1">Arrosage: toutes {{ plant.care.wateringIntervalDays }} jours</p>
+          <p class="mt-2">{{ plant.care.careTips }}</p>
+        </div>
       </div>
     </div>
   </section>
