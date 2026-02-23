@@ -1,0 +1,2016 @@
+{
+  "Application": {
+    "Screens": [
+      {
+        "Name": "Main",
+        "Components": [
+          {
+            "Type": "ScalableImage",
+            "Name": "Fond",
+            "X": -214,
+            "Y": -254,
+            "Width": 909,
+            "Height": 776,
+            "Filename": "Fond.png",
+            "ScalingAlgorithm": "Nearest-neighbor"
+          },
+          {
+            "Type": "ScalableImage",
+            "Name": "ImagePot4",
+            "X": 386,
+            "Y": 180,
+            "Width": 67,
+            "Height": 67,
+            "Filename": "pots04.png",
+            "ScalingAlgorithm": "Nearest-neighbor"
+          },
+          {
+            "Type": "FlexButton",
+            "Name": "BouttonPot4",
+            "X": 386,
+            "Y": 180,
+            "Width": 67,
+            "Height": 67,
+            "Alpha": 0,
+            "ButtonTrigger": {
+              "Type": "ClickButtonTrigger"
+            },
+            "ButtonStyles": [
+              {
+                "Type": "BoxWithBorderButtonStyle",
+                "Width": 67,
+                "Height": 67,
+                "LockToFlexButtonSize": true,
+                "BorderSize": 5,
+                "ColorReleased": {
+                  "Green": 102,
+                  "Blue": 153
+                },
+                "ColorPressed": {
+                  "Green": 153,
+                  "Blue": 204
+                },
+                "ColorBorderReleased": {
+                  "Green": 51,
+                  "Blue": 102
+                },
+                "ColorBorderPressed": {
+                  "Red": 51,
+                  "Green": 102,
+                  "Blue": 153
+                }
+              }
+            ]
+          },
+          {
+            "Type": "ScalableImage",
+            "Name": "ImagePot3",
+            "X": 271,
+            "Y": 180,
+            "Width": 67,
+            "Height": 67,
+            "Filename": "pots03.png",
+            "ScalingAlgorithm": "Nearest-neighbor"
+          },
+          {
+            "Type": "FlexButton",
+            "Name": "BouttonPot3",
+            "X": 271,
+            "Y": 180,
+            "Width": 67,
+            "Height": 67,
+            "Alpha": 0,
+            "ButtonTrigger": {
+              "Type": "ClickButtonTrigger"
+            },
+            "ButtonStyles": [
+              {
+                "Type": "BoxWithBorderButtonStyle",
+                "Width": 67,
+                "Height": 67,
+                "LockToFlexButtonSize": true,
+                "BorderSize": 5,
+                "ColorReleased": {
+                  "Green": 102,
+                  "Blue": 153
+                },
+                "ColorPressed": {
+                  "Green": 153,
+                  "Blue": 204
+                },
+                "ColorBorderReleased": {
+                  "Green": 51,
+                  "Blue": 102
+                },
+                "ColorBorderPressed": {
+                  "Red": 51,
+                  "Green": 102,
+                  "Blue": 153
+                }
+              }
+            ]
+          },
+          {
+            "Type": "ScalableImage",
+            "Name": "ImagePot2",
+            "X": 151,
+            "Y": 180,
+            "Width": 67,
+            "Height": 67,
+            "Filename": "pots02.png",
+            "ScalingAlgorithm": "Nearest-neighbor"
+          },
+          {
+            "Type": "FlexButton",
+            "Name": "BouttonPot2",
+            "X": 151,
+            "Y": 180,
+            "Width": 67,
+            "Height": 67,
+            "Alpha": 0,
+            "ButtonTrigger": {
+              "Type": "ClickButtonTrigger"
+            },
+            "ButtonStyles": [
+              {
+                "Type": "BoxWithBorderButtonStyle",
+                "Width": 67,
+                "Height": 67,
+                "LockToFlexButtonSize": true,
+                "BorderSize": 5,
+                "ColorReleased": {
+                  "Green": 102,
+                  "Blue": 153
+                },
+                "ColorPressed": {
+                  "Green": 153,
+                  "Blue": 204
+                },
+                "ColorBorderReleased": {
+                  "Green": 51,
+                  "Blue": 102
+                },
+                "ColorBorderPressed": {
+                  "Red": 51,
+                  "Green": 102,
+                  "Blue": 153
+                }
+              }
+            ]
+          },
+          {
+            "Type": "ScalableImage",
+            "Name": "ImagePot1",
+            "X": 36,
+            "Y": 180,
+            "Width": 67,
+            "Height": 67,
+            "Filename": "pots01.png",
+            "ScalingAlgorithm": "Nearest-neighbor"
+          },
+          {
+            "Type": "FlexButton",
+            "Name": "BouttonPot1",
+            "X": 36,
+            "Y": 180,
+            "Width": 67,
+            "Height": 67,
+            "Alpha": 0,
+            "ButtonTrigger": {
+              "Type": "ClickButtonTrigger"
+            },
+            "ButtonStyles": [
+              {
+                "Type": "BoxWithBorderButtonStyle",
+                "Width": 67,
+                "Height": 67,
+                "LockToFlexButtonSize": true,
+                "BorderSize": 5,
+                "ColorReleased": {
+                  "Green": 102,
+                  "Blue": 153
+                },
+                "ColorPressed": {
+                  "Green": 153,
+                  "Blue": 204
+                },
+                "ColorBorderReleased": {
+                  "Green": 51,
+                  "Blue": 102
+                },
+                "ColorBorderPressed": {
+                  "Red": 51,
+                  "Green": 102,
+                  "Blue": 153
+                }
+              }
+            ]
+          },
+          {
+            "Type": "ScalableImage",
+            "Name": "ImageSetting",
+            "X": 435,
+            "Y": 4,
+            "Width": 40,
+            "Height": 40,
+            "Filename": "settings.png",
+            "ScalingAlgorithm": "Nearest-neighbor"
+          },
+          {
+            "Type": "FlexButton",
+            "Name": "BouttonSetting",
+            "X": 436,
+            "Width": 44,
+            "Height": 44,
+            "Alpha": 0,
+            "ButtonTrigger": {
+              "Type": "ClickButtonTrigger"
+            },
+            "ButtonStyles": [
+              {
+                "Type": "BoxWithBorderButtonStyle",
+                "Width": 44,
+                "Height": 44,
+                "LockToFlexButtonSize": true,
+                "BorderSize": 5,
+                "ColorReleased": {
+                  "Green": 102,
+                  "Blue": 153
+                },
+                "ColorPressed": {
+                  "Green": 153,
+                  "Blue": 204
+                },
+                "ColorBorderReleased": {
+                  "Green": 51,
+                  "Blue": 102
+                },
+                "ColorBorderPressed": {
+                  "Red": 51,
+                  "Green": 102,
+                  "Blue": 153
+                }
+              }
+            ]
+          },
+          {
+            "Type": "TextArea",
+            "Name": "Titre",
+            "X": 126,
+            "Y": 4,
+            "Width": 229,
+            "Height": 47,
+            "TextId": "__SingleUse_RZOS",
+            "TextRotation": "0"
+          },
+          {
+            "Type": "ScalableImage",
+            "Name": "scalableImage1",
+            "X": 36,
+            "Y": 52,
+            "Width": 268,
+            "Height": 50,
+            "Filename": "barre.png",
+            "ScalingAlgorithm": "Nearest-neighbor"
+          },
+          {
+            "Type": "ScalableImage",
+            "Name": "scalableImage1_1",
+            "X": 36,
+            "Y": 92,
+            "Width": 268,
+            "Height": 50,
+            "Filename": "barre.png",
+            "ScalingAlgorithm": "Nearest-neighbor"
+          },
+          {
+            "Type": "ScalableImage",
+            "Name": "scalableImage1_2",
+            "X": 36,
+            "Y": 132,
+            "Width": 268,
+            "Height": 50,
+            "Filename": "barre.png",
+            "ScalingAlgorithm": "Nearest-neighbor"
+          },
+          {
+            "Type": "ScalableImage",
+            "Name": "scalableImage2",
+            "X": 42,
+            "Y": 57,
+            "Width": 39,
+            "Height": 39,
+            "Filename": "temperature.png",
+            "ScalingAlgorithm": "Nearest-neighbor"
+          },
+          {
+            "Type": "ScalableImage",
+            "Name": "scalableImage2_1",
+            "X": 43,
+            "Y": 99,
+            "Width": 37,
+            "Height": 37,
+            "Filename": "humidite.png",
+            "ScalingAlgorithm": "Nearest-neighbor"
+          },
+          {
+            "Type": "ScalableImage",
+            "Name": "scalableImage2_2",
+            "X": 44,
+            "Y": 140,
+            "Width": 35,
+            "Height": 35,
+            "Filename": "lumiere.png",
+            "ScalingAlgorithm": "Nearest-neighbor"
+          },
+          {
+            "Type": "TextArea",
+            "Name": "TexteTemperature",
+            "X": 89,
+            "Y": 64,
+            "Width": 151,
+            "Height": 24,
+            "TextId": "__SingleUse_P7G7",
+            "TextRotation": "0",
+            "AutoSize": true
+          },
+          {
+            "Type": "TextArea",
+            "Name": "TexteHumidite",
+            "X": 89,
+            "Y": 104,
+            "Width": 112,
+            "Height": 24,
+            "TextId": "__SingleUse_9IYS",
+            "TextRotation": "0",
+            "AutoSize": true
+          },
+          {
+            "Type": "TextArea",
+            "Name": "TexteLuminosite",
+            "X": 89,
+            "Y": 144,
+            "Width": 131,
+            "Height": 24,
+            "TextId": "__SingleUse_BNEE",
+            "TextRotation": "0",
+            "AutoSize": true
+          },
+          {
+            "Type": "TextArea",
+            "Name": "ValLuminosite",
+            "X": 218,
+            "Y": 144,
+            "Width": 67,
+            "Height": 24,
+            "TextId": "__SingleUse_R5G6",
+            "TextRotation": "0",
+            "Wildcard1": {
+              "UseBuffer": true,
+              "BufferSize": 16
+            }
+          },
+          {
+            "Type": "TextArea",
+            "Name": "ValHumidite",
+            "X": 201,
+            "Y": 104,
+            "Width": 84,
+            "Height": 25,
+            "TextId": "__SingleUse_LSX1",
+            "TextRotation": "0",
+            "Wildcard1": {
+              "UseBuffer": true,
+              "BufferSize": 10
+            }
+          },
+          {
+            "Type": "TextArea",
+            "Name": "ValTemperature",
+            "X": 233,
+            "Y": 65,
+            "Width": 63,
+            "Height": 24,
+            "TextId": "__SingleUse_2KWC",
+            "TextRotation": "0",
+            "Wildcard1": {
+              "UseBuffer": true,
+              "BufferSize": 10
+            }
+          },
+          {
+            "Type": "ScalableImage",
+            "Name": "scalableImage3",
+            "X": 304,
+            "Y": 57,
+            "Width": 171,
+            "Height": 118,
+            "Filename": "__generated\\alternate_theme_images_widgets_button_icon_rounded_medium_outline_pressed.png",
+            "ScalingAlgorithm": "Nearest-neighbor"
+          },
+          {
+            "Type": "TextArea",
+            "Name": "TextDate",
+            "X": 314,
+            "Y": 129,
+            "Width": 150,
+            "Height": 22,
+            "TextId": "__SingleUse_27IN",
+            "TextRotation": "0",
+            "Wildcard1": {
+              "TextId": "__SingleUse_Y7QS"
+            }
+          },
+          {
+            "Type": "AnimatedImage",
+            "Name": "froid",
+            "X": -44,
+            "Y": 1,
+            "Width": 569,
+            "Height": 272,
+            "Visible": false,
+            "FileNameFirst": "froid_1.png",
+            "FileNameLast": "froid_2.png",
+            "UpdateTicksInterval": 500,
+            "StartOnLoad": true
+          },
+          {
+            "Type": "AnimatedImage",
+            "Name": "chaud",
+            "X": -44,
+            "Width": 569,
+            "Height": 272,
+            "Visible": false,
+            "FileNameFirst": "chaud_1.png",
+            "FileNameLast": "chaud_2.png",
+            "UpdateTicksInterval": 501,
+            "StartOnLoad": true
+          },
+          {
+            "Type": "AnimatedImage",
+            "Name": "contente",
+            "X": -44,
+            "Width": 569,
+            "Height": 272,
+            "Visible": false,
+            "FileNameFirst": "contente_1.png",
+            "FileNameLast": "contente_2.png",
+            "UpdateTicksInterval": 501,
+            "StartOnLoad": true
+          },
+          {
+            "Type": "DigitalClock",
+            "Name": "digitalClock1",
+            "X": 339,
+            "Y": 77,
+            "Width": 100,
+            "Height": 25,
+            "TextId": "__SingleUse_2LU2",
+            "DisplaySeconds": true,
+            "DisplayLeadingZeroForHourIndicator": true,
+            "InitialHour": 10,
+            "InitialMinute": 10
+          }
+        ],
+        "Interactions": [
+          {
+            "InteractionName": "Interaction1",
+            "Trigger": {
+              "Type": "TriggerClicked",
+              "TriggerComponent": "BouttonPot4"
+            },
+            "Action": {
+              "Type": "ActionGotoScreen",
+              "ScreenTransitionType": "ScreenTransitionNone",
+              "ActionComponent": "Pot4"
+            }
+          },
+          {
+            "InteractionName": "Interaction2",
+            "Trigger": {
+              "Type": "TriggerClicked",
+              "TriggerComponent": "BouttonPot3"
+            },
+            "Action": {
+              "Type": "ActionGotoScreen",
+              "ScreenTransitionType": "ScreenTransitionNone",
+              "ActionComponent": "Pot3"
+            }
+          },
+          {
+            "InteractionName": "Interaction3",
+            "Trigger": {
+              "Type": "TriggerClicked",
+              "TriggerComponent": "BouttonPot2"
+            },
+            "Action": {
+              "Type": "ActionGotoScreen",
+              "ScreenTransitionType": "ScreenTransitionNone",
+              "ActionComponent": "Pot2"
+            }
+          },
+          {
+            "InteractionName": "Interaction4",
+            "Trigger": {
+              "Type": "TriggerClicked",
+              "TriggerComponent": "BouttonPot1"
+            },
+            "Action": {
+              "Type": "ActionGotoScreen",
+              "ScreenTransitionType": "ScreenTransitionNone",
+              "ActionComponent": "Pot1"
+            }
+          },
+          {
+            "InteractionName": "Interaction5",
+            "Trigger": {
+              "Type": "TriggerClicked",
+              "TriggerComponent": "BouttonSetting"
+            },
+            "Action": {
+              "Type": "ActionGotoScreen",
+              "ScreenTransitionType": "ScreenTransitionNone",
+              "ActionComponent": "Setting"
+            }
+          }
+        ]
+      },
+      {
+        "Name": "Pot1",
+        "Components": [
+          {
+            "Type": "ScalableImage",
+            "Name": "Fond",
+            "X": -214,
+            "Y": -254,
+            "Width": 909,
+            "Height": 776,
+            "Filename": "Fond.png",
+            "Alpha": 200,
+            "ScalingAlgorithm": "Nearest-neighbor"
+          },
+          {
+            "Type": "ScalableImage",
+            "Name": "ImageHome",
+            "X": 438,
+            "Y": 4,
+            "Width": 40,
+            "Height": 40,
+            "Filename": "Main.png",
+            "ScalingAlgorithm": "Nearest-neighbor"
+          },
+          {
+            "Type": "FlexButton",
+            "Name": "BouttonHome",
+            "X": 436,
+            "Width": 44,
+            "Height": 44,
+            "Alpha": 0,
+            "ButtonTrigger": {
+              "Type": "ClickButtonTrigger"
+            },
+            "ButtonStyles": [
+              {
+                "Type": "BoxWithBorderButtonStyle",
+                "Width": 44,
+                "Height": 44,
+                "LockToFlexButtonSize": true,
+                "BorderSize": 5,
+                "ColorReleased": {
+                  "Green": 102,
+                  "Blue": 153
+                },
+                "ColorPressed": {
+                  "Green": 153,
+                  "Blue": 204
+                },
+                "ColorBorderReleased": {
+                  "Green": 51,
+                  "Blue": 102
+                },
+                "ColorBorderPressed": {
+                  "Red": 51,
+                  "Green": 102,
+                  "Blue": 153
+                }
+              }
+            ]
+          },
+          {
+            "Type": "TextArea",
+            "Name": "Titre",
+            "X": 126,
+            "Y": 4,
+            "Width": 229,
+            "Height": 47,
+            "TextId": "__SingleUse_Q584",
+            "TextRotation": "0"
+          },
+          {
+            "Type": "ScalableImage",
+            "Name": "scalableImage2",
+            "X": 79,
+            "Y": 64,
+            "Width": 322,
+            "Height": 216,
+            "Filename": "fond_pot.png",
+            "ScalingAlgorithm": "Nearest-neighbor"
+          },
+          {
+            "Type": "TextArea",
+            "Name": "textplante",
+            "X": 106,
+            "Y": 71,
+            "Width": 162,
+            "Height": 24,
+            "TextId": "__SingleUse_SMN9",
+            "TextRotation": "0",
+            "AutoSize": true
+          },
+          {
+            "Type": "TextArea",
+            "Name": "textarrosage",
+            "X": 106,
+            "Y": 229,
+            "Width": 143,
+            "Height": 18,
+            "TextId": "__SingleUse_99BH",
+            "TextRotation": "0",
+            "AutoSize": true
+          },
+          {
+            "Type": "TextArea",
+            "Name": "textehumidite",
+            "X": 90,
+            "Y": 154,
+            "Width": 80,
+            "Height": 18,
+            "TextId": "__SingleUse_QSOB",
+            "TextRotation": "0",
+            "AutoSize": true
+          },
+          {
+            "Type": "FlexButton",
+            "Name": "BoutonEauOn",
+            "X": 14,
+            "Y": 95,
+            "Width": 50,
+            "Height": 50,
+            "ButtonTrigger": {
+              "Type": "ClickButtonTrigger"
+            },
+            "ButtonStyles": [
+              {
+                "Type": "IconButtonStyle",
+                "IconReleased": "__generated\\icon_theme_images_content_waves_50_50_000000.svg.png",
+                "IconPressed": "__generated\\icon_theme_images_action_done_50_50_E8F6FB.svg.png"
+              }
+            ]
+          },
+          {
+            "Type": "FlexButton",
+            "Name": "BoutonEauOff",
+            "X": 413,
+            "Y": 95,
+            "Width": 50,
+            "Height": 50,
+            "ButtonTrigger": {
+              "Type": "ClickButtonTrigger"
+            },
+            "ButtonStyles": [
+              {
+                "Type": "IconButtonStyle",
+                "IconReleased": "__generated\\icon_theme_images_content_block_flipped_50_50_000000.svg.png",
+                "IconPressed": "__generated\\icon_theme_images_action_done_50_50_E8F6FB.svg.png"
+              }
+            ]
+          },
+          {
+            "Type": "TextArea",
+            "Name": "textearossage",
+            "X": 7,
+            "Y": 154,
+            "Width": 58,
+            "Height": 18,
+            "TextId": "__SingleUse_FT29",
+            "TextRotation": "0",
+            "AutoSize": true
+          },
+          {
+            "Type": "TextArea",
+            "Name": "textenonarossage",
+            "X": 403,
+            "Y": 154,
+            "Width": 75,
+            "Height": 18,
+            "TextId": "__SingleUse_A4HE",
+            "TextRotation": "0",
+            "AutoSize": true
+          },
+          {
+            "Type": "TextArea",
+            "Name": "DateArrosage",
+            "X": 252,
+            "Y": 229,
+            "Width": 44,
+            "Height": 24,
+            "TextId": "__SingleUse_L3TX",
+            "TextRotation": "0",
+            "Wildcard1": {
+              "UseBuffer": true,
+              "BufferSize": 15
+            }
+          },
+          {
+            "Type": "TextArea",
+            "Name": "ValPlante",
+            "X": 112,
+            "Y": 95,
+            "Width": 22,
+            "Height": 12,
+            "TextId": "__SingleUse_Y2RL",
+            "TextRotation": "0",
+            "AutoSize": true,
+            "Wildcard1": {
+              "UseBuffer": true,
+              "BufferSize": 10
+            }
+          },
+          {
+            "Type": "ScalableImage",
+            "Name": "scalableImage1",
+            "X": 320,
+            "Y": 83,
+            "Width": 53,
+            "Height": 48,
+            "Filename": "fleur.png",
+            "ScalingAlgorithm": "Nearest-neighbor"
+          },
+          {
+            "Type": "ScalableImage",
+            "Name": "imagescore",
+            "X": 7,
+            "Y": 8,
+            "Width": 47,
+            "Height": 47,
+            "Filename": "score.png",
+            "ScalingAlgorithm": "Nearest-neighbor"
+          },
+          {
+            "Type": "TextArea",
+            "Name": "textescore",
+            "X": 14,
+            "Y": 25,
+            "Width": 39,
+            "Height": 12,
+            "TextId": "__SingleUse_VQ01",
+            "TextRotation": "0",
+            "AutoSize": true
+          },
+          {
+            "Type": "TextArea",
+            "Name": "ValHumidite",
+            "X": 172,
+            "Y": 154,
+            "Width": 33,
+            "Height": 18,
+            "TextId": "__SingleUse_XBER",
+            "TextRotation": "0",
+            "Wildcard1": {
+              "UseBuffer": true,
+              "BufferSize": 10
+            }
+          },
+          {
+            "Type": "ImageProgress",
+            "Name": "ValBarreHumidite",
+            "X": 90,
+            "Y": 192,
+            "Width": 300,
+            "Height": 10,
+            "FileNameProgress": "__generated\\alternate_theme_images_widgets_imageprogress_plain_normal_medium_action.png",
+            "AnchorAtZero": true,
+            "Direction": "Right",
+            "Preset": "alternate_theme\\presets\\imageprogress\\plain\\normal\\medium_active.json",
+            "FileNameBackground": "__generated\\alternate_theme_images_widgets_imageprogress_plain_normal_medium.png",
+            "IndicatorPositionWidth": 300,
+            "IndicatorPositionHeight": 10,
+            "ProgressRangeMax": 100,
+            "ProgressInitialValue": 60
+          },
+          {
+            "Type": "AnimatedImage",
+            "Name": "froid",
+            "X": -44,
+            "Y": 1,
+            "Width": 569,
+            "Height": 272,
+            "Visible": false,
+            "FileNameFirst": "froid_1.png",
+            "FileNameLast": "froid_2.png",
+            "UpdateTicksInterval": 500,
+            "StartOnLoad": true
+          },
+          {
+            "Type": "AnimatedImage",
+            "Name": "chaud",
+            "X": -44,
+            "Width": 569,
+            "Height": 272,
+            "Visible": false,
+            "FileNameFirst": "chaud_1.png",
+            "FileNameLast": "chaud_2.png",
+            "UpdateTicksInterval": 501,
+            "StartOnLoad": true
+          },
+          {
+            "Type": "AnimatedImage",
+            "Name": "contente",
+            "X": -44,
+            "Width": 569,
+            "Height": 272,
+            "Visible": false,
+            "FileNameFirst": "contente_1.png",
+            "FileNameLast": "contente_2.png",
+            "UpdateTicksInterval": 501,
+            "StartOnLoad": true
+          }
+        ],
+        "Interactions": [
+          {
+            "InteractionName": "Interaction1",
+            "Trigger": {
+              "Type": "TriggerClicked",
+              "TriggerComponent": "BouttonHome"
+            },
+            "Action": {
+              "Type": "ActionGotoScreen",
+              "ScreenTransitionType": "ScreenTransitionNone",
+              "ActionComponent": "Main"
+            }
+          }
+        ]
+      },
+      {
+        "Name": "Pot2",
+        "Components": [
+          {
+            "Type": "ScalableImage",
+            "Name": "Fond",
+            "X": -214,
+            "Y": -254,
+            "Width": 909,
+            "Height": 776,
+            "Filename": "Fond.png",
+            "Alpha": 200,
+            "ScalingAlgorithm": "Nearest-neighbor"
+          },
+          {
+            "Type": "ScalableImage",
+            "Name": "ImageHome",
+            "X": 438,
+            "Y": 4,
+            "Width": 40,
+            "Height": 40,
+            "Filename": "Main.png",
+            "ScalingAlgorithm": "Nearest-neighbor"
+          },
+          {
+            "Type": "FlexButton",
+            "Name": "BouttonHome",
+            "X": 436,
+            "Width": 44,
+            "Height": 44,
+            "Alpha": 0,
+            "ButtonTrigger": {
+              "Type": "ClickButtonTrigger"
+            },
+            "ButtonStyles": [
+              {
+                "Type": "BoxWithBorderButtonStyle",
+                "Width": 44,
+                "Height": 44,
+                "LockToFlexButtonSize": true,
+                "BorderSize": 5,
+                "ColorReleased": {
+                  "Green": 102,
+                  "Blue": 153
+                },
+                "ColorPressed": {
+                  "Green": 153,
+                  "Blue": 204
+                },
+                "ColorBorderReleased": {
+                  "Green": 51,
+                  "Blue": 102
+                },
+                "ColorBorderPressed": {
+                  "Red": 51,
+                  "Green": 102,
+                  "Blue": 153
+                }
+              }
+            ]
+          },
+          {
+            "Type": "TextArea",
+            "Name": "Titre",
+            "X": 126,
+            "Y": 4,
+            "Width": 229,
+            "Height": 47,
+            "TextId": "__SingleUse_ZSBB",
+            "TextRotation": "0"
+          },
+          {
+            "Type": "ScalableImage",
+            "Name": "scalableImage2",
+            "X": 79,
+            "Y": 64,
+            "Width": 322,
+            "Height": 216,
+            "Filename": "fond_pot.png",
+            "ScalingAlgorithm": "Nearest-neighbor"
+          },
+          {
+            "Type": "TextArea",
+            "Name": "textplante",
+            "X": 106,
+            "Y": 71,
+            "Width": 162,
+            "Height": 24,
+            "TextId": "__SingleUse_7IB5",
+            "TextRotation": "0",
+            "AutoSize": true
+          },
+          {
+            "Type": "TextArea",
+            "Name": "textarrosage",
+            "X": 106,
+            "Y": 229,
+            "Width": 143,
+            "Height": 18,
+            "TextId": "__SingleUse_5KSB",
+            "TextRotation": "0",
+            "AutoSize": true
+          },
+          {
+            "Type": "TextArea",
+            "Name": "textehumidite",
+            "X": 90,
+            "Y": 154,
+            "Width": 80,
+            "Height": 18,
+            "TextId": "__SingleUse_EEP9",
+            "TextRotation": "0",
+            "AutoSize": true
+          },
+          {
+            "Type": "TextArea",
+            "Name": "DateArrosage",
+            "X": 252,
+            "Y": 229,
+            "Width": 44,
+            "Height": 24,
+            "TextId": "__SingleUse_N64L",
+            "TextRotation": "0",
+            "AutoSize": true,
+            "Wildcard1": {
+              "UseBuffer": true,
+              "BufferSize": 15
+            }
+          },
+          {
+            "Type": "FlexButton",
+            "Name": "BoutonEauOn",
+            "X": 14,
+            "Y": 95,
+            "Width": 50,
+            "Height": 50,
+            "ButtonTrigger": {
+              "Type": "ClickButtonTrigger"
+            },
+            "ButtonStyles": [
+              {
+                "Type": "IconButtonStyle",
+                "IconReleased": "__generated\\icon_theme_images_content_waves_50_50_000000.svg.png",
+                "IconPressed": "__generated\\icon_theme_images_action_done_50_50_E8F6FB.svg.png"
+              }
+            ]
+          },
+          {
+            "Type": "FlexButton",
+            "Name": "BoutonEauOff",
+            "X": 413,
+            "Y": 95,
+            "Width": 50,
+            "Height": 50,
+            "ButtonTrigger": {
+              "Type": "ClickButtonTrigger"
+            },
+            "ButtonStyles": [
+              {
+                "Type": "IconButtonStyle",
+                "IconReleased": "__generated\\icon_theme_images_content_block_flipped_50_50_000000.svg.png",
+                "IconPressed": "__generated\\icon_theme_images_action_done_50_50_E8F6FB.svg.png"
+              }
+            ]
+          },
+          {
+            "Type": "TextArea",
+            "Name": "textearossage",
+            "X": 7,
+            "Y": 154,
+            "Width": 58,
+            "Height": 18,
+            "TextId": "__SingleUse_N3UB",
+            "TextRotation": "0",
+            "AutoSize": true
+          },
+          {
+            "Type": "TextArea",
+            "Name": "textenonarossage",
+            "X": 403,
+            "Y": 154,
+            "Width": 75,
+            "Height": 18,
+            "TextId": "__SingleUse_V6Q6",
+            "TextRotation": "0",
+            "AutoSize": true
+          },
+          {
+            "Type": "TextArea",
+            "Name": "ValPlante",
+            "X": 112,
+            "Y": 95,
+            "Width": 22,
+            "Height": 12,
+            "TextId": "__SingleUse_TVEB",
+            "TextRotation": "0",
+            "AutoSize": true,
+            "Wildcard1": {
+              "UseBuffer": true,
+              "BufferSize": 10
+            }
+          },
+          {
+            "Type": "ScalableImage",
+            "Name": "scalableImage1",
+            "X": 320,
+            "Y": 83,
+            "Width": 53,
+            "Height": 48,
+            "Filename": "fleur.png",
+            "ScalingAlgorithm": "Nearest-neighbor"
+          },
+          {
+            "Type": "ScalableImage",
+            "Name": "imagescore",
+            "X": 7,
+            "Y": 8,
+            "Width": 47,
+            "Height": 47,
+            "Filename": "score.png",
+            "ScalingAlgorithm": "Nearest-neighbor"
+          },
+          {
+            "Type": "TextArea",
+            "Name": "textescore",
+            "X": 14,
+            "Y": 25,
+            "Width": 39,
+            "Height": 12,
+            "TextId": "__SingleUse_YL1G",
+            "TextRotation": "0",
+            "AutoSize": true
+          },
+          {
+            "Type": "TextArea",
+            "Name": "ValHumidite",
+            "X": 172,
+            "Y": 154,
+            "Width": 33,
+            "Height": 18,
+            "TextId": "__SingleUse_RBNS",
+            "TextRotation": "0",
+            "Wildcard1": {
+              "UseBuffer": true,
+              "BufferSize": 10
+            }
+          },
+          {
+            "Type": "ImageProgress",
+            "Name": "ValBarreHumidite",
+            "X": 90,
+            "Y": 192,
+            "Width": 300,
+            "Height": 10,
+            "FileNameProgress": "__generated\\alternate_theme_images_widgets_imageprogress_plain_normal_medium_action.png",
+            "AnchorAtZero": true,
+            "Direction": "Right",
+            "Preset": "alternate_theme\\presets\\imageprogress\\plain\\normal\\medium_active.json",
+            "FileNameBackground": "__generated\\alternate_theme_images_widgets_imageprogress_plain_normal_medium.png",
+            "IndicatorPositionWidth": 300,
+            "IndicatorPositionHeight": 10,
+            "ProgressRangeMax": 100,
+            "ProgressInitialValue": 60
+          },
+          {
+            "Type": "AnimatedImage",
+            "Name": "froid",
+            "X": -44,
+            "Y": 1,
+            "Width": 569,
+            "Height": 272,
+            "Visible": false,
+            "FileNameFirst": "froid_1.png",
+            "FileNameLast": "froid_2.png",
+            "UpdateTicksInterval": 500,
+            "StartOnLoad": true
+          },
+          {
+            "Type": "AnimatedImage",
+            "Name": "chaud",
+            "X": -44,
+            "Width": 569,
+            "Height": 272,
+            "Visible": false,
+            "FileNameFirst": "chaud_1.png",
+            "FileNameLast": "chaud_2.png",
+            "UpdateTicksInterval": 501,
+            "StartOnLoad": true
+          },
+          {
+            "Type": "AnimatedImage",
+            "Name": "contente",
+            "X": -44,
+            "Width": 569,
+            "Height": 272,
+            "Visible": false,
+            "FileNameFirst": "contente_1.png",
+            "FileNameLast": "contente_2.png",
+            "UpdateTicksInterval": 501,
+            "StartOnLoad": true
+          }
+        ],
+        "Interactions": [
+          {
+            "InteractionName": "Interaction1",
+            "Trigger": {
+              "Type": "TriggerClicked",
+              "TriggerComponent": "BouttonHome"
+            },
+            "Action": {
+              "Type": "ActionGotoScreen",
+              "ScreenTransitionType": "ScreenTransitionNone",
+              "ActionComponent": "Main"
+            }
+          }
+        ]
+      },
+      {
+        "Name": "Pot3",
+        "Components": [
+          {
+            "Type": "ScalableImage",
+            "Name": "Fond",
+            "X": -214,
+            "Y": -254,
+            "Width": 909,
+            "Height": 776,
+            "Filename": "Fond.png",
+            "Alpha": 200,
+            "ScalingAlgorithm": "Nearest-neighbor"
+          },
+          {
+            "Type": "ScalableImage",
+            "Name": "ImageHome",
+            "X": 438,
+            "Y": 4,
+            "Width": 40,
+            "Height": 40,
+            "Filename": "Main.png",
+            "ScalingAlgorithm": "Nearest-neighbor"
+          },
+          {
+            "Type": "FlexButton",
+            "Name": "BouttonHome",
+            "X": 436,
+            "Width": 44,
+            "Height": 44,
+            "Alpha": 0,
+            "ButtonTrigger": {
+              "Type": "ClickButtonTrigger"
+            },
+            "ButtonStyles": [
+              {
+                "Type": "BoxWithBorderButtonStyle",
+                "Width": 44,
+                "Height": 44,
+                "LockToFlexButtonSize": true,
+                "BorderSize": 5,
+                "ColorReleased": {
+                  "Green": 102,
+                  "Blue": 153
+                },
+                "ColorPressed": {
+                  "Green": 153,
+                  "Blue": 204
+                },
+                "ColorBorderReleased": {
+                  "Green": 51,
+                  "Blue": 102
+                },
+                "ColorBorderPressed": {
+                  "Red": 51,
+                  "Green": 102,
+                  "Blue": 153
+                }
+              }
+            ]
+          },
+          {
+            "Type": "TextArea",
+            "Name": "Titre",
+            "X": 126,
+            "Y": 4,
+            "Width": 229,
+            "Height": 47,
+            "TextId": "__SingleUse_QCMY",
+            "TextRotation": "0"
+          },
+          {
+            "Type": "ScalableImage",
+            "Name": "scalableImage2",
+            "X": 79,
+            "Y": 64,
+            "Width": 322,
+            "Height": 216,
+            "Filename": "fond_pot.png",
+            "ScalingAlgorithm": "Nearest-neighbor"
+          },
+          {
+            "Type": "TextArea",
+            "Name": "textplante",
+            "X": 106,
+            "Y": 71,
+            "Width": 162,
+            "Height": 24,
+            "TextId": "__SingleUse_4BAA",
+            "TextRotation": "0",
+            "AutoSize": true
+          },
+          {
+            "Type": "TextArea",
+            "Name": "textarrosage",
+            "X": 106,
+            "Y": 229,
+            "Width": 143,
+            "Height": 18,
+            "TextId": "__SingleUse_FEWZ",
+            "TextRotation": "0",
+            "AutoSize": true
+          },
+          {
+            "Type": "TextArea",
+            "Name": "textehumidite",
+            "X": 90,
+            "Y": 154,
+            "Width": 80,
+            "Height": 18,
+            "TextId": "__SingleUse_B3CQ",
+            "TextRotation": "0",
+            "AutoSize": true
+          },
+          {
+            "Type": "FlexButton",
+            "Name": "BoutonEauOn",
+            "X": 14,
+            "Y": 95,
+            "Width": 50,
+            "Height": 50,
+            "ButtonTrigger": {
+              "Type": "ClickButtonTrigger"
+            },
+            "ButtonStyles": [
+              {
+                "Type": "IconButtonStyle",
+                "IconReleased": "__generated\\icon_theme_images_content_waves_50_50_000000.svg.png",
+                "IconPressed": "__generated\\icon_theme_images_action_done_50_50_E8F6FB.svg.png"
+              }
+            ]
+          },
+          {
+            "Type": "FlexButton",
+            "Name": "BoutonEauOff",
+            "X": 413,
+            "Y": 95,
+            "Width": 50,
+            "Height": 50,
+            "ButtonTrigger": {
+              "Type": "ClickButtonTrigger"
+            },
+            "ButtonStyles": [
+              {
+                "Type": "IconButtonStyle",
+                "IconReleased": "__generated\\icon_theme_images_content_block_flipped_50_50_000000.svg.png",
+                "IconPressed": "__generated\\icon_theme_images_action_done_50_50_E8F6FB.svg.png"
+              }
+            ]
+          },
+          {
+            "Type": "TextArea",
+            "Name": "textearossage",
+            "X": 7,
+            "Y": 154,
+            "Width": 58,
+            "Height": 18,
+            "TextId": "__SingleUse_SFJ5",
+            "TextRotation": "0",
+            "AutoSize": true
+          },
+          {
+            "Type": "TextArea",
+            "Name": "textenonarossage",
+            "X": 403,
+            "Y": 154,
+            "Width": 75,
+            "Height": 18,
+            "TextId": "__SingleUse_4M51",
+            "TextRotation": "0",
+            "AutoSize": true
+          },
+          {
+            "Type": "TextArea",
+            "Name": "DateArrosage",
+            "X": 252,
+            "Y": 229,
+            "Width": 44,
+            "Height": 24,
+            "TextId": "__SingleUse_6G3M",
+            "TextRotation": "0",
+            "AutoSize": true,
+            "Wildcard1": {
+              "UseBuffer": true,
+              "BufferSize": 15
+            }
+          },
+          {
+            "Type": "TextArea",
+            "Name": "ValPlante",
+            "X": 112,
+            "Y": 95,
+            "Width": 22,
+            "Height": 12,
+            "TextId": "__SingleUse_EP17",
+            "TextRotation": "0",
+            "AutoSize": true,
+            "Wildcard1": {
+              "UseBuffer": true,
+              "BufferSize": 10
+            }
+          },
+          {
+            "Type": "ScalableImage",
+            "Name": "scalableImage1",
+            "X": 320,
+            "Y": 83,
+            "Width": 53,
+            "Height": 48,
+            "Filename": "fleur.png",
+            "ScalingAlgorithm": "Nearest-neighbor"
+          },
+          {
+            "Type": "ScalableImage",
+            "Name": "imagescore",
+            "X": 7,
+            "Y": 8,
+            "Width": 47,
+            "Height": 47,
+            "Filename": "score.png",
+            "ScalingAlgorithm": "Nearest-neighbor"
+          },
+          {
+            "Type": "TextArea",
+            "Name": "textescore",
+            "X": 14,
+            "Y": 25,
+            "Width": 39,
+            "Height": 12,
+            "TextId": "__SingleUse_ERDM",
+            "TextRotation": "0",
+            "AutoSize": true
+          },
+          {
+            "Type": "TextArea",
+            "Name": "ValHumidite",
+            "X": 172,
+            "Y": 154,
+            "Width": 33,
+            "Height": 18,
+            "TextId": "__SingleUse_VUUS",
+            "TextRotation": "0",
+            "Wildcard1": {
+              "UseBuffer": true,
+              "BufferSize": 10
+            }
+          },
+          {
+            "Type": "ImageProgress",
+            "Name": "ValBarreHumidite",
+            "X": 90,
+            "Y": 192,
+            "Width": 300,
+            "Height": 10,
+            "FileNameProgress": "__generated\\alternate_theme_images_widgets_imageprogress_plain_normal_medium_action.png",
+            "AnchorAtZero": true,
+            "Direction": "Right",
+            "Preset": "alternate_theme\\presets\\imageprogress\\plain\\normal\\medium_active.json",
+            "FileNameBackground": "__generated\\alternate_theme_images_widgets_imageprogress_plain_normal_medium.png",
+            "IndicatorPositionWidth": 300,
+            "IndicatorPositionHeight": 10,
+            "ProgressRangeMax": 100,
+            "ProgressInitialValue": 60
+          },
+          {
+            "Type": "AnimatedImage",
+            "Name": "froid",
+            "X": -44,
+            "Y": 1,
+            "Width": 569,
+            "Height": 272,
+            "Visible": false,
+            "FileNameFirst": "froid_1.png",
+            "FileNameLast": "froid_2.png",
+            "UpdateTicksInterval": 500,
+            "StartOnLoad": true
+          },
+          {
+            "Type": "AnimatedImage",
+            "Name": "chaud",
+            "X": -44,
+            "Width": 569,
+            "Height": 272,
+            "Visible": false,
+            "FileNameFirst": "chaud_1.png",
+            "FileNameLast": "chaud_2.png",
+            "UpdateTicksInterval": 501,
+            "StartOnLoad": true
+          },
+          {
+            "Type": "AnimatedImage",
+            "Name": "contente",
+            "X": -44,
+            "Width": 569,
+            "Height": 272,
+            "Visible": false,
+            "FileNameFirst": "contente_1.png",
+            "FileNameLast": "contente_2.png",
+            "UpdateTicksInterval": 501,
+            "StartOnLoad": true
+          }
+        ],
+        "Interactions": [
+          {
+            "InteractionName": "Interaction1",
+            "Trigger": {
+              "Type": "TriggerClicked",
+              "TriggerComponent": "BouttonHome"
+            },
+            "Action": {
+              "Type": "ActionGotoScreen",
+              "ScreenTransitionType": "ScreenTransitionNone",
+              "ActionComponent": "Main"
+            }
+          }
+        ]
+      },
+      {
+        "Name": "Pot4",
+        "Components": [
+          {
+            "Type": "ScalableImage",
+            "Name": "Fond",
+            "X": -214,
+            "Y": -254,
+            "Width": 909,
+            "Height": 776,
+            "Filename": "Fond.png",
+            "Alpha": 200,
+            "ScalingAlgorithm": "Nearest-neighbor"
+          },
+          {
+            "Type": "ScalableImage",
+            "Name": "ImageHome",
+            "X": 438,
+            "Y": 4,
+            "Width": 40,
+            "Height": 40,
+            "Filename": "Main.png",
+            "ScalingAlgorithm": "Nearest-neighbor"
+          },
+          {
+            "Type": "FlexButton",
+            "Name": "BouttonHome",
+            "X": 436,
+            "Width": 44,
+            "Height": 44,
+            "Alpha": 0,
+            "ButtonTrigger": {
+              "Type": "ClickButtonTrigger"
+            },
+            "ButtonStyles": [
+              {
+                "Type": "BoxWithBorderButtonStyle",
+                "Width": 44,
+                "Height": 44,
+                "LockToFlexButtonSize": true,
+                "BorderSize": 5,
+                "ColorReleased": {
+                  "Green": 102,
+                  "Blue": 153
+                },
+                "ColorPressed": {
+                  "Green": 153,
+                  "Blue": 204
+                },
+                "ColorBorderReleased": {
+                  "Green": 51,
+                  "Blue": 102
+                },
+                "ColorBorderPressed": {
+                  "Red": 51,
+                  "Green": 102,
+                  "Blue": 153
+                }
+              }
+            ]
+          },
+          {
+            "Type": "TextArea",
+            "Name": "Titre",
+            "X": 126,
+            "Y": 4,
+            "Width": 229,
+            "Height": 47,
+            "TextId": "__SingleUse_I4IF",
+            "TextRotation": "0"
+          },
+          {
+            "Type": "ScalableImage",
+            "Name": "scalableImage2",
+            "X": 79,
+            "Y": 64,
+            "Width": 322,
+            "Height": 216,
+            "Filename": "fond_pot.png",
+            "ScalingAlgorithm": "Nearest-neighbor"
+          },
+          {
+            "Type": "TextArea",
+            "Name": "textplante",
+            "X": 106,
+            "Y": 71,
+            "Width": 162,
+            "Height": 24,
+            "TextId": "__SingleUse_2TZA",
+            "TextRotation": "0",
+            "AutoSize": true
+          },
+          {
+            "Type": "TextArea",
+            "Name": "textarrosage",
+            "X": 106,
+            "Y": 229,
+            "Width": 143,
+            "Height": 18,
+            "TextId": "__SingleUse_7GCD",
+            "TextRotation": "0",
+            "AutoSize": true
+          },
+          {
+            "Type": "TextArea",
+            "Name": "textehumidite",
+            "X": 90,
+            "Y": 154,
+            "Width": 80,
+            "Height": 18,
+            "TextId": "__SingleUse_UZ9X",
+            "TextRotation": "0",
+            "AutoSize": true
+          },
+          {
+            "Type": "FlexButton",
+            "Name": "BoutonEauOn",
+            "X": 14,
+            "Y": 95,
+            "Width": 50,
+            "Height": 50,
+            "ButtonTrigger": {
+              "Type": "ClickButtonTrigger"
+            },
+            "ButtonStyles": [
+              {
+                "Type": "IconButtonStyle",
+                "IconReleased": "__generated\\icon_theme_images_content_waves_50_50_000000.svg.png",
+                "IconPressed": "__generated\\icon_theme_images_action_done_50_50_E8F6FB.svg.png"
+              }
+            ]
+          },
+          {
+            "Type": "FlexButton",
+            "Name": "BoutonEauOff",
+            "X": 413,
+            "Y": 95,
+            "Width": 50,
+            "Height": 50,
+            "ButtonTrigger": {
+              "Type": "ClickButtonTrigger"
+            },
+            "ButtonStyles": [
+              {
+                "Type": "IconButtonStyle",
+                "IconReleased": "__generated\\icon_theme_images_content_block_flipped_50_50_000000.svg.png",
+                "IconPressed": "__generated\\icon_theme_images_action_done_50_50_E8F6FB.svg.png"
+              }
+            ]
+          },
+          {
+            "Type": "TextArea",
+            "Name": "textearossage",
+            "X": 7,
+            "Y": 154,
+            "Width": 58,
+            "Height": 18,
+            "TextId": "__SingleUse_WX0U",
+            "TextRotation": "0",
+            "AutoSize": true
+          },
+          {
+            "Type": "TextArea",
+            "Name": "textenonarossage",
+            "X": 403,
+            "Y": 154,
+            "Width": 75,
+            "Height": 18,
+            "TextId": "__SingleUse_FL6A",
+            "TextRotation": "0",
+            "AutoSize": true
+          },
+          {
+            "Type": "TextArea",
+            "Name": "DateArrosage",
+            "X": 252,
+            "Y": 229,
+            "Width": 44,
+            "Height": 24,
+            "TextId": "__SingleUse_8HEQ",
+            "TextRotation": "0",
+            "AutoSize": true,
+            "Wildcard1": {
+              "UseBuffer": true,
+              "BufferSize": 15
+            }
+          },
+          {
+            "Type": "TextArea",
+            "Name": "ValPlante",
+            "X": 112,
+            "Y": 95,
+            "Width": 22,
+            "Height": 12,
+            "TextId": "__SingleUse_HBTX",
+            "TextRotation": "0",
+            "AutoSize": true,
+            "Wildcard1": {
+              "UseBuffer": true,
+              "BufferSize": 10
+            }
+          },
+          {
+            "Type": "ScalableImage",
+            "Name": "scalableImage1",
+            "X": 320,
+            "Y": 83,
+            "Width": 53,
+            "Height": 48,
+            "Filename": "fleur.png",
+            "ScalingAlgorithm": "Nearest-neighbor"
+          },
+          {
+            "Type": "ScalableImage",
+            "Name": "imagescore",
+            "X": 7,
+            "Y": 8,
+            "Width": 47,
+            "Height": 47,
+            "Filename": "score.png",
+            "ScalingAlgorithm": "Nearest-neighbor"
+          },
+          {
+            "Type": "TextArea",
+            "Name": "textescore",
+            "X": 14,
+            "Y": 25,
+            "Width": 39,
+            "Height": 12,
+            "TextId": "__SingleUse_YA8T",
+            "TextRotation": "0",
+            "AutoSize": true
+          },
+          {
+            "Type": "TextArea",
+            "Name": "ValHumidite",
+            "X": 172,
+            "Y": 154,
+            "Width": 33,
+            "Height": 18,
+            "TextId": "__SingleUse_IX50",
+            "TextRotation": "0",
+            "Wildcard1": {
+              "UseBuffer": true,
+              "BufferSize": 10
+            }
+          },
+          {
+            "Type": "ImageProgress",
+            "Name": "ValBarreHumidite",
+            "X": 90,
+            "Y": 192,
+            "Width": 300,
+            "Height": 10,
+            "FileNameProgress": "__generated\\alternate_theme_images_widgets_imageprogress_plain_normal_medium_action.png",
+            "AnchorAtZero": true,
+            "Direction": "Right",
+            "Preset": "alternate_theme\\presets\\imageprogress\\plain\\normal\\medium_active.json",
+            "FileNameBackground": "__generated\\alternate_theme_images_widgets_imageprogress_plain_normal_medium.png",
+            "IndicatorPositionWidth": 300,
+            "IndicatorPositionHeight": 10,
+            "ProgressRangeMax": 100,
+            "ProgressInitialValue": 60
+          },
+          {
+            "Type": "AnimatedImage",
+            "Name": "froid",
+            "X": -44,
+            "Y": 1,
+            "Width": 569,
+            "Height": 272,
+            "Visible": false,
+            "FileNameFirst": "froid_1.png",
+            "FileNameLast": "froid_2.png",
+            "UpdateTicksInterval": 500,
+            "StartOnLoad": true
+          },
+          {
+            "Type": "AnimatedImage",
+            "Name": "chaud",
+            "X": -44,
+            "Width": 569,
+            "Height": 272,
+            "Visible": false,
+            "FileNameFirst": "chaud_1.png",
+            "FileNameLast": "chaud_2.png",
+            "UpdateTicksInterval": 501,
+            "StartOnLoad": true
+          },
+          {
+            "Type": "AnimatedImage",
+            "Name": "contente",
+            "X": -44,
+            "Width": 569,
+            "Height": 272,
+            "Visible": false,
+            "FileNameFirst": "contente_1.png",
+            "FileNameLast": "contente_2.png",
+            "UpdateTicksInterval": 501,
+            "StartOnLoad": true
+          }
+        ],
+        "Interactions": [
+          {
+            "InteractionName": "Interaction1",
+            "Trigger": {
+              "Type": "TriggerClicked",
+              "TriggerComponent": "BouttonHome"
+            },
+            "Action": {
+              "Type": "ActionGotoScreen",
+              "ScreenTransitionType": "ScreenTransitionNone",
+              "ActionComponent": "Main"
+            }
+          }
+        ]
+      },
+      {
+        "Name": "Setting",
+        "Components": [
+          {
+            "Type": "ScalableImage",
+            "Name": "Fond",
+            "X": -214,
+            "Y": -249,
+            "Width": 909,
+            "Height": 771,
+            "Filename": "Fond.png",
+            "ScalingAlgorithm": "Nearest-neighbor"
+          },
+          {
+            "Type": "TextArea",
+            "Name": "Titre",
+            "X": 92,
+            "Y": 10,
+            "Width": 297,
+            "Height": 47,
+            "TextId": "__SingleUse_9QJY",
+            "TextRotation": "0"
+          },
+          {
+            "Type": "ScalableImage",
+            "Name": "ImageHome",
+            "X": 436,
+            "Y": 4,
+            "Width": 40,
+            "Height": 40,
+            "Filename": "Main.png",
+            "ScalingAlgorithm": "Nearest-neighbor"
+          },
+          {
+            "Type": "FlexButton",
+            "Name": "BouttonHome",
+            "X": 436,
+            "Width": 44,
+            "Height": 44,
+            "Alpha": 0,
+            "ButtonTrigger": {
+              "Type": "ClickButtonTrigger"
+            },
+            "ButtonStyles": [
+              {
+                "Type": "BoxWithBorderButtonStyle",
+                "Width": 44,
+                "Height": 44,
+                "LockToFlexButtonSize": true,
+                "BorderSize": 5,
+                "ColorReleased": {
+                  "Green": 102,
+                  "Blue": 153
+                },
+                "ColorPressed": {
+                  "Green": 153,
+                  "Blue": 204
+                },
+                "ColorBorderReleased": {
+                  "Green": 51,
+                  "Blue": 102
+                },
+                "ColorBorderPressed": {
+                  "Red": 51,
+                  "Green": 102,
+                  "Blue": 153
+                }
+              }
+            ]
+          },
+          {
+            "Type": "TextArea",
+            "Name": "textIp",
+            "X": 11,
+            "Y": 70,
+            "Width": 122,
+            "Height": 24,
+            "TextId": "__SingleUse_DKQ2",
+            "TextRotation": "0",
+            "AutoSize": true
+          },
+          {
+            "Type": "TextArea",
+            "Name": "ValIp",
+            "X": 133,
+            "Y": 70,
+            "Width": 205,
+            "Height": 24,
+            "TextId": "__SingleUse_GSPK",
+            "TextRotation": "0",
+            "Wildcard1": {
+              "UseBuffer": true,
+              "BufferSize": 16
+            }
+          },
+          {
+            "Type": "AnimatedImage",
+            "Name": "froid",
+            "X": -44,
+            "Y": 1,
+            "Width": 569,
+            "Height": 272,
+            "Visible": false,
+            "FileNameFirst": "froid_1.png",
+            "FileNameLast": "froid_2.png",
+            "UpdateTicksInterval": 500,
+            "StartOnLoad": true
+          },
+          {
+            "Type": "AnimatedImage",
+            "Name": "chaud",
+            "X": -44,
+            "Width": 569,
+            "Height": 272,
+            "Visible": false,
+            "FileNameFirst": "chaud_1.png",
+            "FileNameLast": "chaud_2.png",
+            "UpdateTicksInterval": 501,
+            "StartOnLoad": true
+          },
+          {
+            "Type": "AnimatedImage",
+            "Name": "contente",
+            "X": -44,
+            "Width": 569,
+            "Height": 272,
+            "Visible": false,
+            "FileNameFirst": "contente_1.png",
+            "FileNameLast": "contente_2.png",
+            "UpdateTicksInterval": 501,
+            "StartOnLoad": true
+          }
+        ],
+        "Interactions": [
+          {
+            "InteractionName": "Interaction1",
+            "Trigger": {
+              "Type": "TriggerClicked",
+              "TriggerComponent": "BouttonHome"
+            },
+            "Action": {
+              "Type": "ActionGotoScreen",
+              "ScreenTransitionType": "ScreenTransitionNone",
+              "ActionComponent": "Main"
+            }
+          }
+        ]
+      }
+    ],
+    "CustomContainerDefinitions": [],
+    "Name": "Plantly",
+    "Resolution": {
+      "Width": 480,
+      "Height": 272
+    },
+    "SelectedColorDepth": 16,
+    "StartupScreenName": "Main",
+    "SelectedStartupLanguage": "GB",
+    "TouchGfxPath": "../Middlewares/ST/touchgfx",
+    "UIPath": ".",
+    "AvailableColorDepths": [
+      16
+    ],
+    "AvailableLCDs": {
+      "16": "LCD16bpp"
+    },
+    "AvailableSections": [
+      "ExtFlashSection",
+      "IntFlashSection"
+    ],
+    "AvailableResolutions": [
+      {
+        "Width": 480,
+        "Height": 272
+      }
+    ],
+    "PhysicalButtons": [],
+    "FrameworkFeatures": {
+      "LCD16bpp": {
+        "Id": "LCD16bpp",
+        "IsEnabled": true
+      }
+    },
+    "GenerateAssetsCommand": "make -f simulator/gcc/Makefile assets -j8",
+    "PostGenerateCommand": "touchgfx update_project --project-file=simulator/msvs/Application.vcxproj",
+    "PostGenerateTargetCommand": "touchgfx update_project",
+    "CompileSimulatorCommand": "make -f simulator/gcc/Makefile -j8",
+    "RunSimulatorCommand": "build\\bin\\simulator.exe",
+    "CompileTargetCommand": "make -f ../gcc/Makefile -j8",
+    "FlashTargetCommand": "make -f ../gcc/Makefile flash -j8",
+    "FlashTargetIntCommandOverride": "make -f ../gcc/Makefile intflash -j8",
+    "LandscapeSkinX": 0,
+    "LandscapeSkinY": 0,
+    "PortraitSkinX": 0,
+    "PortraitSkinY": 0,
+    "DisplayOrientation": "Landscape",
+    "Family": "STM32F7",
+    "SubFamily": "STM32F7x6",
+    "Toolchain": "STM32CubeIDE",
+    "Platform": "m7",
+    "ProjectFile": "../STM32F746G_DISCO.ioc",
+    "OptionalComponentsRoot": "../Middlewares/ST/touchgfx_components",
+    "OptionalComponents": [],
+    "AdditionalFeatures": [
+      "CWRVector",
+      "VectorFonts",
+      "Video"
+    ]
+  },
+  "Version": "4.26.0",
+  "CreatedBy": "4.26.0"
+}
