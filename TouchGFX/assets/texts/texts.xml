@@ -6,47 +6,80 @@
   <Texts>
     <TextGroup Id="Group1" />
     <TextGroup Id="Unsorted">
-      <Text Id="__SingleUse_WX0U" Alignment="Left" TypographyId="Date">
-        <Translation Language="GB">Set Eau</Translation>
+      <Text Id="__SingleUse_HUUH" Alignment="Left" TypographyId="Default">
+        <Translation Language="GB">Mode vacance</Translation>
       </Text>
-      <Text Id="__SingleUse_FL6A" Alignment="Left" TypographyId="Date">
-        <Translation Language="GB">Reset Eau</Translation>
+      <Text Id="__SingleUse_Q0T0" Alignment="Left" TypographyId="Default">
+        <Translation Language="GB">Mode extérieur</Translation>
+      </Text>
+      <Text Id="__SingleUse_YWW0" Alignment="Left" TypographyId="Default">
+        <Translation Language="GB">Oublier le réseau</Translation>
+      </Text>
+      <Text Id="__SingleUse_IDSF" Alignment="Left" TypographyId="Date">
+        <Translation Language="GB">&lt;d&gt;</Translation>
+      </Text>
+      <Text Id="__SingleUse_SPXN" Alignment="Left" TypographyId="Date">
+        <Translation Language="GB">&lt;d&gt;</Translation>
+      </Text>
+      <Text Id="__SingleUse_P39J" Alignment="Left" TypographyId="Date">
+        <Translation Language="GB">&lt;d&gt;</Translation>
+      </Text>
+      <Text Id="__SingleUse_VHWX" Alignment="Left" TypographyId="Date">
+        <Translation Language="GB">&lt;d&gt;</Translation>
+      </Text>
+      <Text Id="__SingleUse_3NIG" Alignment="Left" TypographyId="Date">
+        <Translation Language="GB">&lt;d&gt;</Translation>
+      </Text>
+      <Text Id="__SingleUse_1XSQ" Alignment="Left" TypographyId="Date">
+        <Translation Language="GB">&lt;d&gt;</Translation>
+      </Text>
+      <Text Id="__SingleUse_UYYX" Alignment="Left" TypographyId="Default">
+        <Translation Language="GB">Identification : </Translation>
+      </Text>
+      <Text Id="__SingleUse_2FGX" Alignment="Left" TypographyId="Default">
+        <Translation Language="GB">Nom du wifi : </Translation>
+      </Text>
+      <Text Id="__SingleUse_DZBN" Alignment="Left" TypographyId="Default">
+        <Translation Language="GB">&lt;d&gt;</Translation>
+      </Text>
+      <Text Id="__SingleUse_F3KW" Alignment="Left" TypographyId="Date">
+        <Translation Language="GB">&lt;d&gt;</Translation>
+      </Text>
+      <Text Id="__SingleUse_WX0U" Alignment="Left" TypographyId="Date">
+        <Translation Language="GB">Arrosage</Translation>
+      </Text>
+      <Text Id="__SingleUse_FL6A" Alignment="Center" TypographyId="Date">
+        <Translation Language="GB">Annuler&#10;arrosage</Translation>
       </Text>
       <Text Id="__SingleUse_SFJ5" Alignment="Left" TypographyId="Date">
-        <Translation Language="GB">Set Eau</Translation>
+        <Translation Language="GB">Arrosage</Translation>
       </Text>
-      <Text Id="__SingleUse_4M51" Alignment="Left" TypographyId="Date">
-        <Translation Language="GB">Reset Eau</Translation>
+      <Text Id="__SingleUse_4M51" Alignment="Center" TypographyId="Date">
+        <Translation Language="GB">Annuler&#10;arrosage</Translation>
       </Text>
-      <Text Id="__SingleUse_N3UB" Alignment="Left" TypographyId="Date">
-        <Translation Language="GB">Set Eau</Translation>
+      <Text Id="__SingleUse_N3UB" Alignment="Center" TypographyId="Date">
+        <Translation Language="GB">Arrosage</Translation>
       </Text>
-      <Text Id="__SingleUse_V6Q6" Alignment="Left" TypographyId="Date">
-        <Translation Language="GB">Reset Eau</Translation>
+      <Text Id="__SingleUse_V6Q6" Alignment="Center" TypographyId="Date">
+        <Translation Language="GB">Annuler&#10;arrosage</Translation>
       </Text>
-      <Text Id="__SingleUse_A4HE" Alignment="Left" TypographyId="Date">
-        <Translation Language="GB">Reset Eau</Translation>
+      <Text Id="__SingleUse_A4HE" Alignment="Center" TypographyId="Date">
+        <Translation Language="GB">Annuler&#10;arrosage</Translation>
       </Text>
-      <Text Id="__SingleUse_FT29" Alignment="Left" TypographyId="Date">
-        <Translation Language="GB">Set Eau</Translation>
+      <Text Id="__SingleUse_FT29" Alignment="Center" TypographyId="Date">
+        <Translation Language="GB">Arrosage</Translation>
       </Text>
       <Text Id="__SingleUse_9QJY" Alignment="Center" TypographyId="TITRE">
         <Translation Language="GB">PARAMETRE</Translation>
       </Text>
       <Text Id="__SingleUse_DKQ2" Alignment="Left" TypographyId="Default">
-        <Translation Language="GB">Adresse IP :</Translation>
+        <Translation Language="GB">Adresse IP : </Translation>
       </Text>
       <Text Id="__SingleUse_GSPK" Alignment="Left" TypographyId="Default">
         <Translation Language="GB">&lt;d&gt;</Translation>
       </Text>
-      <Text Id="__SingleUse_VUUS" Alignment="Left" TypographyId="Date">
-        <Translation Language="GB">&lt;d&gt;</Translation>
-      </Text>
       <Text Id="__SingleUse_ERDM" Alignment="Left" TypographyId="Small">
         <Translation Language="GB">    /100</Translation>
-      </Text>
-      <Text Id="__SingleUse_EP17" Alignment="Left" TypographyId="Default">
-        <Translation Language="GB">&lt;d&gt;</Translation>
       </Text>
       <Text Id="__SingleUse_6G3M" Alignment="Left" TypographyId="Date">
         <Translation Language="GB">&lt;d&gt;</Translation>
@@ -61,19 +94,10 @@
         <Translation Language="GB">Type de plante :</Translation>
       </Text>
       <Text Id="__SingleUse_QCMY" Alignment="Center" TypographyId="TITRE">
-        <Translation Language="GB">POT 3</Translation>
-      </Text>
-      <Text Id="__SingleUse_RBNS" Alignment="Left" TypographyId="Date">
         <Translation Language="GB">&lt;d&gt;</Translation>
       </Text>
       <Text Id="__SingleUse_YL1G" Alignment="Left" TypographyId="Small">
         <Translation Language="GB">    /100</Translation>
-      </Text>
-      <Text Id="__SingleUse_TVEB" Alignment="Left" TypographyId="Default">
-        <Translation Language="GB">&lt;d&gt;</Translation>
-      </Text>
-      <Text Id="__SingleUse_N64L" Alignment="Left" TypographyId="Date">
-        <Translation Language="GB">&lt;d&gt;</Translation>
       </Text>
       <Text Id="__SingleUse_EEP9" Alignment="Left" TypographyId="Date">
         <Translation Language="GB">Humidite :</Translation>
@@ -85,7 +109,7 @@
         <Translation Language="GB">Type de plante :</Translation>
       </Text>
       <Text Id="__SingleUse_ZSBB" Alignment="Center" TypographyId="TITRE">
-        <Translation Language="GB">POT 2</Translation>
+        <Translation Language="GB">&lt;d&gt;</Translation>
       </Text>
       <Text Id="__SingleUse_IX50" Alignment="Left" TypographyId="Date">
         <Translation Language="GB">&lt;d&gt;</Translation>
@@ -93,14 +117,14 @@
       <Text Id="__SingleUse_YA8T" Alignment="Left" TypographyId="Small">
         <Translation Language="GB">    /100</Translation>
       </Text>
-      <Text Id="__SingleUse_HBTX" Alignment="Left" TypographyId="Default">
+      <Text Id="__SingleUse_HBTX" Alignment="Left" TypographyId="Date">
         <Translation Language="GB">&lt;d&gt;</Translation>
       </Text>
       <Text Id="__SingleUse_8HEQ" Alignment="Left" TypographyId="Date">
         <Translation Language="GB">&lt;d&gt;</Translation>
       </Text>
       <Text Id="__SingleUse_UZ9X" Alignment="Left" TypographyId="Date">
-        <Translation Language="GB">Humidite :</Translation>
+        <Translation Language="GB">Humidite : </Translation>
       </Text>
       <Text Id="__SingleUse_7GCD" Alignment="Left" TypographyId="Date">
         <Translation Language="GB">Dernier arrosage : </Translation>
@@ -109,10 +133,10 @@
         <Translation Language="GB">Type de plante :</Translation>
       </Text>
       <Text Id="__SingleUse_I4IF" Alignment="Center" TypographyId="TITRE">
-        <Translation Language="GB">POT 4</Translation>
+        <Translation Language="GB">&lt;d&gt;</Translation>
       </Text>
       <Text Id="__SingleUse_Q584" Alignment="Center" TypographyId="TITRE">
-        <Translation Language="GB">POT 1</Translation>
+        <Translation Language="GB">&lt;d&gt;</Translation>
       </Text>
       <Text Id="__SingleUse_SMN9" Alignment="Left" TypographyId="Default">
         <Translation Language="GB">Type de plante :</Translation>
@@ -126,16 +150,10 @@
       <Text Id="__SingleUse_L3TX" Alignment="Left" TypographyId="Date">
         <Translation Language="GB">&lt;d&gt;</Translation>
       </Text>
-      <Text Id="__SingleUse_Y2RL" Alignment="Left" TypographyId="Default">
-        <Translation Language="GB">&lt;d&gt;</Translation>
-      </Text>
       <Text Id="__SingleUse_VQ01" Alignment="Left" TypographyId="Small">
         <Translation Language="GB">    /100</Translation>
       </Text>
-      <Text Id="__SingleUse_XBER" Alignment="Left" TypographyId="Date">
-        <Translation Language="GB">&lt;d&gt;</Translation>
-      </Text>
-      <Text Id="__SingleUse_RZOS" Alignment="Left" TypographyId="TITRE">
+      <Text Id="__SingleUse_RZOS" Alignment="Center" TypographyId="TITRE">
         <Translation Language="GB">PLANTLY</Translation>
       </Text>
       <Text Id="__SingleUse_P7G7" Alignment="Left" TypographyId="Default">
@@ -156,21 +174,23 @@
       <Text Id="__SingleUse_2KWC" Alignment="Left" TypographyId="Default">
         <Translation Language="GB">&lt;d&gt;</Translation>
       </Text>
-      <Text Id="__SingleUse_2LU2" Alignment="Left" TypographyId="Default">
+      <Text Id="__SingleUse_2LU2" Alignment="Center" TypographyId="Dateheure">
         <Translation Language="GB">&lt;&gt;</Translation>
       </Text>
-      <Text Id="__SingleUse_27IN" Alignment="Left" TypographyId="Date">
+      <Text Id="__SingleUse_27IN" Alignment="Center" TypographyId="Datemain">
         <Translation Language="GB">&lt;d&gt;</Translation>
       </Text>
-      <Text Id="__SingleUse_Y7QS" Alignment="Left" TypographyId="Date">
+      <Text Id="__SingleUse_Y7QS" Alignment="Left" TypographyId="Datemain">
         <Translation Language="GB">24 décembre 2025</Translation>
       </Text>
     </TextGroup>
   </Texts>
   <Typographies>
-    <Typography Id="Default" Font="verdana.ttf" Size="20" Bpp="4" IsVector="no" Direction="LTR" WildcardCharacters="123456789°azertyuiopqsdfghjklmwxcvbn./:,%°AZERTYYUIOPQSDFGHJKLMWXCVBN" WidgetWildcardCharacters="0123456789 :APM" />
-    <Typography Id="TITRE" Font="ITCKRIST.TTF" Size="40" Bpp="4" IsVector="no" Direction="LTR" FallbackCharacter="?" />
-    <Typography Id="Date" Font="verdana.ttf" Size="15" Bpp="4" IsVector="no" Direction="LTR" FallbackCharacter="?" WildcardCharacters="0123456789azertyuiopqsdfghjklmwxcvbnéè.,:/AZERTYUIOPQSDFGHJKLMWXCVBN%°" />
+    <Typography Id="Default" Font="ROCKBI.TTF" Size="20" Bpp="4" IsVector="no" Direction="LTR" WildcardCharacters="0123456789°azertyuiopqsdfghjklmwxcvbn./:,%°AZERTYYUIOPQSDFGHJKLMWXCVBN" />
+    <Typography Id="TITRE" Font="BOD_BI.TTF" Size="40" Bpp="4" IsVector="no" Direction="LTR" FallbackCharacter="?" WildcardCharacters="AZERTYUIOPQSDFGHJKLMWXCVBNazertyuiopqsdfghjklmwxcvbn0123456789_.?:!-%^¨îù@ '" />
+    <Typography Id="Date" Font="calibriz.ttf" Size="15" Bpp="4" IsVector="no" Direction="LTR" FallbackCharacter="?" WildcardCharacters="0123456789azertyuiopqsdfghjklmwxcvbnéè.,:/AZERTYUIOPQSDFGHJKLMWXCVBN%°" />
     <Typography Id="Small" Font="verdana.ttf" Size="10" Bpp="4" IsVector="no" Direction="LTR" FallbackCharacter="?" />
+    <Typography Id="Datemain" Font="calibriz.ttf" Size="19" Bpp="4" IsVector="no" Direction="LTR" FallbackCharacter="?" WildcardCharacters="0123456789azertyuiopqsdfghjklmwxcvbnéè.,:/AZERTYUIOPQSDFGHJKLMWXCVBN%°" />
+    <Typography Id="Dateheure" Font="calibriz.ttf" Size="24" Bpp="4" IsVector="no" Direction="LTR" FallbackCharacter="?" WildcardCharacters="0123456789azertyuiopqsdfghjklmwxcvbnéè.,:/AZERTYUIOPQSDFGHJKLMWXCVBN%°" WidgetWildcardCharacters="0123456789 :APM" />
   </Typographies>
 </TextDatabase>

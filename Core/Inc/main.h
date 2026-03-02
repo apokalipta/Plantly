@@ -64,6 +64,8 @@ void Error_Handler(void);
 #define LCD_BL_CTRL_GPIO_Port GPIOK
 #define LCD_DISP_Pin GPIO_PIN_12
 #define LCD_DISP_GPIO_Port GPIOI
+#define WATER_LVL_Pin GPIO_PIN_7
+#define WATER_LVL_GPIO_Port GPIOG
 #define MCU_ACTIVE_Pin GPIO_PIN_6
 #define MCU_ACTIVE_GPIO_Port GPIOG
 #define humidite_pot2_Pin GPIO_PIN_10

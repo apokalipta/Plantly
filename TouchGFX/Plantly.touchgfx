@@ -326,9 +326,9 @@
           {
             "Type": "TextArea",
             "Name": "TexteTemperature",
-            "X": 89,
+            "X": 81,
             "Y": 64,
-            "Width": 151,
+            "Width": 139,
             "Height": 24,
             "TextId": "__SingleUse_P7G7",
             "TextRotation": "0",
@@ -337,9 +337,9 @@
           {
             "Type": "TextArea",
             "Name": "TexteHumidite",
-            "X": 89,
+            "X": 81,
             "Y": 104,
-            "Width": 112,
+            "Width": 106,
             "Height": 24,
             "TextId": "__SingleUse_9IYS",
             "TextRotation": "0",
@@ -348,9 +348,9 @@
           {
             "Type": "TextArea",
             "Name": "TexteLuminosite",
-            "X": 89,
+            "X": 81,
             "Y": 144,
-            "Width": 131,
+            "Width": 124,
             "Height": 24,
             "TextId": "__SingleUse_BNEE",
             "TextRotation": "0",
@@ -359,10 +359,10 @@
           {
             "Type": "TextArea",
             "Name": "ValLuminosite",
-            "X": 218,
-            "Y": 144,
-            "Width": 67,
-            "Height": 24,
+            "X": 205,
+            "Y": 145,
+            "Width": 87,
+            "Height": 23,
             "TextId": "__SingleUse_R5G6",
             "TextRotation": "0",
             "Wildcard1": {
@@ -373,9 +373,9 @@
           {
             "Type": "TextArea",
             "Name": "ValHumidite",
-            "X": 201,
+            "X": 187,
             "Y": 104,
-            "Width": 84,
+            "Width": 105,
             "Height": 25,
             "TextId": "__SingleUse_LSX1",
             "TextRotation": "0",
@@ -387,9 +387,9 @@
           {
             "Type": "TextArea",
             "Name": "ValTemperature",
-            "X": 233,
+            "X": 220,
             "Y": 65,
-            "Width": 63,
+            "Width": 84,
             "Height": 24,
             "TextId": "__SingleUse_2KWC",
             "TextRotation": "0",
@@ -406,12 +406,13 @@
             "Width": 171,
             "Height": 118,
             "Filename": "__generated\\alternate_theme_images_widgets_button_icon_rounded_medium_outline_pressed.png",
+            "Alpha": 170,
             "ScalingAlgorithm": "Nearest-neighbor"
           },
           {
             "Type": "TextArea",
             "Name": "TextDate",
-            "X": 314,
+            "X": 315,
             "Y": 129,
             "Width": 150,
             "Height": 22,
@@ -420,6 +421,19 @@
             "Wildcard1": {
               "TextId": "__SingleUse_Y7QS"
             }
+          },
+          {
+            "Type": "DigitalClock",
+            "Name": "digitalClock1",
+            "X": 339,
+            "Y": 77,
+            "Width": 100,
+            "Height": 25,
+            "TextId": "__SingleUse_2LU2",
+            "DisplaySeconds": true,
+            "DisplayLeadingZeroForHourIndicator": true,
+            "InitialHour": 10,
+            "InitialMinute": 10
           },
           {
             "Type": "AnimatedImage",
@@ -459,17 +473,15 @@
             "StartOnLoad": true
           },
           {
-            "Type": "DigitalClock",
-            "Name": "digitalClock1",
-            "X": 339,
-            "Y": 77,
-            "Width": 100,
-            "Height": 25,
-            "TextId": "__SingleUse_2LU2",
-            "DisplaySeconds": true,
-            "DisplayLeadingZeroForHourIndicator": true,
-            "InitialHour": 10,
-            "InitialMinute": 10
+            "Type": "ScalableImage",
+            "Name": "WaterWarning",
+            "X": 111,
+            "Y": 14,
+            "Width": 258,
+            "Height": 228,
+            "Visible": false,
+            "Filename": "test.png",
+            "ScalingAlgorithm": "Nearest-neighbor"
           }
         ],
         "Interactions": [
@@ -604,7 +616,11 @@
             "Width": 229,
             "Height": 47,
             "TextId": "__SingleUse_Q584",
-            "TextRotation": "0"
+            "TextRotation": "0",
+            "Wildcard1": {
+              "UseBuffer": true,
+              "BufferSize": 15
+            }
           },
           {
             "Type": "ScalableImage",
@@ -612,7 +628,7 @@
             "X": 79,
             "Y": 64,
             "Width": 322,
-            "Height": 216,
+            "Height": 208,
             "Filename": "fond_pot.png",
             "ScalingAlgorithm": "Nearest-neighbor"
           },
@@ -621,7 +637,7 @@
             "Name": "textplante",
             "X": 106,
             "Y": 71,
-            "Width": 162,
+            "Width": 153,
             "Height": 24,
             "TextId": "__SingleUse_SMN9",
             "TextRotation": "0",
@@ -630,9 +646,9 @@
           {
             "Type": "TextArea",
             "Name": "textarrosage",
-            "X": 106,
-            "Y": 229,
-            "Width": 143,
+            "X": 85,
+            "Y": 247,
+            "Width": 113,
             "Height": 18,
             "TextId": "__SingleUse_99BH",
             "TextRotation": "0",
@@ -643,7 +659,7 @@
             "Name": "textehumidite",
             "X": 90,
             "Y": 154,
-            "Width": 80,
+            "Width": 64,
             "Height": 18,
             "TextId": "__SingleUse_QSOB",
             "TextRotation": "0",
@@ -662,8 +678,8 @@
             "ButtonStyles": [
               {
                 "Type": "IconButtonStyle",
-                "IconReleased": "__generated\\icon_theme_images_content_waves_50_50_000000.svg.png",
-                "IconPressed": "__generated\\icon_theme_images_action_done_50_50_E8F6FB.svg.png"
+                "IconReleased": "arrosoirdate.png",
+                "IconPressed": "arrosoirdate.png"
               }
             ]
           },
@@ -680,17 +696,17 @@
             "ButtonStyles": [
               {
                 "Type": "IconButtonStyle",
-                "IconReleased": "__generated\\icon_theme_images_content_block_flipped_50_50_000000.svg.png",
-                "IconPressed": "__generated\\icon_theme_images_action_done_50_50_E8F6FB.svg.png"
+                "IconReleased": "arrosoirbarre.png",
+                "IconPressed": "arrosoirbarre.png"
               }
             ]
           },
           {
             "Type": "TextArea",
             "Name": "textearossage",
-            "X": 7,
+            "X": 11,
             "Y": 154,
-            "Width": 58,
+            "Width": 56,
             "Height": 18,
             "TextId": "__SingleUse_FT29",
             "TextRotation": "0",
@@ -699,10 +715,10 @@
           {
             "Type": "TextArea",
             "Name": "textenonarossage",
-            "X": 403,
+            "X": 411,
             "Y": 154,
-            "Width": 75,
-            "Height": 18,
+            "Width": 55,
+            "Height": 36,
             "TextId": "__SingleUse_A4HE",
             "TextRotation": "0",
             "AutoSize": true
@@ -710,30 +726,15 @@
           {
             "Type": "TextArea",
             "Name": "DateArrosage",
-            "X": 252,
-            "Y": 229,
-            "Width": 44,
-            "Height": 24,
+            "X": 198,
+            "Y": 247,
+            "Width": 192,
+            "Height": 18,
             "TextId": "__SingleUse_L3TX",
             "TextRotation": "0",
             "Wildcard1": {
               "UseBuffer": true,
-              "BufferSize": 15
-            }
-          },
-          {
-            "Type": "TextArea",
-            "Name": "ValPlante",
-            "X": 112,
-            "Y": 95,
-            "Width": 22,
-            "Height": 12,
-            "TextId": "__SingleUse_Y2RL",
-            "TextRotation": "0",
-            "AutoSize": true,
-            "Wildcard1": {
-              "UseBuffer": true,
-              "BufferSize": 10
+              "BufferSize": 40
             }
           },
           {
@@ -770,11 +771,25 @@
           {
             "Type": "TextArea",
             "Name": "ValHumidite",
-            "X": 172,
+            "X": 157,
             "Y": 154,
             "Width": 33,
             "Height": 18,
-            "TextId": "__SingleUse_XBER",
+            "TextId": "__SingleUse_IDSF",
+            "TextRotation": "0",
+            "Wildcard1": {
+              "UseBuffer": true,
+              "BufferSize": 10
+            }
+          },
+          {
+            "Type": "TextArea",
+            "Name": "ValPlante",
+            "X": 106,
+            "Y": 95,
+            "Width": 153,
+            "Height": 25,
+            "TextId": "__SingleUse_VHWX",
             "TextRotation": "0",
             "Wildcard1": {
               "UseBuffer": true,
@@ -847,6 +862,28 @@
               "Type": "ActionGotoScreen",
               "ScreenTransitionType": "ScreenTransitionNone",
               "ActionComponent": "Main"
+            }
+          },
+          {
+            "InteractionName": "SetEau",
+            "Trigger": {
+              "Type": "TriggerClicked",
+              "TriggerComponent": "BoutonEauOn"
+            },
+            "Action": {
+              "Type": "ActionCustom",
+              "FunctionName": "SetEau"
+            }
+          },
+          {
+            "InteractionName": "ResetEau",
+            "Trigger": {
+              "Type": "TriggerClicked",
+              "TriggerComponent": "BoutonEauOff"
+            },
+            "Action": {
+              "Type": "ActionCustom",
+              "FunctionName": "ResetEau"
             }
           }
         ]
@@ -920,7 +957,11 @@
             "Width": 229,
             "Height": 47,
             "TextId": "__SingleUse_ZSBB",
-            "TextRotation": "0"
+            "TextRotation": "0",
+            "Wildcard1": {
+              "UseBuffer": true,
+              "BufferSize": 15
+            }
           },
           {
             "Type": "ScalableImage",
@@ -928,16 +969,30 @@
             "X": 79,
             "Y": 64,
             "Width": 322,
-            "Height": 216,
+            "Height": 208,
             "Filename": "fond_pot.png",
             "ScalingAlgorithm": "Nearest-neighbor"
+          },
+          {
+            "Type": "TextArea",
+            "Name": "DateArrosage",
+            "X": 198,
+            "Y": 246,
+            "Width": 203,
+            "Height": 18,
+            "TextId": "__SingleUse_F3KW",
+            "TextRotation": "0",
+            "Wildcard1": {
+              "UseBuffer": true,
+              "BufferSize": 40
+            }
           },
           {
             "Type": "TextArea",
             "Name": "textplante",
             "X": 106,
             "Y": 71,
-            "Width": 162,
+            "Width": 153,
             "Height": 24,
             "TextId": "__SingleUse_7IB5",
             "TextRotation": "0",
@@ -946,9 +1001,9 @@
           {
             "Type": "TextArea",
             "Name": "textarrosage",
-            "X": 106,
-            "Y": 229,
-            "Width": 143,
+            "X": 85,
+            "Y": 246,
+            "Width": 113,
             "Height": 18,
             "TextId": "__SingleUse_5KSB",
             "TextRotation": "0",
@@ -959,26 +1014,11 @@
             "Name": "textehumidite",
             "X": 90,
             "Y": 154,
-            "Width": 80,
+            "Width": 64,
             "Height": 18,
             "TextId": "__SingleUse_EEP9",
             "TextRotation": "0",
             "AutoSize": true
-          },
-          {
-            "Type": "TextArea",
-            "Name": "DateArrosage",
-            "X": 252,
-            "Y": 229,
-            "Width": 44,
-            "Height": 24,
-            "TextId": "__SingleUse_N64L",
-            "TextRotation": "0",
-            "AutoSize": true,
-            "Wildcard1": {
-              "UseBuffer": true,
-              "BufferSize": 15
-            }
           },
           {
             "Type": "FlexButton",
@@ -993,8 +1033,8 @@
             "ButtonStyles": [
               {
                 "Type": "IconButtonStyle",
-                "IconReleased": "__generated\\icon_theme_images_content_waves_50_50_000000.svg.png",
-                "IconPressed": "__generated\\icon_theme_images_action_done_50_50_E8F6FB.svg.png"
+                "IconReleased": "arrosoirdate.png",
+                "IconPressed": "arrosoirdate.png"
               }
             ]
           },
@@ -1011,8 +1051,8 @@
             "ButtonStyles": [
               {
                 "Type": "IconButtonStyle",
-                "IconReleased": "__generated\\icon_theme_images_content_block_flipped_50_50_000000.svg.png",
-                "IconPressed": "__generated\\icon_theme_images_action_done_50_50_E8F6FB.svg.png"
+                "IconReleased": "arrosoirbarre.png",
+                "IconPressed": "arrosoirbarre.png"
               }
             ]
           },
@@ -1021,7 +1061,7 @@
             "Name": "textearossage",
             "X": 7,
             "Y": 154,
-            "Width": 58,
+            "Width": 56,
             "Height": 18,
             "TextId": "__SingleUse_N3UB",
             "TextRotation": "0",
@@ -1030,28 +1070,13 @@
           {
             "Type": "TextArea",
             "Name": "textenonarossage",
-            "X": 403,
+            "X": 411,
             "Y": 154,
-            "Width": 75,
-            "Height": 18,
+            "Width": 55,
+            "Height": 36,
             "TextId": "__SingleUse_V6Q6",
             "TextRotation": "0",
             "AutoSize": true
-          },
-          {
-            "Type": "TextArea",
-            "Name": "ValPlante",
-            "X": 112,
-            "Y": 95,
-            "Width": 22,
-            "Height": 12,
-            "TextId": "__SingleUse_TVEB",
-            "TextRotation": "0",
-            "AutoSize": true,
-            "Wildcard1": {
-              "UseBuffer": true,
-              "BufferSize": 10
-            }
           },
           {
             "Type": "ScalableImage",
@@ -1087,11 +1112,25 @@
           {
             "Type": "TextArea",
             "Name": "ValHumidite",
-            "X": 172,
+            "X": 157,
             "Y": 154,
             "Width": 33,
             "Height": 18,
-            "TextId": "__SingleUse_RBNS",
+            "TextId": "__SingleUse_SPXN",
+            "TextRotation": "0",
+            "Wildcard1": {
+              "UseBuffer": true,
+              "BufferSize": 10
+            }
+          },
+          {
+            "Type": "TextArea",
+            "Name": "ValPlante",
+            "X": 106,
+            "Y": 95,
+            "Width": 153,
+            "Height": 25,
+            "TextId": "__SingleUse_3NIG",
             "TextRotation": "0",
             "Wildcard1": {
               "UseBuffer": true,
@@ -1164,6 +1203,28 @@
               "Type": "ActionGotoScreen",
               "ScreenTransitionType": "ScreenTransitionNone",
               "ActionComponent": "Main"
+            }
+          },
+          {
+            "InteractionName": "SetEau",
+            "Trigger": {
+              "Type": "TriggerClicked",
+              "TriggerComponent": "BoutonEauOn"
+            },
+            "Action": {
+              "Type": "ActionCustom",
+              "FunctionName": "SetEau"
+            }
+          },
+          {
+            "InteractionName": "ResetEau",
+            "Trigger": {
+              "Type": "TriggerClicked",
+              "TriggerComponent": "BoutonEauOff"
+            },
+            "Action": {
+              "Type": "ActionCustom",
+              "FunctionName": "ResetEau"
             }
           }
         ]
@@ -1237,7 +1298,11 @@
             "Width": 229,
             "Height": 47,
             "TextId": "__SingleUse_QCMY",
-            "TextRotation": "0"
+            "TextRotation": "0",
+            "Wildcard1": {
+              "UseBuffer": true,
+              "BufferSize": 15
+            }
           },
           {
             "Type": "ScalableImage",
@@ -1245,7 +1310,7 @@
             "X": 79,
             "Y": 64,
             "Width": 322,
-            "Height": 216,
+            "Height": 208,
             "Filename": "fond_pot.png",
             "ScalingAlgorithm": "Nearest-neighbor"
           },
@@ -1254,7 +1319,7 @@
             "Name": "textplante",
             "X": 106,
             "Y": 71,
-            "Width": 162,
+            "Width": 153,
             "Height": 24,
             "TextId": "__SingleUse_4BAA",
             "TextRotation": "0",
@@ -1263,9 +1328,9 @@
           {
             "Type": "TextArea",
             "Name": "textarrosage",
-            "X": 106,
-            "Y": 229,
-            "Width": 143,
+            "X": 83,
+            "Y": 246,
+            "Width": 113,
             "Height": 18,
             "TextId": "__SingleUse_FEWZ",
             "TextRotation": "0",
@@ -1276,7 +1341,7 @@
             "Name": "textehumidite",
             "X": 90,
             "Y": 154,
-            "Width": 80,
+            "Width": 64,
             "Height": 18,
             "TextId": "__SingleUse_B3CQ",
             "TextRotation": "0",
@@ -1295,8 +1360,8 @@
             "ButtonStyles": [
               {
                 "Type": "IconButtonStyle",
-                "IconReleased": "__generated\\icon_theme_images_content_waves_50_50_000000.svg.png",
-                "IconPressed": "__generated\\icon_theme_images_action_done_50_50_E8F6FB.svg.png"
+                "IconReleased": "arrosoirdate.png",
+                "IconPressed": "arrosoirdate.png"
               }
             ]
           },
@@ -1313,8 +1378,8 @@
             "ButtonStyles": [
               {
                 "Type": "IconButtonStyle",
-                "IconReleased": "__generated\\icon_theme_images_content_block_flipped_50_50_000000.svg.png",
-                "IconPressed": "__generated\\icon_theme_images_action_done_50_50_E8F6FB.svg.png"
+                "IconReleased": "arrosoirbarre.png",
+                "IconPressed": "arrosoirbarre.png"
               }
             ]
           },
@@ -1323,7 +1388,7 @@
             "Name": "textearossage",
             "X": 7,
             "Y": 154,
-            "Width": 58,
+            "Width": 56,
             "Height": 18,
             "TextId": "__SingleUse_SFJ5",
             "TextRotation": "0",
@@ -1332,10 +1397,10 @@
           {
             "Type": "TextArea",
             "Name": "textenonarossage",
-            "X": 403,
+            "X": 413,
             "Y": 154,
-            "Width": 75,
-            "Height": 18,
+            "Width": 55,
+            "Height": 36,
             "TextId": "__SingleUse_4M51",
             "TextRotation": "0",
             "AutoSize": true
@@ -1343,31 +1408,15 @@
           {
             "Type": "TextArea",
             "Name": "DateArrosage",
-            "X": 252,
-            "Y": 229,
-            "Width": 44,
-            "Height": 24,
+            "X": 198,
+            "Y": 246,
+            "Width": 203,
+            "Height": 18,
             "TextId": "__SingleUse_6G3M",
             "TextRotation": "0",
-            "AutoSize": true,
             "Wildcard1": {
               "UseBuffer": true,
-              "BufferSize": 15
-            }
-          },
-          {
-            "Type": "TextArea",
-            "Name": "ValPlante",
-            "X": 112,
-            "Y": 95,
-            "Width": 22,
-            "Height": 12,
-            "TextId": "__SingleUse_EP17",
-            "TextRotation": "0",
-            "AutoSize": true,
-            "Wildcard1": {
-              "UseBuffer": true,
-              "BufferSize": 10
+              "BufferSize": 40
             }
           },
           {
@@ -1404,11 +1453,25 @@
           {
             "Type": "TextArea",
             "Name": "ValHumidite",
-            "X": 172,
+            "X": 157,
             "Y": 154,
             "Width": 33,
             "Height": 18,
-            "TextId": "__SingleUse_VUUS",
+            "TextId": "__SingleUse_P39J",
+            "TextRotation": "0",
+            "Wildcard1": {
+              "UseBuffer": true,
+              "BufferSize": 10
+            }
+          },
+          {
+            "Type": "TextArea",
+            "Name": "ValPlante",
+            "X": 106,
+            "Y": 95,
+            "Width": 153,
+            "Height": 25,
+            "TextId": "__SingleUse_1XSQ",
             "TextRotation": "0",
             "Wildcard1": {
               "UseBuffer": true,
@@ -1482,6 +1545,28 @@
               "ScreenTransitionType": "ScreenTransitionNone",
               "ActionComponent": "Main"
             }
+          },
+          {
+            "InteractionName": "SetEau",
+            "Trigger": {
+              "Type": "TriggerClicked",
+              "TriggerComponent": "BoutonEauOn"
+            },
+            "Action": {
+              "Type": "ActionCustom",
+              "FunctionName": "SetEau"
+            }
+          },
+          {
+            "InteractionName": "ResetEau",
+            "Trigger": {
+              "Type": "TriggerClicked",
+              "TriggerComponent": "BoutonEauOff"
+            },
+            "Action": {
+              "Type": "ActionCustom",
+              "FunctionName": "ResetEau"
+            }
           }
         ]
       },
@@ -1554,7 +1639,11 @@
             "Width": 229,
             "Height": 47,
             "TextId": "__SingleUse_I4IF",
-            "TextRotation": "0"
+            "TextRotation": "0",
+            "Wildcard1": {
+              "UseBuffer": true,
+              "BufferSize": 10
+            }
           },
           {
             "Type": "ScalableImage",
@@ -1562,7 +1651,7 @@
             "X": 79,
             "Y": 64,
             "Width": 322,
-            "Height": 216,
+            "Height": 208,
             "Filename": "fond_pot.png",
             "ScalingAlgorithm": "Nearest-neighbor"
           },
@@ -1571,7 +1660,7 @@
             "Name": "textplante",
             "X": 106,
             "Y": 71,
-            "Width": 162,
+            "Width": 153,
             "Height": 24,
             "TextId": "__SingleUse_2TZA",
             "TextRotation": "0",
@@ -1580,9 +1669,9 @@
           {
             "Type": "TextArea",
             "Name": "textarrosage",
-            "X": 106,
-            "Y": 229,
-            "Width": 143,
+            "X": 83,
+            "Y": 246,
+            "Width": 113,
             "Height": 18,
             "TextId": "__SingleUse_7GCD",
             "TextRotation": "0",
@@ -1593,7 +1682,7 @@
             "Name": "textehumidite",
             "X": 90,
             "Y": 154,
-            "Width": 80,
+            "Width": 67,
             "Height": 18,
             "TextId": "__SingleUse_UZ9X",
             "TextRotation": "0",
@@ -1612,8 +1701,8 @@
             "ButtonStyles": [
               {
                 "Type": "IconButtonStyle",
-                "IconReleased": "__generated\\icon_theme_images_content_waves_50_50_000000.svg.png",
-                "IconPressed": "__generated\\icon_theme_images_action_done_50_50_E8F6FB.svg.png"
+                "IconReleased": "arrosoirdate.png",
+                "IconPressed": "arrosoirdate.png"
               }
             ]
           },
@@ -1630,17 +1719,17 @@
             "ButtonStyles": [
               {
                 "Type": "IconButtonStyle",
-                "IconReleased": "__generated\\icon_theme_images_content_block_flipped_50_50_000000.svg.png",
-                "IconPressed": "__generated\\icon_theme_images_action_done_50_50_E8F6FB.svg.png"
+                "IconReleased": "arrosoirbarre.png",
+                "IconPressed": "arrosoirbarre.png"
               }
             ]
           },
           {
             "Type": "TextArea",
             "Name": "textearossage",
-            "X": 7,
+            "X": 11,
             "Y": 154,
-            "Width": 58,
+            "Width": 56,
             "Height": 18,
             "TextId": "__SingleUse_WX0U",
             "TextRotation": "0",
@@ -1649,10 +1738,10 @@
           {
             "Type": "TextArea",
             "Name": "textenonarossage",
-            "X": 403,
+            "X": 411,
             "Y": 154,
-            "Width": 75,
-            "Height": 18,
+            "Width": 55,
+            "Height": 36,
             "TextId": "__SingleUse_FL6A",
             "TextRotation": "0",
             "AutoSize": true
@@ -1660,28 +1749,26 @@
           {
             "Type": "TextArea",
             "Name": "DateArrosage",
-            "X": 252,
-            "Y": 229,
-            "Width": 44,
-            "Height": 24,
+            "X": 196,
+            "Y": 246,
+            "Width": 205,
+            "Height": 18,
             "TextId": "__SingleUse_8HEQ",
             "TextRotation": "0",
-            "AutoSize": true,
             "Wildcard1": {
               "UseBuffer": true,
-              "BufferSize": 15
+              "BufferSize": 40
             }
           },
           {
             "Type": "TextArea",
             "Name": "ValPlante",
-            "X": 112,
+            "X": 106,
             "Y": 95,
-            "Width": 22,
-            "Height": 12,
+            "Width": 153,
+            "Height": 25,
             "TextId": "__SingleUse_HBTX",
             "TextRotation": "0",
-            "AutoSize": true,
             "Wildcard1": {
               "UseBuffer": true,
               "BufferSize": 10
@@ -1710,7 +1797,7 @@
           {
             "Type": "TextArea",
             "Name": "textescore",
-            "X": 14,
+            "X": 12,
             "Y": 25,
             "Width": 39,
             "Height": 12,
@@ -1721,7 +1808,7 @@
           {
             "Type": "TextArea",
             "Name": "ValHumidite",
-            "X": 172,
+            "X": 157,
             "Y": 154,
             "Width": 33,
             "Height": 18,
@@ -1798,6 +1885,28 @@
               "Type": "ActionGotoScreen",
               "ScreenTransitionType": "ScreenTransitionNone",
               "ActionComponent": "Main"
+            }
+          },
+          {
+            "InteractionName": "SetEau",
+            "Trigger": {
+              "Type": "TriggerClicked",
+              "TriggerComponent": "BoutonEauOn"
+            },
+            "Action": {
+              "Type": "ActionCustom",
+              "FunctionName": "SetEau"
+            }
+          },
+          {
+            "InteractionName": "ResetEau",
+            "Trigger": {
+              "Type": "TriggerClicked",
+              "TriggerComponent": "BoutonEauOff"
+            },
+            "Action": {
+              "Type": "ActionCustom",
+              "FunctionName": "ResetEau"
             }
           }
         ]
@@ -1877,7 +1986,7 @@
             "Name": "textIp",
             "X": 11,
             "Y": 70,
-            "Width": 122,
+            "Width": 117,
             "Height": 24,
             "TextId": "__SingleUse_DKQ2",
             "TextRotation": "0",
@@ -1885,8 +1994,51 @@
           },
           {
             "Type": "TextArea",
+            "Name": "texteresetwifi",
+            "X": 312,
+            "Y": 70,
+            "Width": 164,
+            "Height": 24,
+            "TextId": "__SingleUse_YWW0",
+            "TextRotation": "0",
+            "AutoSize": true
+          },
+          {
+            "Type": "TextArea",
+            "Name": "etsteexterne",
+            "X": 312,
+            "Y": 161,
+            "Width": 144,
+            "Height": 24,
+            "TextId": "__SingleUse_Q0T0",
+            "TextRotation": "0"
+          },
+          {
+            "Type": "TextArea",
+            "Name": "etstevacance",
+            "X": 162,
+            "Y": 161,
+            "Width": 136,
+            "Height": 24,
+            "TextId": "__SingleUse_HUUH",
+            "TextRotation": "0",
+            "AutoSize": true
+          },
+          {
+            "Type": "TextArea",
+            "Name": "textcode",
+            "X": 11,
+            "Y": 137,
+            "Width": 146,
+            "Height": 24,
+            "TextId": "__SingleUse_UYYX",
+            "TextRotation": "0",
+            "AutoSize": true
+          },
+          {
+            "Type": "TextArea",
             "Name": "ValIp",
-            "X": 133,
+            "X": 128,
             "Y": 70,
             "Width": 205,
             "Height": 24,
@@ -1896,6 +2048,93 @@
               "UseBuffer": true,
               "BufferSize": 16
             }
+          },
+          {
+            "Type": "TextArea",
+            "Name": "texteSSID",
+            "X": 11,
+            "Y": 104,
+            "Width": 132,
+            "Height": 24,
+            "TextId": "__SingleUse_2FGX",
+            "TextRotation": "0",
+            "AutoSize": true
+          },
+          {
+            "Type": "TextArea",
+            "Name": "ValSSID",
+            "X": 143,
+            "Y": 104,
+            "Width": 205,
+            "Height": 24,
+            "TextId": "__SingleUse_DZBN",
+            "TextRotation": "0",
+            "Wildcard1": {
+              "UseBuffer": true,
+              "BufferSize": 16
+            }
+          },
+          {
+            "Type": "QRCode",
+            "Name": "qrCode",
+            "X": 11,
+            "Y": 161,
+            "Width": 105,
+            "Height": 105,
+            "QRVersion": 1,
+            "Scale": 5,
+            "Text": "1111000",
+            "BackgroundColor": {
+              "Red": 255,
+              "Green": 255,
+              "Blue": 255
+            }
+          },
+          {
+            "Type": "FlexButton",
+            "Name": "RestartSSD",
+            "X": 369,
+            "Y": 99,
+            "Width": 50,
+            "Height": 50,
+            "ButtonTrigger": {
+              "Type": "ClickButtonTrigger"
+            },
+            "ButtonStyles": [
+              {
+                "Type": "IconButtonStyle",
+                "IconReleased": "__generated\\icon_theme_images_notification_wifi_off_50_50_000000.svg.png",
+                "IconPressed": "__generated\\icon_theme_images_notification_wifi_off_50_50_000000.svg.png"
+              }
+            ]
+          },
+          {
+            "Type": "FlexButton",
+            "Name": "BoutonVacances",
+            "X": 205,
+            "Y": 194,
+            "Width": 50,
+            "Height": 50,
+            "ButtonTrigger": {
+              "Type": "ClickButtonTrigger"
+            },
+            "ButtonStyles": [
+              {
+                "Type": "IconButtonStyle",
+                "IconReleased": "__generated\\icon_theme_images_image_wb_sunny_50_50_DEC821.svg.png",
+                "IconPressed": "__generated\\icon_theme_images_image_wb_sunny_50_50_DEC821.svg.png"
+              }
+            ]
+          },
+          {
+            "Type": "ToggleButton",
+            "Name": "toggle_exterieur",
+            "X": 315,
+            "Y": 200,
+            "Width": 138,
+            "Height": 50,
+            "Pressed": "__generated\\alternate_theme_images_widgets_togglebutton_medium_rounded_text_on_light.png",
+            "Released": "__generated\\alternate_theme_images_widgets_togglebutton_medium_rounded_text_off_normal.png"
           },
           {
             "Type": "AnimatedImage",
@@ -1946,6 +2185,28 @@
               "Type": "ActionGotoScreen",
               "ScreenTransitionType": "ScreenTransitionNone",
               "ActionComponent": "Main"
+            }
+          },
+          {
+            "InteractionName": "RestartWIFI",
+            "Trigger": {
+              "Type": "TriggerClicked",
+              "TriggerComponent": "RestartSSD"
+            },
+            "Action": {
+              "Type": "ActionCustom",
+              "FunctionName": "RestartWIFI"
+            }
+          },
+          {
+            "InteractionName": "toggleexterieur",
+            "Trigger": {
+              "Type": "TriggerClicked",
+              "TriggerComponent": "toggle_exterieur"
+            },
+            "Action": {
+              "Type": "ActionCustom",
+              "FunctionName": "toggleexterieur"
             }
           }
         ]

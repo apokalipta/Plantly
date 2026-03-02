@@ -23,6 +23,10 @@ public:
 
     bool isIdleVideoActive() const { return idleVideoActive; }
 
+    // ✅ Mode extérieur (persistant tant que l’app tourne)
+    void setExteriorMode(bool enabled);
+    bool isExteriorModeEnabled() const { return exteriorMode; }
+
 private:
     void resetInactivity();
     void activateIdleVideo();
@@ -33,14 +37,19 @@ private:
 
 private:
     uint32_t inactivityTicks = 0;
-    uint32_t videoIdleTicks = 0;
+    uint32_t videoIdleTicks  = 0;
 
     bool idleVideoActive = false;
     bool screenSleeping = false;
 
+    // ✅ mode extérieur
+    bool exteriorMode = false;
+
     static constexpr uint32_t TICKS_PER_SECOND = 30;
-    static constexpr uint32_t IDLE_VIDEO_DELAY = 10000 * TICKS_PER_SECOND;   // 5 s
-    static constexpr uint32_t SCREEN_SLEEP_DELAY = 10000 * TICKS_PER_SECOND; // 5 s après vidéo
+
+    // ✅ délais dynamiques (en ticks)
+    uint32_t idleVideoDelayTicks   = 30u * 60u * TICKS_PER_SECOND; // défaut 30 min
+    uint32_t screenSleepDelayTicks = 30u * 60u * TICKS_PER_SECOND; // défaut 30 min
 };
 
 #endif // FRONTENDAPPLICATION_HPP

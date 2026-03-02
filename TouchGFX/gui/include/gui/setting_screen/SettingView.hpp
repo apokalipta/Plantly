@@ -15,11 +15,26 @@ public:
     virtual void tearDownScreen() override;
     virtual void handleTickEvent() override;
 
+    // Bouton "RestartWIFI"
+    virtual void RestartWIFI() override;
+
+    // ✅ Toggle extérieur (persistant)
+    virtual void toggleexterieur() override;
+
 private:
     void updateIdleVideo();
+    void updateQRCodeWithIp(const char* ip);
+
     bool videoShown = false;
 
-    touchgfx::Unicode::UnicodeChar ipBuffer[16]; // 15 + fin
+    // 15 + fin
+    touchgfx::Unicode::UnicodeChar ipBuffer[16];
+
+    // SSID affiché (15 max)
+    touchgfx::Unicode::UnicodeChar ssidBuffer[16];
+
+    // dernière IP encodée dans QR
+    char lastQrIp[16] = "0.0.0.0";
 };
 
-#endif
+#endif // SETTINGVIEW_HPP

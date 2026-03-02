@@ -13,11 +13,12 @@ public:
 
     virtual void setupScreen() override;
     virtual void tearDownScreen() override;
-
     virtual void handleTickEvent() override;
 
 private:
     void updateIdleVideo();
+    void updateClockAndDate(uint8_t hh, uint8_t mm, uint8_t ss, uint8_t dd, uint8_t mo, uint16_t yyyy);
+
     bool videoShown = false;
 
     // Buffer wildcard pour TextDate
@@ -38,8 +39,10 @@ private:
     touchgfx::Unicode::UnicodeChar luxBuffer[16];
     uint32_t lastLux = 0xFFFFFFFF;
 
-
-    void updateClockAndDate(uint8_t hh, uint8_t mm, uint8_t ss, uint8_t dd, uint8_t mo, uint16_t yyyy);
+    // ✅ Water warning (clignotement)
+    uint32_t lastWater = 0xFFFFFFFF;
+    uint16_t waterBlinkTick = 0;
+    bool waterBlinkState = false;
 };
 
 #endif // MAINVIEW_HPP

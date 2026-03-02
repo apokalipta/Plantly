@@ -1,10 +1,33 @@
 #include <gui/common/FrontendApplication.hpp>
 #include <touchgfx/hal/HAL.hpp>
-#include "main.h"   // pour LCD_BL_CTRL_GPIO_Port / LCD_BL_CTRL_Pin
+#include "main.h"   // LCD_BL_CTRL_GPIO_Port / LCD_BL_CTRL_Pin / LCD_DISP...
 
 FrontendApplication::FrontendApplication(Model& m, FrontendHeap& heap)
     : FrontendApplicationBase(m, heap)
 {
+    // défaut : mode normal (30min)
+    setExteriorMode(false);
+}
+
+void FrontendApplication::setExteriorMode(bool enabled)
+{
+    exteriorMode = enabled;
+
+    if (exteriorMode)
+    {
+        // ✅ Mode extérieur : 1 minute / 1 minute
+        idleVideoDelayTicks   = 1u * 60u * TICKS_PER_SECOND;
+        screenSleepDelayTicks = 1u * 60u * TICKS_PER_SECOND;
+    }
+    else
+    {
+        // ✅ Mode normal : 30 minutes / 30 minutes
+        idleVideoDelayTicks   = 30u * 60u * TICKS_PER_SECOND;
+        screenSleepDelayTicks = 30u * 60u * TICKS_PER_SECOND;
+    }
+
+    // on repart propre quand on change le mode
+    resetInactivity();
 }
 
 void FrontendApplication::handleTickEvent()
@@ -22,7 +45,7 @@ void FrontendApplication::handleTickEvent()
     if (!idleVideoActive)
     {
         inactivityTicks++;
-        if (inactivityTicks >= IDLE_VIDEO_DELAY)
+        if (inactivityTicks >= idleVideoDelayTicks)
         {
             activateIdleVideo();
         }
@@ -31,7 +54,7 @@ void FrontendApplication::handleTickEvent()
     {
         // 3️⃣ Vidéo active → on compte avant mise en veille écran
         videoIdleTicks++;
-        if (videoIdleTicks >= SCREEN_SLEEP_DELAY)
+        if (videoIdleTicks >= screenSleepDelayTicks)
         {
             enterScreenSleep();
         }
@@ -107,7 +130,7 @@ void FrontendApplication::handleGestureEvent(const touchgfx::GestureEvent& evt)
 void FrontendApplication::resetInactivity()
 {
     inactivityTicks = 0;
-    videoIdleTicks = 0;
+    videoIdleTicks  = 0;
 }
 
 void FrontendApplication::activateIdleVideo()
@@ -138,5 +161,3 @@ void FrontendApplication::exitScreenSleep()
     deactivateIdleVideo();
     gotoMainScreenNoTransition();
 }
-
-

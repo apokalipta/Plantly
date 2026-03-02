@@ -1,459 +1,170 @@
+/**************************************************************
+ *  PLANTLY ESP32 - WiFi Provisioning (Portail captif) + API + UART STM32
+ *
+ *  ✅ API :
+ *    - GET  /api/state
+ *    - GET  /api/data        (inclut n1..n4)
+ *    - GET  /api/wifi
+ *    - POST /api/rename?pot=1..4&name=...   (Android -> ESP32)
+ *
+ *  ✅ NOUVEAU IMPORTANT (FIX TouchGFX):
+ *    - Renvoi périodique des noms PN1..PN4 vers STM32 toutes les 5s
+ *      => si STM32 reboot, elle récupère quand même les noms.
+ **************************************************************/
+
 #include <WiFi.h>
 #include <WebServer.h>
+#include <DNSServer.h>
+#include <Preferences.h>
 #include "time.h"
-
-// ====== CONFIGURATION WIFI ======
-const char* ssid     = "Matthieu";
-const char* password = "Matthieu12!";
 
 // ====== CONFIGURATION NTP (HEURE) ======
 const char* ntpServer = "pool.ntp.org";
-const char* tzInfo = "CET-1CEST,M3.5.0/2,M10.5.0/3";
+const char* tzInfo    = "CET-1CEST,M3.5.0/2,M10.5.0/3";
 
 // ====== UART2 vers STM32 ======
 static const int UART_RX = 16; // STM32 TX -> ESP32 RX
 static const int UART_TX = 17; // ESP32 TX -> STM32 RX
 
 // ====== Web Server ======
-WebServer server(80);
+WebServer   server(80);
+DNSServer   dnsServer;
+Preferences prefs;
+
+// ====== Captive portal ======
+static const byte DNS_PORT = 53;
+bool configMode = false;
 
 // ====== Timing ======
-unsigned long lastSendMs    = 0;
-unsigned long lastSendIpMs  = 0;
+unsigned long lastSendMs      = 0;
+unsigned long lastSendIpMs    = 0;
+unsigned long lastSendNamesMs = 0;   // ✅ FIX
 
 // ====== Valeurs reçues depuis STM32 ======
 volatile int   soilPct[4] = {0,0,0,0};   // SOIL1..SOIL4
 volatile int   soilAdc[4] = {0,0,0,0};   // ADC1..ADC4 (optionnel)
 volatile float airTempC   = NAN;         // TEMP=23.4
 volatile float airRH      = NAN;         // AIRH=50.3
-volatile int   luxValue   = 0;           // LUX=123 (si tu l'envoies)
+volatile int   luxValue   = 0;           // LUX=123
+
+// ====== Dates arrosage reçues depuis STM32 ======
+String arrosageStr[4] = {"NONE","NONE","NONE","NONE"}; // AR1..AR4
+
+// ✅ NOMS des pots (reçus via Android /api/rename) + persist NVS
+String potNames[4] = {"POT 1","POT 2","POT 3","POT 4"};
 
 // ====== Suivi de l'IP pour la STM32 ======
 String lastIpSent = "0.0.0.0";
-bool ipEverSent = false;
+bool   ipEverSent = false;
 
-// ------------------ INTERFACE WEB (HTML) ------------------
-static const char HTML_PAGE[] PROGMEM = R"rawliteral(
-<!doctype html>
-<html lang="fr">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>PLANTLY</title>
-  <style>
-    :root{
-      --bg:#dfeee6;
-      --card:#e7f5ee;
-      --card2:#e3f1ea;
-      --shadow: 0 12px 26px rgba(0,0,0,.18);
-      --text:#0a1f12;
-      --muted: rgba(10,31,18,.7);
+// ====== WiFi info courant ======
+String wifiSsid = "";
+String wifiPass = "";
 
-      --pill:#eef7f2;
-      --pill2:#e3f1ea;
+// ====== Buffer UART RX pour gérer CMD=... ======
+static String uartLine = "";
 
-      --green1:#b9f0b5;
-      --green2:#7fcf7a;
+// ✅ RESET WIFI (CMD depuis STM32)
+volatile bool pendingWifiClear = false;
+volatile bool ignoreAutoSave   = false;
 
-      --barTrack:#31454e;
-      --barFill:#f1b12c;
-      --borderSoft: rgba(255,255,255,.55);
-    }
-
-    *{box-sizing:border-box;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;}
-    body{
-      margin:0;
-      background: var(--bg);
-      min-height:100vh;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      padding:18px;
-      color:var(--text);
-    }
-
-    /* grosse carte centrale comme sur ta capture */
-    .wrap{
-      width:min(1100px,100%);
-      background: rgba(231,245,238,.92);
-      border-radius:24px;
-      padding:22px 22px 26px;
-      box-shadow: var(--shadow);
-      position:relative;
-      overflow:hidden;
-      border:1px solid rgba(255,255,255,.55);
-    }
-
-    /* petit effet "feuilles" en CSS (proche visuel TouchGFX) */
-    .wrap:before{
-      content:"";
-      position:absolute; inset:-80px;
-      background:
-        radial-gradient(closest-side at 20% 20%, rgba(46,125,50,.10), transparent 60%),
-        radial-gradient(closest-side at 80% 30%, rgba(0,150,136,.08), transparent 55%),
-        radial-gradient(closest-side at 30% 85%, rgba(76,175,80,.08), transparent 60%),
-        radial-gradient(closest-side at 85% 80%, rgba(33,150,243,.05), transparent 60%);
-      filter: blur(0px);
-      pointer-events:none;
-    }
-
-    .content{position:relative;}
-
-    .title{
-      text-align:center;
-      font-size:56px;
-      font-weight:1000;
-      letter-spacing:2px;
-      margin:0 0 12px 0;
-      text-transform:uppercase;
-    }
-
-    .tabs{
-      display:flex;
-      gap:12px;
-      justify-content:center;
-      flex-wrap:wrap;
-      margin:8px 0 18px;
-    }
-
-    .tab{
-      cursor:pointer;
-      user-select:none;
-      padding:10px 16px;
-      border-radius:999px;
-      background: rgba(255,255,255,.65);
-      border:1px solid rgba(0,0,0,.08);
-      box-shadow: 0 8px 16px rgba(0,0,0,.10);
-      font-weight:900;
-      opacity:.75;
-      transition: .15s ease;
-    }
-    .tab:hover{transform: translateY(-1px); opacity:.9;}
-    .tab.active{
-      opacity:1;
-      background: linear-gradient(180deg,var(--green1),var(--green2));
-    }
-
-    .view{display:none;}
-    .view.active{display:block;}
-
-    /* HOME layout */
-    .main{
-      display:grid;
-      grid-template-columns: 1.1fr .9fr;
-      gap:18px;
-      align-items:stretch;
-      margin-top:6px;
-    }
-
-    .left{
-      display:flex;
-      flex-direction:column;
-      gap:12px;
-      padding:6px 6px 6px 2px;
-    }
-
-    .pill{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      border-radius:999px;
-      padding:14px 18px;
-      background: rgba(255,255,255,.55);
-      border:1px solid rgba(0,0,0,.08);
-      box-shadow: 0 10px 18px rgba(0,0,0,.10);
-      font-size:20px;
-      font-weight:900;
-    }
-
-    .label{display:flex;align-items:center;gap:12px;}
-    .icon{
-      width:40px;height:40px;border-radius:50%;
-      background: rgba(255,255,255,.55);
-      display:flex;align-items:center;justify-content:center;
-      box-shadow: inset 0 0 0 2px rgba(255,255,255,.55);
-      font-size:20px;
-    }
-    .value{font-weight:1000;min-width:90px;text-align:right;}
-
-    .rightBox{
-      background: rgba(255,255,255,.55);
-      border: 4px solid rgba(30,59,71,.55);
-      border-radius:18px;
-      box-shadow: 0 12px 22px rgba(0,0,0,.12);
-      padding:16px;
-      display:flex;
-      flex-direction:column;
-      justify-content:center;
-      gap:8px;
-    }
-
-    .clock{font-size:38px;font-weight:1000;text-align:center;letter-spacing:1px;}
-    .date{font-size:20px;font-weight:900;text-align:center;opacity:.95;}
-    .ip{margin-top:8px;font-size:13px;text-align:center;opacity:.75;}
-
-    /* POT layout (proche TouchGFX) */
-    .potCard{
-      background: rgba(232,248,239,.88);
-      border-radius:18px;
-      padding:18px;
-      border:1px solid rgba(255,255,255,.65);
-      box-shadow: 0 12px 22px rgba(0,0,0,.12);
-      max-width: 900px;
-      margin: 0 auto;
-      position:relative;
-      overflow:hidden;
-    }
-
-    .potCard:before{
-      content:"";
-      position:absolute; inset:-70px;
-      background:
-        radial-gradient(closest-side at 15% 35%, rgba(76,175,80,.10), transparent 60%),
-        radial-gradient(closest-side at 85% 30%, rgba(0,150,136,.09), transparent 55%),
-        radial-gradient(closest-side at 70% 85%, rgba(33,150,243,.05), transparent 60%);
-      pointer-events:none;
-    }
-
-    .potInner{position:relative;}
-
-    .potTitle{
-      text-align:center;
-      font-size:34px;
-      font-weight:1000;
-      margin:6px 0 12px;
-      letter-spacing:1px;
-      text-transform:uppercase;
-    }
-
-    .plantRow{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:12px;
-      margin: 8px 0 12px;
-    }
-    .plantLabel{
-      font-size:20px;
-      font-weight:900;
-      opacity:.95;
-    }
-    .plantIcon{
-      width:54px;height:54px;border-radius:50%;
-      background: rgba(255,255,255,.65);
-      display:flex;align-items:center;justify-content:center;
-      box-shadow: 0 10px 18px rgba(0,0,0,.12), inset 0 0 0 2px rgba(255,255,255,.75);
-      font-size:26px;
-      flex: 0 0 auto;
-    }
-
-    .humLabel{
-      font-size:18px;
-      font-weight:900;
-      margin-top: 6px;
-      opacity:.95;
-    }
-
-    .barWrap{
-      width:100%;
-      height:14px;
-      border-radius:999px;
-      background: var(--barTrack);
-      overflow:hidden;
-      box-shadow: inset 0 0 0 1px rgba(0,0,0,.20);
-      margin-top: 8px;
-    }
-    .bar{
-      height:100%;
-      width:0%;
-      background: var(--barFill);
-      border-radius:999px;
-      transition: width .25s ease;
-    }
-
-    .bottomRow{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:12px;
-      margin-top: 12px;
-      font-weight:900;
-      color: var(--muted);
-    }
-    .pct{
-      font-weight:1000;
-      color: var(--text);
-      opacity: 1;
-    }
-
-    @media (max-width:820px){
-      .title{font-size:42px;}
-      .main{grid-template-columns:1fr;}
-      .clock{font-size:32px;}
-    }
-  </style>
-</head>
-
-<body>
-  <div class="wrap">
-    <div class="content">
-      <div class="title">PLANTLY</div>
-
-      <div class="tabs">
-        <div class="tab active" data-view="home">Home</div>
-        <div class="tab" data-view="pot1">Pot 1</div>
-        <div class="tab" data-view="pot2">Pot 2</div>
-        <div class="tab" data-view="pot3">Pot 3</div>
-        <div class="tab" data-view="pot4">Pot 4</div>
-      </div>
-
-      <!-- HOME -->
-      <div id="home" class="view active">
-        <div class="main">
-          <div class="left">
-            <div class="pill">
-              <div class="label"><div class="icon">🌡️</div>Température air :</div>
-              <div class="value" id="temp">--</div>
-            </div>
-            <div class="pill">
-              <div class="label"><div class="icon">☁️</div>Humidité air :</div>
-              <div class="value" id="airh">--</div>
-            </div>
-            <div class="pill">
-              <div class="label"><div class="icon">💡</div>Luminosité :</div>
-              <div class="value" id="lum">--</div>
-            </div>
-          </div>
-
-          <div class="rightBox">
-            <div class="clock" id="clock">--:--:--</div>
-            <div class="date" id="date">--</div>
-            <div class="ip" id="ip">IP: ...</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- POTS -->
-      <div id="pot1" class="view">
-        <div class="potCard">
-          <div class="potInner">
-            <div class="potTitle">POT 1</div>
-
-            <div class="plantRow">
-              <div class="plantLabel">Type de plante :</div>
-              <div class="plantIcon">🪴</div>
-            </div>
-
-            <div class="humLabel">Humidité :</div>
-            <div class="barWrap"><div class="bar" id="p1bar"></div></div>
-
-            <div class="bottomRow">
-              <div>Dernier arrosage</div>
-              <div class="pct" id="p1txt">0%</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div id="pot2" class="view">
-        <div class="potCard">
-          <div class="potInner">
-            <div class="potTitle">POT 2</div>
-            <div class="plantRow">
-              <div class="plantLabel">Type de plante :</div>
-              <div class="plantIcon">🪴</div>
-            </div>
-            <div class="humLabel">Humidité :</div>
-            <div class="barWrap"><div class="bar" id="p2bar"></div></div>
-            <div class="bottomRow">
-              <div>Dernier arrosage</div>
-              <div class="pct" id="p2txt">0%</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div id="pot3" class="view">
-        <div class="potCard">
-          <div class="potInner">
-            <div class="potTitle">POT 3</div>
-            <div class="plantRow">
-              <div class="plantLabel">Type de plante :</div>
-              <div class="plantIcon">🪴</div>
-            </div>
-            <div class="humLabel">Humidité :</div>
-            <div class="barWrap"><div class="bar" id="p3bar"></div></div>
-            <div class="bottomRow">
-              <div>Dernier arrosage</div>
-              <div class="pct" id="p3txt">0%</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div id="pot4" class="view">
-        <div class="potCard">
-          <div class="potInner">
-            <div class="potTitle">POT 4</div>
-            <div class="plantRow">
-              <div class="plantLabel">Type de plante :</div>
-              <div class="plantIcon">🪴</div>
-            </div>
-            <div class="humLabel">Humidité :</div>
-            <div class="barWrap"><div class="bar" id="p4bar"></div></div>
-            <div class="bottomRow">
-              <div>Dernier arrosage</div>
-              <div class="pct" id="p4txt">0%</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-    </div>
-  </div>
-
-<script>
-function setActive(view){
-  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active', t.dataset.view===view));
-  document.querySelectorAll('.view').forEach(v=>v.classList.toggle('active', v.id===view));
+// ------------------ helpers ------------------
+static inline bool isHex(char c){
+  return (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F');
 }
-document.querySelectorAll('.tab').forEach(t=>{
-  t.addEventListener('click', ()=>setActive(t.dataset.view));
-});
-
-function pctToWidth(p){ return Math.max(0, Math.min(100, p)) + "%"; }
-
-async function refresh(){
-  try{
-    const r = await fetch('/api/state', {cache:"no-store"});
-    const j = await r.json();
-
-    document.getElementById('clock').textContent = j.time;
-    document.getElementById('date').textContent  = j.date;
-    document.getElementById('ip').textContent    = "IP: " + j.ip;
-
-    document.getElementById('temp').textContent  = j.temp;
-    document.getElementById('airh').textContent  = j.airh;
-    document.getElementById('lum').textContent   = j.lux;
-
-    document.getElementById('p1txt').textContent = j.p1;
-    document.getElementById('p2txt').textContent = j.p2;
-    document.getElementById('p3txt').textContent = j.p3;
-    document.getElementById('p4txt').textContent = j.p4;
-
-    document.getElementById('p1bar').style.width = pctToWidth(j.p1n);
-    document.getElementById('p2bar').style.width = pctToWidth(j.p2n);
-    document.getElementById('p3bar').style.width = pctToWidth(j.p3n);
-    document.getElementById('p4bar').style.width = pctToWidth(j.p4n);
-
-  }catch(e){}
+static inline uint8_t hexVal(char c){
+  if (c >= '0' && c <= '9') return (uint8_t)(c - '0');
+  if (c >= 'a' && c <= 'f') return (uint8_t)(10 + (c - 'a'));
+  return (uint8_t)(10 + (c - 'A'));
 }
-setInterval(refresh, 1000);
-refresh();
-</script>
-</body>
-</html>
-)rawliteral";
+
+// Decode simple pour query-string (URLEncoder côté Android)
+static String urlDecode(const String& s){
+  String out; out.reserve(s.length());
+  for (int i=0; i<(int)s.length(); i++){
+    char c = s[i];
+    if (c == '+') { out += ' '; continue; }
+    if (c == '%' && i+2 < (int)s.length() && isHex(s[i+1]) && isHex(s[i+2])) {
+      uint8_t v = (hexVal(s[i+1]) << 4) | hexVal(s[i+2]);
+      out += (char)v;
+      i += 2;
+      continue;
+    }
+    out += c;
+  }
+  return out;
+}
+
+// Escape JSON
+static String jsonEscape(const String& s){
+  String o; o.reserve(s.length() + 8);
+  for (int i=0; i<(int)s.length(); i++){
+    char c = s[i];
+    if      (c == '\\') o += "\\\\";
+    else if (c == '"')  o += "\\\"";
+    else if (c == '\n') o += "\\n";
+    else if (c == '\r') o += "\\r";
+    else if (c == '\t') o += "\\t";
+    else o += c;
+  }
+  return o;
+}
+
+// ------------------ PORTAIL WIFI (HTML) ------------------
+static String htmlEscape(const String& s) {
+  String o;
+  o.reserve(s.length() + 8);
+  for (size_t i=0;i<s.length();i++){
+    char c = s[i];
+    if      (c=='&') o += "&amp;";
+    else if (c=='<') o += "&lt;";
+    else if (c=='>') o += "&gt;";
+    else if (c=='"') o += "&quot;";
+    else o += c;
+  }
+  return o;
+}
+
+static String wifiConfigPage(const String& msg = "") {
+  int n = WiFi.scanNetworks(false, true);
+  String options;
+  for (int i=0;i<n;i++){
+    String ss = WiFi.SSID(i);
+    int rssi = WiFi.RSSI(i);
+    bool open = (WiFi.encryptionType(i) == WIFI_AUTH_OPEN);
+    options += "<option value=\"" + htmlEscape(ss) + "\">" + htmlEscape(ss) + " (" + String(rssi) + " dBm" + (open ? ", ouvert" : "") + ")</option>";
+  }
+
+  String page;
+  page.reserve(4500);
+  page += "<!doctype html><html lang='fr'><head><meta charset='utf-8'/>";
+  page += "<meta name='viewport' content='width=device-width,initial-scale=1'/>";
+  page += "<title>Plantly - WiFi</title>";
+  page += "<style>body{font-family:system-ui,Arial;margin:0;background:#dfeee6;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:18px;}";
+  page += ".card{width:min(520px,100%);background:#fff;border-radius:18px;box-shadow:0 12px 26px rgba(0,0,0,.18);padding:18px;}";
+  page += "h1{margin:0 0 8px;font-size:28px}p{margin:8px 0;color:#234}";
+  page += "label{display:block;margin-top:12px;font-weight:700}";
+  page += "select,input{width:100%;padding:12px;border-radius:12px;border:1px solid #ccd;margin-top:6px;font-size:16px}";
+  page += "button{margin-top:14px;width:100%;padding:12px;border:0;border-radius:12px;background:#7fcf7a;font-weight:900;font-size:16px;cursor:pointer}";
+  page += ".msg{margin-top:10px;padding:10px;border-radius:12px;background:#eef7f2;border:1px solid #cde;}";
+  page += ".small{font-size:13px;opacity:.75}</style></head><body>";
+  page += "<div class='card'>";
+  page += "<h1>Configurer le WiFi Plantly</h1>";
+  page += "<p>Choisis ton réseau WiFi, mets le mot de passe, puis valide.</p>";
+  if (msg.length()) page += "<div class='msg'>" + htmlEscape(msg) + "</div>";
+  page += "<form method='POST' action='/wifisave'>";
+  page += "<label>Réseau WiFi (SSID)</label>";
+  page += "<select name='ssid' required>";
+  page += options.length() ? options : "<option value=''>Aucun réseau trouvé</option>";
+  page += "</select>";
+  page += "<label>Mot de passe</label>";
+  page += "<input name='pass' type='password' placeholder='(laisser vide si réseau ouvert)' />";
+  page += "<button type='submit'>Connecter</button>";
+  page += "</form>";
+  page += "<p class='small'>Si ça ne s'ouvre pas automatiquement: va sur <b>http://192.168.4.1</b></p>";
+  page += "</div></body></html>";
+  return page;
+}
 
 // ------------------ UTILS ------------------
 String two(int v){ return (v<10) ? ("0"+String(v)) : String(v); }
@@ -471,8 +182,34 @@ static void sendIpToSTM32(const String& ip) {
   Serial2.print("IP=");
   Serial2.print(ip);
   Serial2.print("\n");
-  Serial.print("[UART] -> STM32 : IP=");
-  Serial.println(ip);
+}
+
+static void sendSsidToSTM32(const String& ssid) {
+  Serial2.print("SSID=");
+  Serial2.print(ssid);
+  Serial2.print("\n");
+}
+
+// ✅ Envoi PN1..PN4 vers STM32
+static void sendPotNameToSTM32(uint8_t potIndex){
+  if (potIndex > 3) return;
+
+  String name = potNames[potIndex];
+  name.trim();
+  if (name.length() == 0) name = "POT " + String(potIndex + 1);
+  if (name.length() > 32) name = name.substring(0, 32);
+
+  Serial2.print("PN");
+  Serial2.print((int)(potIndex + 1));
+  Serial2.print("=");
+  Serial2.print(name);
+  Serial2.print("\n");
+}
+
+static void sendAllPotNamesToSTM32(){
+  for (uint8_t i = 0; i < 4; i++){
+    sendPotNameToSTM32(i);
+  }
 }
 
 static int clampPct(int v){
@@ -481,112 +218,87 @@ static int clampPct(int v){
   return v;
 }
 
-// ----------- PARSING : token "KEY=VALUE" -----------
+// ------------------ PARSING UART STM32 -> ESP32 ------------------
 static void parseToken(String token){
   token.trim();
   if(token.length() == 0) return;
 
-  // Debug console
-  Serial.println("TOK: " + token);
+  // CMD=WIFI_CLEAR
+  if(token.startsWith("CMD=")){
+    String cmd = token.substring(4);
+    cmd.trim();
+    if(cmd == "WIFI_CLEAR"){
+      pendingWifiClear = true;
+      ignoreAutoSave   = true;
+    }
+    return;
+  }
 
-  // SOIL1..SOIL4
+  // SOIL1=xx
   if(token.startsWith("SOIL")){
-    // ex: SOIL1=45
     int eq = token.indexOf('=');
     if(eq < 0) return;
-    int idxCharPos = 4; // '1' dans SOIL1
-    if(token.length() <= idxCharPos) return;
-    int potIdx = token.charAt(idxCharPos) - '1'; // 0..3
+    if(token.length() < 5) return;
+    int potIdx = token.charAt(4) - '1';
     if(potIdx < 0 || potIdx > 3) return;
     int v = clampPct(token.substring(eq+1).toInt());
     soilPct[potIdx] = v;
     return;
   }
 
-  // ADC1..ADC4
+  // ADC1=xxxx
   if(token.startsWith("ADC")){
     int eq = token.indexOf('=');
     if(eq < 0) return;
-    int idxCharPos = 3;
-    if(token.length() <= idxCharPos) return;
-    int potIdx = token.charAt(idxCharPos) - '1';
+    if(token.length() < 4) return;
+    int potIdx = token.charAt(3) - '1';
     if(potIdx < 0 || potIdx > 3) return;
     soilAdc[potIdx] = token.substring(eq+1).toInt();
     return;
   }
 
-  // TEMP
-  if(token.startsWith("TEMP=")){
-    airTempC = token.substring(5).toFloat();
-    return;
-  }
+  if(token.startsWith("TEMP=")){ airTempC = token.substring(5).toFloat(); return; }
+  if(token.startsWith("AIRH=")){ airRH    = token.substring(5).toFloat(); return; }
+  if(token.startsWith("LUX=")) { luxValue = token.substring(4).toInt(); if(luxValue < 0) luxValue = 0; return; }
 
-  // AIRH
-  if(token.startsWith("AIRH=")){
-    airRH = token.substring(5).toFloat();
-    return;
-  }
-
-  // LUX
-  if(token.startsWith("LUX=")){
-    luxValue = token.substring(4).toInt();
-    if(luxValue < 0) luxValue = 0;
-    return;
-  }
-
-  // (optionnel) ancien format Humidite:
-  if(token.startsWith("Humidite:")){
-    int colon = token.indexOf(':');
-    int percentPos = token.indexOf('%');
-    if (colon >= 0 && percentPos > colon) {
-      String v = token.substring(colon + 1, percentPos);
-      v.trim();
-      soilPct[0] = clampPct(v.toInt());
-    }
-    int adcPos = token.indexOf("adc=");
-    if (adcPos >= 0) {
-      String a = token.substring(adcPos + 4);
-      a.replace(")", ""); a.trim();
-      soilAdc[0] = a.toInt();
-    }
+  // AR1=dd/mm/yyyy hh:mm  ou AR1=NONE
+  if (token.startsWith("AR")) {
+    int eq = token.indexOf('=');
+    if (eq < 0) return;
+    if (token.length() < 4) return;
+    char n = token.charAt(2);
+    int potIdx = (int)(n - '1');
+    if (potIdx < 0 || potIdx > 3) return;
+    String val = token.substring(eq + 1);
+    val.trim();
+    if (val.length() == 0) val = "NONE";
+    arrosageStr[potIdx] = val;
     return;
   }
 }
 
-// ----------- Parse line : split par ';' -----------
-// ----------- Parse line : split par ';' ET '|' -----------
+// split par ';' et '|'
 static void parseLine(String line){
   line.replace("\r", "");
   line.trim();
   if(line.length() == 0) return;
 
-  Serial.println("STM32 -> " + line);
-
-  // ✅ IMPORTANT : ton main.c envoie " ... ; ... | ... ; ... | ... "
-  // On convertit les séparateurs '|' en ';' pour que chaque token soit bien parsé
   line.replace("|", ";");
 
-  // Split par ';'
   int start = 0;
   while(true){
     int sep = line.indexOf(';', start);
     if(sep < 0){
-      String tok = line.substring(start);
-      parseToken(tok);
+      parseToken(line.substring(start));
       break;
     }else{
-      String tok = line.substring(start, sep);
-      parseToken(tok);
+      parseToken(line.substring(start, sep));
       start = sep + 1;
     }
   }
 }
 
-// ------------------ WEB HANDLERS ------------------
-void handleRoot(){
-  server.send(200, "text/html; charset=utf-8", HTML_PAGE);
-}
-
+// ------------------ API HANDLERS ------------------
 void handleApiState(){
   struct tm t;
   String timeStr = "--:--:--";
@@ -598,9 +310,8 @@ void handleApiState(){
   }
 
   String ip = (WiFi.status() == WL_CONNECTED) ? WiFi.localIP().toString() : "0.0.0.0";
-
   String tempStr = isnan(airTempC) ? "--" : (String(airTempC, 1) + " °C");
-  String airhStr = isnan(airRH)    ? "--" : (String(airRH, 1) + " %");
+  String airhStr  = isnan(airRH)   ? "--" : (String(airRH, 1) + " %");
 
   String json = "{";
   json += "\"time\":\"" + timeStr + "\",";
@@ -613,13 +324,269 @@ void handleApiState(){
   json += "\"p2\":\""   + String(soilPct[1]) + "%\",";
   json += "\"p3\":\""   + String(soilPct[2]) + "%\",";
   json += "\"p4\":\""   + String(soilPct[3]) + "%\",";
-  json += "\"p1n\":"    + String(soilPct[0]) + ",";
-  json += "\"p2n\":"    + String(soilPct[1]) + ",";
-  json += "\"p3n\":"    + String(soilPct[2]) + ",";
-  json += "\"p4n\":"    + String(soilPct[3]);
+  json += "\"n1\":\"" + jsonEscape(potNames[0]) + "\",";
+  json += "\"n2\":\"" + jsonEscape(potNames[1]) + "\",";
+  json += "\"n3\":\"" + jsonEscape(potNames[2]) + "\",";
+  json += "\"n4\":\"" + jsonEscape(potNames[3]) + "\"";
   json += "}";
-
   server.send(200, "application/json; charset=utf-8", json);
+}
+
+void handleApiData(){
+  String tempStr   = isnan(airTempC) ? "--" : String(airTempC, 1);
+  String airHumStr = isnan(airRH)    ? "--" : String(airRH, 1);
+  String luxStr    = String(luxValue);
+
+  String json = "{";
+  json += "\"temp\":\""   + tempStr + "\",";
+  json += "\"airHum\":\"" + airHumStr + "\",";
+  json += "\"lux\":\""    + luxStr + "\",";
+  json += "\"pot1\":\""   + String(soilPct[0]) + "%\",";
+  json += "\"pot2\":\""   + String(soilPct[1]) + "%\",";
+  json += "\"pot3\":\""   + String(soilPct[2]) + "%\",";
+  json += "\"pot4\":\""   + String(soilPct[3]) + "%\",";
+  json += "\"ar1\":\"" + jsonEscape(arrosageStr[0]) + "\",";
+  json += "\"ar2\":\"" + jsonEscape(arrosageStr[1]) + "\",";
+  json += "\"ar3\":\"" + jsonEscape(arrosageStr[2]) + "\",";
+  json += "\"ar4\":\"" + jsonEscape(arrosageStr[3]) + "\",";
+  json += "\"n1\":\"" + jsonEscape(potNames[0]) + "\",";
+  json += "\"n2\":\"" + jsonEscape(potNames[1]) + "\",";
+  json += "\"n3\":\"" + jsonEscape(potNames[2]) + "\",";
+  json += "\"n4\":\"" + jsonEscape(potNames[3]) + "\"";
+  json += "}";
+  server.send(200, "application/json; charset=utf-8", json);
+}
+
+void handleApiWifi(){
+  String ip = (WiFi.status() == WL_CONNECTED) ? WiFi.localIP().toString() : "0.0.0.0";
+  String ss = (WiFi.status() == WL_CONNECTED) ? WiFi.SSID() : "";
+  String json = "{";
+  json += "\"ssid\":\"" + jsonEscape(ss) + "\",";
+  json += "\"ip\":\"" + ip + "\"";
+  json += "}";
+  server.send(200, "application/json; charset=utf-8", json);
+}
+
+// ✅ Android -> POST /api/rename?pot=1..4&name=...
+void handleApiRename(){
+  if (!server.hasArg("pot") || !server.hasArg("name")){
+    server.send(400, "application/json; charset=utf-8", "{\"status\":\"error\",\"msg\":\"missing pot/name\"}");
+    return;
+  }
+
+  int pot = server.arg("pot").toInt(); // 1..4
+  int idx = pot - 1;
+  if (idx < 0 || idx > 3){
+    server.send(400, "application/json; charset=utf-8", "{\"status\":\"error\",\"msg\":\"bad pot\"}");
+    return;
+  }
+
+  String rawName = server.arg("name");
+  String newName = urlDecode(rawName);
+  newName.trim();
+  if (newName.length() == 0){
+    server.send(400, "application/json; charset=utf-8", "{\"status\":\"error\",\"msg\":\"empty name\"}");
+    return;
+  }
+  if (newName.length() > 32) newName = newName.substring(0, 32);
+
+  potNames[idx] = newName;
+
+  prefs.begin("plantly", false);
+  String key = "name" + String(pot);   // name1..name4
+  prefs.putString(key.c_str(), newName);
+  prefs.end();
+
+  // ✅ PUSH immédiat vers STM32
+  sendPotNameToSTM32((uint8_t)idx);
+
+  server.send(200, "application/json; charset=utf-8", "{\"status\":\"success\"}");
+}
+
+// ------------------ WEB HANDLERS (MODE AP CONFIG) ------------------
+void handleRootConfig(){
+  server.send(200, "text/html; charset=utf-8", wifiConfigPage());
+}
+
+void handleWifiSave(){
+  String ssid = server.arg("ssid");
+  String pass = server.arg("pass");
+  ssid.trim();
+
+  if (ssid.length() == 0) {
+    server.send(200, "text/html; charset=utf-8", wifiConfigPage("SSID invalide."));
+    return;
+  }
+
+  server.send(200, "text/html; charset=utf-8",
+              wifiConfigPage("Tentative de connexion a: " + ssid + " ... (patiente 10-20s)"));
+
+  wifiSsid = ssid;
+  wifiPass = pass;
+
+  ignoreAutoSave = false;
+
+  WiFi.mode(WIFI_AP_STA);
+  WiFi.begin(wifiSsid.c_str(), wifiPass.c_str());
+}
+
+void handleNotFoundConfig(){
+  server.sendHeader("Location", String("http://") + WiFi.softAPIP().toString() + "/", true);
+  server.send(302, "text/plain", "");
+}
+
+// ------------------ WIFI / NVS ------------------
+static void loadConfigFromNVS() {
+  prefs.begin("plantly", true);
+
+  wifiSsid = prefs.getString("ssid", "");
+  wifiPass = prefs.getString("pass", "");
+
+  for (int i=0; i<4; i++){
+    int pot = i + 1;
+    String key = "name" + String(pot);
+    String def = "POT " + String(pot);
+    potNames[i] = prefs.getString(key.c_str(), def);
+    potNames[i].trim();
+    if (potNames[i].length() == 0) potNames[i] = def;
+    if (potNames[i].length() > 32) potNames[i] = potNames[i].substring(0, 32);
+  }
+
+  prefs.end();
+}
+
+static void saveWifiToNVS(const String& ssid, const String& pass) {
+  prefs.begin("plantly", false);
+  prefs.putString("ssid", ssid);
+  prefs.putString("pass", pass);
+  prefs.end();
+}
+
+static void clearWifiNVS() {
+  prefs.begin("plantly", false);
+  prefs.remove("ssid");
+  prefs.remove("pass");
+  prefs.end();
+}
+
+static bool connectSTA(const String& ssid, const String& pass, uint32_t timeoutMs=15000) {
+  WiFi.mode(WIFI_STA);
+  WiFi.begin(ssid.c_str(), pass.c_str());
+
+  uint32_t t0 = millis();
+  while (WiFi.status() != WL_CONNECTED && (millis() - t0) < timeoutMs) {
+    delay(250);
+  }
+  return (WiFi.status() == WL_CONNECTED);
+}
+
+void startConfigPortal() {
+  configMode = true;
+  ipEverSent = false;
+  lastIpSent = "0.0.0.0";
+
+  WiFi.disconnect(true, true);
+  delay(150);
+
+  WiFi.mode(WIFI_AP);
+  WiFi.softAP("Plantly");
+  delay(100);
+
+  IPAddress apIP = WiFi.softAPIP();
+
+  dnsServer.stop();
+  dnsServer.start(DNS_PORT, "*", apIP);
+
+  server.stop();
+  server.on("/", handleRootConfig);
+  server.on("/wifisave", HTTP_POST, handleWifiSave);
+  server.onNotFound(handleNotFoundConfig);
+  server.begin();
+}
+
+static void startSTAApi() {
+  configMode = false;
+
+  dnsServer.stop();
+  WiFi.softAPdisconnect(true);
+
+  configTzTime(tzInfo, ntpServer);
+
+  // Envoi IP + SSID à la STM32
+  sendSsidToSTM32(WiFi.SSID());
+  lastIpSent = WiFi.localIP().toString();
+  sendIpToSTM32(lastIpSent);
+  ipEverSent = true;
+  lastSendIpMs = millis();
+
+  // ✅ PUSH noms des pots vers STM32 au démarrage
+  sendAllPotNamesToSTM32();
+  lastSendNamesMs = millis();
+
+  server.stop();
+
+  server.on("/", [](){
+    server.send(200, "text/plain; charset=utf-8",
+                "PLANTLY API OK\n"
+                "GET  /api/state\n"
+                "GET  /api/data\n"
+                "GET  /api/wifi\n"
+                "POST /api/rename?pot=1..4&name=...\n");
+  });
+
+  server.on("/api/state",  HTTP_GET,  handleApiState);
+  server.on("/api/data",   HTTP_GET,  handleApiData);
+  server.on("/api/wifi",   HTTP_GET,  handleApiWifi);
+  server.on("/api/rename", HTTP_POST, handleApiRename);
+
+  server.on("/api/wifi/clear", HTTP_POST, [](){
+    clearWifiNVS();
+    wifiSsid = "";
+    wifiPass = "";
+    ignoreAutoSave = true;
+    server.send(200, "application/json; charset=utf-8", "{\"ok\":true}");
+    delay(200);
+    startConfigPortal();
+  });
+
+  server.onNotFound([](){
+    server.send(404, "text/plain", "Not found");
+  });
+
+  server.begin();
+}
+
+static void doWifiClearNow()
+{
+  clearWifiNVS();
+  wifiSsid = "";
+  wifiPass = "";
+
+  WiFi.disconnect(true, true);
+  delay(200);
+  WiFi.mode(WIFI_OFF);
+  delay(300);
+
+  startConfigPortal();
+}
+
+// ------------------ UART RX (ligne) ------------------
+static void uartRxProcess()
+{
+  while (Serial2.available()) {
+    char c = (char)Serial2.read();
+    if (c == '\r') continue;
+
+    if (c == '\n') {
+      String line = uartLine;
+      uartLine = "";
+      line.trim();
+      if (line.length()) parseLine(line);
+    } else {
+      if (uartLine.length() < 200) uartLine += c;
+      else uartLine = "";
+    }
+  }
 }
 
 // ------------------ SETUP ------------------
@@ -630,65 +597,70 @@ void setup() {
   Serial2.begin(115200, SERIAL_8N1, UART_RX, UART_TX);
   delay(100);
 
-  Serial.println("\n=== BOOT ESP32 PLANTLY ===");
-  Serial2.print("ESP32 ready\n");
+  loadConfigFromNVS();
 
-  WiFi.mode(WIFI_STA);
-  WiFi.begin(ssid, password);
-
-  Serial.print("Connexion WiFi");
-  unsigned long t0 = millis();
-  while (WiFi.status() != WL_CONNECTED && millis() - t0 < 15000) {
-    delay(250);
-    Serial.print(".");
+  bool connected = false;
+  if (wifiSsid.length() > 0) {
+    connected = connectSTA(wifiSsid, wifiPass, 15000);
   }
 
-  if (WiFi.status() == WL_CONNECTED) {
-    Serial.println("\nWiFi OK");
-    lastIpSent = WiFi.localIP().toString();
-    sendIpToSTM32(lastIpSent);
-    ipEverSent = true;
-    lastSendIpMs = millis();
+  if (connected) {
+    saveWifiToNVS(wifiSsid, wifiPass);
+    startSTAApi();
   } else {
-    Serial.println("\nWiFi FAIL");
+    startConfigPortal();
   }
-
-  configTzTime(tzInfo, ntpServer);
-
-  server.on("/", handleRoot);
-  server.on("/api/state", handleApiState);
-  server.begin();
 }
 
 // ------------------ LOOP ------------------
 void loop() {
   server.handleClient();
 
-  // IP -> STM32 si changement
-  if (WiFi.status() == WL_CONNECTED) {
+  // Lecture UART STM32
+  uartRxProcess();
+
+  if (pendingWifiClear) {
+    pendingWifiClear = false;
+    doWifiClearNow();
+    return;
+  }
+
+  if (configMode) {
+    dnsServer.processNextRequest();
+
+    if (!ignoreAutoSave && WiFi.status() == WL_CONNECTED) {
+      saveWifiToNVS(wifiSsid, wifiPass);
+      startSTAApi();
+    }
+  }
+
+  // IP -> STM32 si changement (mode STA)
+  if (!configMode && WiFi.status() == WL_CONNECTED) {
     String ipNow = WiFi.localIP().toString();
     if (!ipEverSent || ipNow != lastIpSent) {
       lastIpSent = ipNow;
       sendIpToSTM32(ipNow);
+      sendSsidToSTM32(WiFi.SSID());
       ipEverSent = true;
       lastSendIpMs = millis();
     }
   }
 
-  // renvoi IP périodique
-  if (WiFi.status() == WL_CONNECTED && millis() - lastSendIpMs >= 5000) {
+  // renvoi IP/SSID périodique
+  if (!configMode && WiFi.status() == WL_CONNECTED && millis() - lastSendIpMs >= 5000) {
     lastSendIpMs = millis();
     sendIpToSTM32(WiFi.localIP().toString());
+    sendSsidToSTM32(WiFi.SSID());
   }
 
-  // Lecture UART STM32 (ligne par ligne)
-  while (Serial2.available()) {
-    String line = Serial2.readStringUntil('\n');
-    parseLine(line);
+  // ✅ FIX: renvoi périodique des noms PN1..PN4
+  if (!configMode && WiFi.status() == WL_CONNECTED && millis() - lastSendNamesMs >= 5000) {
+    lastSendNamesMs = millis();
+    sendAllPotNamesToSTM32();
   }
 
-  // Envoi heure/date UART chaque seconde (pour ta STM32)
-  if (millis() - lastSendMs >= 1000) {
+  // Envoi heure/date UART chaque seconde (mode STA uniquement)
+  if (!configMode && millis() - lastSendMs >= 1000) {
     lastSendMs = millis();
     struct tm t;
     if (getLocalTime(&t)) {

@@ -118,6 +118,12 @@ volatile int32_t g_temp_c_x10 = 0;   // ex: 234 = 23.4°C
 volatile uint32_t g_air_rh_x10 = 0;  // pour plus tard: 503 = 50.3%RH (tu peux déjà le remplir)
 
 volatile uint32_t g_lux = 0; // lux (0..65535+)
+
+volatile uint32_t g_water_warning = 0;
+
+/* Filtre anti-bruit */
+static uint8_t  water_cnt = 0;             // compteur intégrateur 0..100
+static uint32_t water_last_ms = 0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -169,6 +175,24 @@ static uint32_t adc_to_percent(uint32_t adc)
     if (p < 0) p = 0;
     if (p > 100) p = 100;
     return (uint32_t)p;
+}
+
+static void WaterSensor_Update_Filtered(void)
+{
+    // appelle cette fonction toutes les ~10ms
+    GPIO_PinState raw = HAL_GPIO_ReadPin(WATER_LVL_GPIO_Port, WATER_LVL_Pin);
+
+    // intégrateur : monte lentement si HIGH, descend lentement si LOW
+    // => hyper robuste contre les glitches
+    if (raw == GPIO_PIN_SET) {
+        if (water_cnt < 100) water_cnt++;
+    } else {
+        if (water_cnt > 0) water_cnt--;
+    }
+
+    // hysteresis : ON si >=80, OFF si <=20
+    if (water_cnt >= 80) g_water_warning = 1;
+    else if (water_cnt <= 20) g_water_warning = 0;
 }
 
 /* USER CODE END 0 */
@@ -871,6 +895,12 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(LCD_DISP_GPIO_Port, &GPIO_InitStruct);
 
+  /*Configure GPIO pin : WATER_LVL_Pin */
+  GPIO_InitStruct.Pin = WATER_LVL_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_PULLDOWN;
+  HAL_GPIO_Init(WATER_LVL_GPIO_Port, &GPIO_InitStruct);
+
   /*Configure GPIO pin : MCU_ACTIVE_Pin */
   GPIO_InitStruct.Pin = MCU_ACTIVE_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
@@ -1039,6 +1069,12 @@ void StartDefaultTask(void *argument)
         g_lux = lux;
         int len = snprintf(msg, sizeof(msg), "LUX=%lu\n", (unsigned long)g_lux);
         HAL_UART_Transmit(&huart6, (uint8_t*)msg, len, 100);
+    }
+
+    for (int k = 0; k < 50; k++)
+    {
+        WaterSensor_Update_Filtered();
+        osDelay(10);
     }
 
     osDelay(500); // toutes les 500ms

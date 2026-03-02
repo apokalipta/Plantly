@@ -7,11 +7,15 @@
 extern "C" volatile uint32_t g_soil_adc[4];
 extern "C" volatile uint32_t g_soil_percent[4];
 
-extern "C" bool Plantly_Time_Get(uint8_t* hh, uint8_t* mm, uint8_t* ss, uint8_t* dd, uint8_t* mo, uint16_t* yy);
+extern "C" bool Plantly_Time_Get(uint8_t* hh, uint8_t* mm, uint8_t* ss,
+                                 uint8_t* dd, uint8_t* mo, uint16_t* yy);
 
 extern "C" volatile int32_t  g_temp_c_x10;
 extern "C" volatile uint32_t g_air_rh_x10;
 extern "C" volatile uint32_t g_lux;
+
+// ✅ NOUVEAU : flag capteur niveau d'eau (1 = eau détectée)
+extern "C" volatile uint32_t g_water_warning;
 
 // Mois FR
 static const char* MONTHS_FR[12] = {
@@ -24,8 +28,12 @@ namespace
     static constexpr uint32_t HUM_PCT_SEC = 30;  // < 30% => sec
     static constexpr uint32_t HUM_PCT_OK  = 70;  // 30..70% => contente / ok
 
-    // ✅ Pot affiché sur l'écran principal (0=Pot1, 1=Pot2, 2=Pot3, 3=Pot4)
+    // ✅ Pot affiché sur l'écran principal
     static constexpr uint32_t MAIN_POT_INDEX = 0;
+
+    // ✅ clignotement : TouchGFX tick ~16ms
+    // 30 ticks ≈ 480ms (clignotement ~2Hz)
+    static constexpr uint16_t WATER_BLINK_PERIOD_TICKS = 30;
 }
 
 MainView::MainView()
@@ -41,9 +49,9 @@ void MainView::setupScreen()
     touchgfx::Unicode::snprintf(textDateBuffer, 40, "");
     TextDate.invalidate();
 
-    // --- Humidité air (en %) ---
+    // --- Humidité air ---
     ValHumidite.setWildcard(humBuffer);
-    touchgfx::Unicode::snprintf(humBuffer, 10, "0%%");
+    touchgfx::Unicode::snprintf(humBuffer, 10, "0%");
     ValHumidite.invalidate();
 
     // --- Température air ---
@@ -61,7 +69,6 @@ void MainView::setupScreen()
     froid.setVisible(false);
     chaud.setVisible(false);
 
-    // Stop sécurité
     contente.stopAnimation();
     froid.stopAnimation();
     chaud.stopAnimation();
@@ -70,16 +77,23 @@ void MainView::setupScreen()
     froid.invalidate();
     chaud.invalidate();
 
+    // ✅ WaterWarning caché au départ
+    WaterWarning.setVisible(false);
+    WaterWarning.invalidate();
+
     // Force refresh au 1er tick
     videoShown = false;
     lastHum = 0xFFFFFFFF;
     lastTemp = 0x7FFFFFFF;
     lastLux = 0xFFFFFFFF;
+
+    lastWater = 0xFFFFFFFF;
+    waterBlinkTick = 0;
+    waterBlinkState = false;
 }
 
 void MainView::tearDownScreen()
 {
-    // Stop propre de toutes les animations
     contente.stopAnimation();
     contente.setVisible(false);
 
@@ -93,6 +107,10 @@ void MainView::tearDownScreen()
     froid.invalidate();
     chaud.invalidate();
 
+    // ✅ WaterWarning off
+    WaterWarning.setVisible(false);
+    WaterWarning.invalidate();
+
     videoShown = false;
 
     MainViewBase::tearDownScreen();
@@ -100,7 +118,7 @@ void MainView::tearDownScreen()
 
 void MainView::handleTickEvent()
 {
-    // 1) Gestion Idle (affiche animation seulement quand FrontendApplication dit "idle")
+    // 1) Gestion Idle
     updateIdleVideo();
 
     // 2) Heure / Date
@@ -112,7 +130,7 @@ void MainView::handleTickEvent()
         updateClockAndDate(hh, mm, ss, dd, mo, yy);
     }
 
-    // 3) Humidité air (ex: 503 => 50.3%)
+    // 3) Humidité air
     uint32_t rh10 = g_air_rh_x10;
     if (rh10 != lastHum)
     {
@@ -121,11 +139,11 @@ void MainView::handleTickEvent()
         uint32_t rh_i = rh10 / 10;
         uint32_t rh_d = rh10 % 10;
 
-        touchgfx::Unicode::snprintf(humBuffer, 10, "%u.%u%%", (unsigned int)rh_i, (unsigned int)rh_d);
+        touchgfx::Unicode::snprintf(humBuffer, 10, "%u.%u%", (unsigned int)rh_i, (unsigned int)rh_d);
         ValHumidite.invalidate();
     }
 
-    // 4) Température (ex: 234 => 23.4°C)
+    // 4) Température
     int32_t t10 = g_temp_c_x10;
     if (t10 != lastTemp)
     {
@@ -139,13 +157,43 @@ void MainView::handleTickEvent()
         ValTemperature.invalidate();
     }
 
-    // 5) Luminosité (lux)
+    // 5) Luminosité
     uint32_t lux = g_lux;
     if (lux != lastLux)
     {
         lastLux = lux;
         touchgfx::Unicode::snprintf(luxBuffer, 16, "%d lx", (int)lux);
         ValLuminosite.invalidate();
+    }
+
+    // ✅ 6) WaterWarning clignotant
+    uint32_t w = g_water_warning; // 0/1
+
+    // Si état a changé -> reset clignotement
+    if (w != lastWater)
+    {
+        lastWater = w;
+        waterBlinkTick = 0;
+        waterBlinkState = false;
+
+        if (w == 0)
+        {
+            WaterWarning.setVisible(false);
+            WaterWarning.invalidate();
+        }
+    }
+
+    if (w == 1)
+    {
+        waterBlinkTick++;
+        if (waterBlinkTick >= WATER_BLINK_PERIOD_TICKS)
+        {
+            waterBlinkTick = 0;
+            waterBlinkState = !waterBlinkState;
+
+            WaterWarning.setVisible(waterBlinkState);
+            WaterWarning.invalidate();
+        }
     }
 
     MainViewBase::handleTickEvent();
@@ -161,10 +209,8 @@ void MainView::updateIdleVideo()
         {
             videoShown = true;
 
-            // ✅ Humidité sol du pot choisi pour l'écran principal
             uint32_t pct = g_soil_percent[MAIN_POT_INDEX];
 
-            // Cache tout + stop tout avant de choisir
             contente.setVisible(false);
             froid.setVisible(false);
             chaud.setVisible(false);
@@ -177,7 +223,6 @@ void MainView::updateIdleVideo()
             froid.invalidate();
             chaud.invalidate();
 
-            // Choix selon % humidité sol
             if (pct < HUM_PCT_SEC)
             {
                 chaud.setVisible(true);
@@ -223,7 +268,6 @@ void MainView::updateIdleVideo()
 void MainView::updateClockAndDate(uint8_t hh, uint8_t mm, uint8_t ss,
                                   uint8_t dd, uint8_t mo, uint16_t yyyy)
 {
-    // évite refresh si rien ne change
     if (hh == last_h && mm == last_m && ss == last_s &&
         dd == last_d && mo == last_mo && yyyy == last_y)
     {
@@ -233,11 +277,9 @@ void MainView::updateClockAndDate(uint8_t hh, uint8_t mm, uint8_t ss,
     last_h = hh; last_m = mm; last_s = ss;
     last_d = dd; last_mo = mo; last_y = yyyy;
 
-    // Heure
     digitalClock1.setTime24Hour(hh, mm, ss);
     digitalClock1.invalidate();
 
-    // Date FR
     const char* monthStr = (mo >= 1 && mo <= 12) ? MONTHS_FR[mo - 1] : "???";
 
     char tmp[48];
