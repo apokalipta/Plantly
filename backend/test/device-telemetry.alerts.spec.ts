@@ -7,7 +7,7 @@ import { TelemetryDto } from '../src/modules/device-telemetry/dto/telemetry.dto'
 
 const makePrisma = () => ({
   device: {
-    findUnique: (jest.fn() as any).mockResolvedValue({ id: 'd1', deviceUid: 'UID-1', deviceSecretHash: 'k', ownerId: 'u1', lastSeenAt: new Date() }),
+    findUnique: (jest.fn() as any).mockResolvedValue({ id: 'd1', deviceUid: 'UID-1', deviceSecret: 'k', ownerId: 'u1', lastSeenAt: new Date() }),
     update: (jest.fn() as any).mockResolvedValue(undefined),
   },
   sensorReading: { create: (jest.fn() as any).mockResolvedValue(undefined) },
@@ -27,7 +27,7 @@ describe('DeviceTelemetryService alerts', () => {
     const crypto = require('crypto');
     const signature = crypto.createHmac('sha256', 'k').update(JSON.stringify(dto) + ts).digest('hex');
     await svc.handleTelemetry('UID-1', ts, signature, dto);
-    expect(alerts.createOrUpdate).toHaveBeenCalledWith('d1', 'p1', 'BATTERY_LOW', 'WARNING');
+    expect(alerts.createOrUpdate).toHaveBeenCalledWith('d1', 'p1', 'BATTERY_LOW', 'WARNING', undefined);
   });
 
   it('creates LIGHT_TOO_LOW alert when below min light', async () => {

@@ -18,6 +18,7 @@ export interface EventPayload {
     soilMoisture?: number;
     lightLevel?: number;
     temperature?: number;
+    airHumidity?: number;
     timestamp?: Date;
   };
 }

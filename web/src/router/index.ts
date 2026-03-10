@@ -12,6 +12,8 @@ const routes: Array<RouteRecordRaw> = [
   { path: '/pots/new', name: 'new-pot', component: () => import('../views/NewPotView.vue') },
   { path: '/pots/:id', name: 'pot-detail', component: () => import('../views/PotDetailView.vue') },
   { path: '/pots/:id/new-plant', name: 'new-plant', component: () => import('../views/NewPlantView.vue') },
+  { path: '/bases', name: 'bases', component: () => import('../views/BasesListView.vue') },
+  { path: '/bases/:id', name: 'base-detail', component: () => import('../views/BaseDetailView.vue') },
   { path: '/wiki', name: 'wiki', component: () => import('../views/PlantWikiListView.vue') },
   { path: '/wiki/:id', name: 'wiki-detail', component: () => import('../views/PlantWikiDetailView.vue') },
   { path: '/tutorials', name: 'tutorials', component: () => import('../views/TutorialsView.vue') },
@@ -30,6 +32,7 @@ const router = createRouter({
 
 const protectedNames = new Set([
   'pots', 'new-pot', 'pot-detail', 'new-plant',
+  'bases', 'base-detail',
   'profile', 'achievements', 'history', 'settings', 'settings-notifications',
 ]);
 
@@ -42,4 +45,3 @@ router.beforeEach((to) => {
 });
 
 export default router;
-

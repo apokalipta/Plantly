@@ -1,5 +1,5 @@
 // Service d'authentification: gestion des comptes, jetons, et réinitialisation.
-import { Injectable, BadRequestException, UnauthorizedException } from '@nestjs/common';
+import { Injectable, BadRequestException, UnauthorizedException, Logger } from '@nestjs/common';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
@@ -16,6 +16,8 @@ import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
@@ -35,7 +37,7 @@ export class AuthService {
     if (usernameExists) {
       throw new BadRequestException('Username already taken');
     }
-    const saltRounds = 10; // TODO: move to config
+    const saltRounds = this.config.get<number>('jwt.bcryptSaltRounds') || 10;
     const passwordHash = await bcrypt.hash(dto.password, saltRounds);
     const user = await this.prisma.user.create({
       data: {
@@ -65,7 +67,7 @@ export class AuthService {
 
   async refreshTokens(dto: RefreshTokenDto): Promise<TokenPairDto> {
     // Vérifie le refresh token et récupère le payload
-    const refreshSecret = this.config.get<string>('JWT_REFRESH_TOKEN_SECRET') || 'TODO_REFRESH_SECRET';
+    const refreshSecret = this.config.get<string>('jwt.refreshSecret');
     let payload: any;
     try {
       payload = await this.jwtService.verifyAsync(dto.refreshToken, { secret: refreshSecret });
@@ -103,7 +105,7 @@ export class AuthService {
   async resetPassword(dto: ResetPasswordDto): Promise<void> {
     // Valide le jeton de réinitialisation et met à jour le mot de passe
     // TODO: validate reset token properly (email flow). For now, assume token encodes userId as JWT.
-    const resetSecret = this.config.get<string>('JWT_RESET_TOKEN_SECRET') || 'TODO_RESET_SECRET';
+    const resetSecret = this.config.get<string>('jwt.accessSecret'); // Using access secret for reset token for now if separate one not configured
     let payload: any;
     try {
       payload = await this.jwtService.verifyAsync(dto.token, { secret: resetSecret });
@@ -112,7 +114,7 @@ export class AuthService {
     }
     const userId: string | undefined = payload?.sub;
     if (!userId) throw new BadRequestException('Invalid reset token payload');
-    const saltRounds = 10; // TODO: move to config
+    const saltRounds = this.config.get<number>('jwt.bcryptSaltRounds') || 10;
     const newHash = await bcrypt.hash(dto.newPassword, saltRounds);
     await this.prisma.user.update({ where: { id: userId }, data: { passwordHash: newHash, tokenVersion: { increment: 1 } } });
     // Sécurité: invalider les sessions après réinitialisation en incrémentant tokenVersion

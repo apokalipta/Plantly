@@ -30,6 +30,7 @@ export class WikiService {
       descriptionShort: s.descriptionShort ?? undefined,
       code: s.code ?? undefined,
       imageUrl: s.imageUrl ?? undefined,
+      type: s.type ?? undefined,
     }));
   }
 
@@ -48,6 +49,7 @@ export class WikiService {
       latinName: sp.latinName ?? undefined,
       descriptionShort: sp.descriptionShort ?? undefined,
       imageUrl: sp.imageUrl ?? undefined,
+      type: sp.type ?? undefined,
       code: sp.code ?? undefined,
       care: sp.care
         ? {
@@ -59,6 +61,8 @@ export class WikiService {
             recommendedTemperatureMin: sp.care.recommendedTemperatureMin ?? undefined,
             recommendedTemperatureMax: sp.care.recommendedTemperatureMax ?? undefined,
             careTips: sp.care.careTips ?? undefined,
+            plantingTips: sp.care.plantingTips ?? undefined,
+            maintenanceTips: sp.care.maintenanceTips ?? undefined,
           }
         : {},
     };

@@ -15,6 +15,9 @@
     "prisma:studio": "prisma studio",
     "prisma:reset": "prisma migrate reset --force"
   },
+  "prisma": {
+    "seed": "node prisma/seed.js"
+  },
   "dependencies": {
     "@nestjs/common": "^10.0.0",
     "@nestjs/config": "^3.0.0",

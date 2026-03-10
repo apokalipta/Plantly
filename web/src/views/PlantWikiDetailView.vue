@@ -5,21 +5,45 @@
       <div v-if="loading">Chargement…</div>
       <div v-else-if="error" class="text-danger">{{ error }}</div>
       <div v-else-if="plant">
-        <div class="card shadow border-0 p-3">
-          <h1 class="mb-1">{{ plant.commonName }}</h1>
-          <p class="text-muted"><i>{{ plant.latinName }}</i></p>
+        <div class="card shadow border-0 p-4 mb-3">
+          <div class="row">
+            <div class="col-md-8">
+              <div class="d-flex align-items-center mb-2">
+                <h1 class="mb-0 mr-3">{{ plant.commonName }}</h1>
+                <span v-if="plant.type" class="badge p-2" :class="typeClass(plant.type)">{{ formatType(plant.type) }}</span>
+              </div>
+              <p class="text-muted mb-3"><i>{{ plant.latinName }}</i></p>
+              <p class="lead" style="font-size: 1.1rem;">{{ plant.descriptionShort }}</p>
+            </div>
+            <div class="col-md-4 text-center">
+               <img v-if="plant.imageUrl" :src="resolveImageUrl(plant.imageUrl)" :alt="plant.commonName || 'Plante'" class="img-fluid rounded shadow-sm" style="max-height: 200px; object-fit: cover;" />
+            </div>
+          </div>
         </div>
-        <div class="card shadow border-0 p-3 mt-3">
-          <p>{{ plant.descriptionShort }}</p>
-          <img v-if="plant.imageUrl" :src="resolveImageUrl(plant.imageUrl)" :alt="plant.commonName || 'Plante'" class="img-fluid rounded mt-2" />
-        </div>
+
         <div class="card shadow border-0 p-3 mt-3" v-if="plant.care">
-          <h2 class="h5">Conseils de soin</h2>
-          <p class="text-muted mb-1">Humidité: {{ plant.care.minMoisture }}–{{ plant.care.maxMoisture }}</p>
-          <p class="text-muted mb-1">Lumière: {{ plant.care.minLight }}–{{ plant.care.maxLight }}</p>
-          <p class="text-muted mb-1">Température: {{ plant.care.recommendedTemperatureMin }}–{{ plant.care.recommendedTemperatureMax }}</p>
-          <p class="text-muted mb-1">Arrosage: toutes {{ plant.care.wateringIntervalDays }} jours</p>
-          <p class="mt-2">{{ plant.care.careTips }}</p>
+          <h2 class="h5">Paramètres de culture</h2>
+          <div class="row">
+            <div class="col-sm-6">
+              <p class="text-muted mb-1"><strong>Humidité sol:</strong> {{ plant.care.minMoisture }}% – {{ plant.care.maxMoisture }}%</p>
+              <p class="text-muted mb-1"><strong>Lumière:</strong> {{ plant.care.minLight }} – {{ plant.care.maxLight }} lux</p>
+            </div>
+            <div class="col-sm-6">
+              <p class="text-muted mb-1"><strong>Température:</strong> {{ plant.care.recommendedTemperatureMin }}°C – {{ plant.care.recommendedTemperatureMax }}°C</p>
+              <p class="text-muted mb-1"><strong>Arrosage:</strong> tous les {{ plant.care.wateringIntervalDays }} jours</p>
+            </div>
+          </div>
+          <p class="mt-2" v-if="plant.care.careTips"><strong>Note générale:</strong> {{ plant.care.careTips }}</p>
+        </div>
+
+        <div class="card shadow border-0 p-3 mt-3" v-if="plant.care && plant.care.plantingTips">
+          <h2 class="h5">Comment planter</h2>
+          <p style="white-space: pre-line;">{{ plant.care.plantingTips }}</p>
+        </div>
+
+        <div class="card shadow border-0 p-3 mt-3" v-if="plant.care && plant.care.maintenanceTips">
+          <h2 class="h5">Entretien</h2>
+          <p style="white-space: pre-line;">{{ plant.care.maintenanceTips }}</p>
         </div>
       </div>
     </div>
@@ -60,4 +84,24 @@ function goBack() { router.push({ name: 'wiki' }); }
 const plant = computed(() => wiki.selectedPlant);
 const loading = computed(() => wiki.loading);
 const error = computed(() => wiki.error);
+
+function formatType(t) {
+  const map = {
+    DECORATIVE: 'Décorative',
+    AROMATIQUE: 'Aromatique',
+    PARFUMEE: 'Parfumée',
+    COMESTIBLE: 'Comestible'
+  };
+  return map[t] || t;
+}
+
+function typeClass(t) {
+  const map = {
+    DECORATIVE: 'badge-info',
+    AROMATIQUE: 'badge-success',
+    PARFUMEE: 'badge-warning',
+    COMESTIBLE: 'badge-primary'
+  };
+  return map[t] || 'badge-secondary';
+}
 </script>

@@ -6,4 +6,5 @@ export class PlantSpeciesListItemDto {
   descriptionShort?: string;
   code?: string;
   imageUrl?: string | null;
+  type?: string;
 }

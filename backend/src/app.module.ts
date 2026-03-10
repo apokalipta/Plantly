@@ -17,6 +17,7 @@ import { AlertsModule } from './modules/alerts/alerts.module';
 import { AchievementsModule } from './modules/achievements/achievements.module';
 import { DatabaseModule } from './database/database.module';
 import { DeviceTelemetryModule } from './modules/device-telemetry/device-telemetry.module';
+import { BasesModule } from './modules/bases/bases.module';
 
 @Module({
   imports: [
@@ -62,6 +63,7 @@ import { DeviceTelemetryModule } from './modules/device-telemetry/device-telemet
     AlertsModule,
     AchievementsModule,
     DeviceTelemetryModule,
+    BasesModule,
     // MediaModule added in separate module file
   ],
 })

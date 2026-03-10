@@ -53,9 +53,10 @@ export class AlertsService {
     plantInstanceId: string | null,
     type: 'WATER_NEEDED' | 'LIGHT_TOO_LOW' | 'LIGHT_TOO_HIGH' | 'BATTERY_LOW' | 'OFFLINE' | 'OTHER',
     severity: 'INFO' | 'WARNING' | 'CRITICAL',
+    baseSlotId?: string,
   ): Promise<void> {
     // Élever sévérité si déjà ouverte, sinon créer
-    const existing = await this.prisma.alert.findFirst({ where: { deviceId, type, resolvedAt: null } });
+    const existing = await this.prisma.alert.findFirst({ where: { deviceId, baseSlotId: baseSlotId ?? undefined, type, resolvedAt: null } });
     if (existing) {
       const level = { INFO: 1, WARNING: 2, CRITICAL: 3 } as const;
       if (level[severity] > level[String(existing.severity) as keyof typeof level]) {
@@ -64,18 +65,11 @@ export class AlertsService {
       return;
     }
     // Création
-    await this.prisma.alert.create({
-      data: {
-        deviceId,
-        plantInstanceId,
-        type,
-        severity,
-      },
-    });
+    await this.prisma.alert.create({ data: { deviceId, baseSlotId: baseSlotId ?? undefined, plantInstanceId, type, severity } });
   }
 
-  async resolveAllForDevice(deviceId: string): Promise<void> {
+  async resolveAllForDevice(deviceId: string, baseSlotId?: string): Promise<void> {
     // Résolution en masse
-    await this.prisma.alert.updateMany({ where: { deviceId, resolvedAt: null }, data: { resolvedAt: new Date() } });
+    await this.prisma.alert.updateMany({ where: { deviceId, baseSlotId: baseSlotId ?? undefined, resolvedAt: null }, data: { resolvedAt: new Date() } });
   }
 }

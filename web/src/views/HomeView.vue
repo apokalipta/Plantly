@@ -65,12 +65,18 @@
 <script setup>
 import { onMounted, computed } from 'vue';
 import { usePotsStore } from '../stores/pots';
+import { useAuthStore } from '../stores/auth';
 import { storeToRefs } from 'pinia';
 
 const potsStore = usePotsStore();
+const auth = useAuthStore();
 const { pots } = storeToRefs(potsStore);
 
-onMounted(() => { if (!Array.isArray(pots.value) || pots.value.length === 0) potsStore.fetchMyPots(); });
+onMounted(() => {
+  if (auth.isAuthenticated && (!Array.isArray(pots.value) || pots.value.length === 0)) {
+    potsStore.fetchMyPots();
+  }
+});
 
 const potsCount = computed(() => (Array.isArray(pots.value) ? pots.value.length : 0));
 const plantsCount = computed(() => {

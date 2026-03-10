@@ -19,90 +19,140 @@ export class DeviceTelemetryService {
     headerTimestamp: string,
     signature: string,
     dto: TelemetryDto,
+    skipSecurity = false,
   ): Promise<{ status: string }> {
     // Vérifier device + horodatage + signature, puis persister et mettre à jour le statut
-    const device = await this.prisma.device.findUnique({ where: { deviceUid } });
-    if (!device) {
+    const device = (deviceUid && deviceUid.length > 0) 
+      ? await this.prisma.device.findUnique({ where: { deviceUid } })
+      : null;
+
+    const useBaseFlow = !!dto.baseUid && typeof dto.slotIndex === 'number';
+    if (!device && !useBaseFlow) {
       throw new UnauthorizedException('Unknown device UID');
     }
 
-    // Valider horodatage (±5 min)
-    const hmacSvc = this.hmac ?? new HmacService();
-    const parsedHeaderTs = hmacSvc.verifyTimestamp(headerTimestamp, 2 * 60 * 1000);
+    if (!skipSecurity) {
+      // Valider horodatage (±5 min)
+      const hmacSvc = this.hmac ?? new HmacService();
+      const parsedHeaderTs = hmacSvc.verifyTimestamp(headerTimestamp, 2 * 60 * 1000);
 
-    hmacSvc.verifySignature(String((device as any).deviceSecretHash || ''), dto, headerTimestamp, signature);
-    // Sécurité: le HMAC protège contre l’altération; la clé doit rester secrète côté appareil/serveur
+      if (device) {
+        hmacSvc.verifySignature(String((device as any).deviceSecret || ''), dto, headerTimestamp, signature);
+      }
+      // Sécurité: le HMAC protège contre l’altération; la clé doit rester secrète côté appareil/serveur
 
-    // Valider timestamp de la mesure
-    const readingTimestamp = this.parseTimestamp(dto.timestamp);
-    if (!readingTimestamp) {
-      throw new BadRequestException('Invalid telemetry timestamp');
-    }
-    const headerTs = parsedHeaderTs.getTime();
-    const bodyTs = readingTimestamp.getTime();
-    const bodyHeaderMaxDeltaMs = 10 * 60 * 1000; // 10 minutes tolerance
-    if (Math.abs(bodyTs - headerTs) > bodyHeaderMaxDeltaMs) {
-      throw new BadRequestException('Body/header timestamp mismatch');
+      // Valider timestamp de la mesure
+      const readingTimestamp = this.parseTimestamp(dto.timestamp);
+      if (!readingTimestamp) {
+        throw new BadRequestException('Invalid telemetry timestamp');
+      }
+      const headerTs = parsedHeaderTs.getTime();
+      const bodyTs = readingTimestamp.getTime();
+      const bodyHeaderMaxDeltaMs = 10 * 60 * 1000; // 10 minutes tolerance
+      if (Math.abs(bodyTs - headerTs) > bodyHeaderMaxDeltaMs) {
+        throw new BadRequestException('Body/header timestamp mismatch');
+      }
     }
     // Sécurité: limite la fenêtre d’acceptation pour réduire les rejoués et dérives d’horloge
 
-    const hasValue = [dto.soilMoisture, dto.lightLevel, dto.temperature, dto.batteryLevel].some((v) => v !== undefined && v !== null);
+    const hasValue = [dto.soilMoisture, dto.lightLevel, dto.temperature, dto.batteryLevel, dto.airHumidity].some((v) => v !== undefined && v !== null);
     if (!hasValue) {
       throw new BadRequestException('No telemetry values provided');
     }
     // Robustesse: refuse les lectures vides afin d’éviter du bruit dans les séries temporelles
 
     // Persister lecture
+    const readingTimestamp = this.parseTimestamp(dto.timestamp) || new Date(); // Fallback if skipped security
+    
+    let mappedDeviceId: string | null = device ? device.id : null;
+    let baseSlotId: string | null = null;
+    if (useBaseFlow) {
+      const base = await this.prisma.baseDevice.findUnique({ where: { baseUid: String(dto.baseUid) } });
+      if (!base) {
+        throw new UnauthorizedException('Unknown base UID');
+      }
+      const slot = await this.prisma.baseSlot.findUnique({
+        where: { baseId_slotIndex: { baseId: base.id, slotIndex: Number(dto.slotIndex) } },
+      });
+      if (!slot) {
+        throw new UnauthorizedException('Unknown slot index');
+      }
+      baseSlotId = slot.id;
+      if (dto.potFormat && String(slot.potFormat) !== String(dto.potFormat)) {
+        await this.prisma.baseSlot.update({ where: { id: slot.id }, data: { potFormat: String(dto.potFormat) as any } });
+      }
+      const virtualUid = `BASE-${base.baseUid}-S${slot.slotIndex}`;
+      let virtualDevice = await this.prisma.device.findUnique({ where: { deviceUid: virtualUid } });
+      if (!virtualDevice) {
+        virtualDevice = await this.prisma.device.create({
+          data: {
+            deviceUid: virtualUid,
+            deviceSecret: '', // Virtual device, secret managed by base
+            ownerId: base.ownerId,
+            name: `${base.name ?? 'Base'} Slot ${slot.slotIndex}`,
+          },
+        });
+      }
+      mappedDeviceId = virtualDevice.id;
+    }
     await this.prisma.sensorReading.create({
       data: {
-        deviceId: device.id,
+        deviceId: mappedDeviceId!,
+        baseSlotId: baseSlotId ?? undefined,
         timestamp: readingTimestamp,
         soilMoisture: dto.soilMoisture ?? null,
         lightLevel: dto.lightLevel ?? null,
         temperature: dto.temperature ?? null,
+        airHumidity: dto.airHumidity ?? null,
       },
     });
 
-    if (device.ownerId) {
-      await this.achievements.onEvent(device.ownerId, AchievementEventType.SENSOR_READING_RECEIVED, {
-        deviceId: device.id,
+    const ownerId = device?.ownerId ?? (useBaseFlow ? (await this.prisma.baseDevice.findUnique({ where: { baseUid: String(dto.baseUid) } }))?.ownerId : null);
+    if (ownerId) {
+      await this.achievements.onEvent(ownerId, AchievementEventType.SENSOR_READING_RECEIVED, {
+        deviceId: mappedDeviceId || undefined,
         reading: {
           soilMoisture: dto.soilMoisture,
           lightLevel: dto.lightLevel,
           temperature: dto.temperature,
+          airHumidity: dto.airHumidity,
           timestamp: readingTimestamp,
         },
       });
     }
 
     // Mettre à jour lastSeenAt
-    await this.prisma.device.update({
-      where: { id: device.id },
-      data: { lastSeenAt: new Date() },
-    });
+    if (mappedDeviceId) {
+      await this.prisma.device.update({ where: { id: mappedDeviceId }, data: { lastSeenAt: new Date() } });
+    }
 
     // Calculer statut global + synchroniser alertes
-    const plant = await this.prisma.plantInstance.findFirst({
-      where: { deviceId: device.id, status: 'ACTIVE' },
+    const plant = mappedDeviceId ? await this.prisma.plantInstance.findFirst({
+      where: { deviceId: mappedDeviceId, status: 'ACTIVE' },
       orderBy: { plantedAt: 'desc' },
-    });
+    }) : null;
     const plantCare = plant ? await this.prisma.plantCare.findUnique({ where: { speciesId: plant.speciesId } }) : null;
     const latestReading: { timestamp: Date; soilMoisture?: number; lightLevel?: number } = {
       timestamp: readingTimestamp,
       soilMoisture: dto.soilMoisture,
       lightLevel: dto.lightLevel,
     };
-    const status = this.computeStatus({ lastSeenAt: device.lastSeenAt }, latestReading, plantCare);
+    const latestSeenAtDevice = mappedDeviceId ? await this.prisma.device.findUnique({ where: { id: mappedDeviceId } }) : null;
+    const status = this.computeStatus({ lastSeenAt: latestSeenAtDevice?.lastSeenAt ?? null }, latestReading, plantCare);
     if (status === 'OK') {
-      await this.alerts.resolveAllForDevice(device.id);
+      await this.alerts.resolveAllForDevice(mappedDeviceId!, baseSlotId ?? undefined);
     } else {
-      await this.evaluateAlerts(device.id, plant ? String(plant.id) : null, status, plantCare, dto.soilMoisture, dto.lightLevel);
+      await this.evaluateAlerts(mappedDeviceId!, plant ? String(plant.id) : null, status, plantCare, dto.soilMoisture, dto.lightLevel, baseSlotId ?? undefined);
     }
 
-    await this.syncBatteryAlerts(device.id, plant ? String(plant.id) : null, dto.batteryLevel);
+    await this.syncBatteryAlerts(mappedDeviceId!, plant ? String(plant.id) : null, dto.batteryLevel, baseSlotId ?? undefined);
 
     // Confirmer
     return { status: 'ok' };
+  }
+
+  async handleTelemetrySimple(dto: TelemetryDto): Promise<{ status: string }> {
+    return this.handleTelemetry('', '', '', dto, true);
   }
 
   // Parse timestamp (ISO ou epoch ms)
@@ -178,22 +228,23 @@ export class DeviceTelemetryService {
     plantCare: { minMoisture?: number | null; maxMoisture?: number | null; minLight?: number | null; maxLight?: number | null } | null,
     soilMoisture?: number,
     lightLevel?: number,
+    baseSlotId?: string,
   ): Promise<void> {
     const severity = this.getSeverity(status);
     const moistureMin = plantCare?.minMoisture ?? 30;
     const moistureMax = plantCare?.maxMoisture ?? 70;
-    await this.createRangeAlert({ deviceId, plantId, value: soilMoisture, min: moistureMin, max: moistureMax, lowCode: 'WATER_NEEDED', highCode: 'OTHER', severity });
+    await this.createRangeAlert({ deviceId, plantId, value: soilMoisture, min: moistureMin, max: moistureMax, lowCode: 'WATER_NEEDED', highCode: 'OTHER', severity, baseSlotId });
     const lightMin = plantCare?.minLight ?? 200;
     const lightMax = plantCare?.maxLight ?? 1000;
-    await this.createRangeAlert({ deviceId, plantId, value: lightLevel, min: lightMin, max: lightMax, lowCode: 'LIGHT_TOO_LOW', highCode: 'LIGHT_TOO_HIGH', severity });
+    await this.createRangeAlert({ deviceId, plantId, value: lightLevel, min: lightMin, max: lightMax, lowCode: 'LIGHT_TOO_LOW', highCode: 'LIGHT_TOO_HIGH', severity, baseSlotId });
   }
 
-  private async syncBatteryAlerts(deviceId: string, plantId: string | null, battery?: number): Promise<void> {
+  private async syncBatteryAlerts(deviceId: string, plantId: string | null, battery?: number, baseSlotId?: string): Promise<void> {
     if (typeof battery !== 'number') return;
     if (battery <= 10) {
-      await this.alerts.createOrUpdate(deviceId, plantId, 'BATTERY_LOW', 'CRITICAL');
+      await this.alerts.createOrUpdate(deviceId, plantId, 'BATTERY_LOW', 'CRITICAL', baseSlotId);
     } else if (battery < 20) {
-      await this.alerts.createOrUpdate(deviceId, plantId, 'BATTERY_LOW', 'WARNING');
+      await this.alerts.createOrUpdate(deviceId, plantId, 'BATTERY_LOW', 'WARNING', baseSlotId);
     }
   }
 
@@ -210,13 +261,14 @@ export class DeviceTelemetryService {
     lowCode: 'WATER_NEEDED' | 'LIGHT_TOO_LOW' | 'OTHER';
     highCode: 'LIGHT_TOO_HIGH' | 'OTHER';
     severity: 'CRITICAL' | 'WARNING';
+    baseSlotId?: string;
   }): Promise<void> {
-    const { deviceId, plantId, value, min, max, lowCode, highCode, severity } = opts;
+    const { deviceId, plantId, value, min, max, lowCode, highCode, severity, baseSlotId } = opts;
     if (typeof value !== 'number') return;
     if (value < min) {
-      await this.alerts.createOrUpdate(deviceId, plantId, lowCode, severity);
+      await this.alerts.createOrUpdate(deviceId, plantId, lowCode, severity, baseSlotId);
     } else if (value > max) {
-      await this.alerts.createOrUpdate(deviceId, plantId, highCode, severity);
+      await this.alerts.createOrUpdate(deviceId, plantId, highCode, severity, baseSlotId);
     }
   }
 }

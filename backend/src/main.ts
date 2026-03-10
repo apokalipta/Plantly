@@ -41,18 +41,17 @@ async function bootstrap() {
   // Sécurité: empêche les propriétés inconnues et force la transformation des DTO
   app.useGlobalFilters(new HttpExceptionFilter());
 
-  const config = new DocumentBuilder()
-    .setTitle('Connected Plant Pot API')
-    .setDescription('REST API for the Plantly connected plant pot platform')
-    .setVersion('1.0')
-    .addBearerAuth({ type: 'http', scheme: 'bearer', bearerFormat: 'JWT' })
-    .build();
-  const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('docs', app, document);
-  // TODO: restrict Swagger in production (e.g., behind auth or disabled)
-  // Intention: exposer la doc pour faciliter les intégrations; à restreindre en prod
+  if (process.env.NODE_ENV !== 'production') {
+    const config = new DocumentBuilder()
+      .setTitle('Connected Plant Pot API')
+      .setDescription('REST API for the Plantly connected plant pot platform')
+      .setVersion('1.0')
+      .addBearerAuth({ type: 'http', scheme: 'bearer', bearerFormat: 'JWT' })
+      .build();
+    const document = SwaggerModule.createDocument(app, config);
+    SwaggerModule.setup('docs', app, document);
+  }
 
-  // TODO: Enable HTTPS in production with proper certificates
   const port = process.env.PORT ? Number(process.env.PORT) : 3000;
   await app.listen(port);
 }

@@ -35,3 +35,7 @@ export async function linkPot(payload: {
   return http('/pots/link', { method: 'POST', body: JSON.stringify(payload) });
 }
 
+export async function removePotPlant(potId: string): Promise<{ status?: string } | void> {
+  return http(`/pots/${potId}/plant`, { method: 'DELETE' });
+}
+

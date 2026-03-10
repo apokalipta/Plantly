@@ -18,7 +18,10 @@
         <div v-for="p in displayPlants" :key="p.id" class="col-md-6 col-lg-4 mb-3">
           <div class="card shadow border-0 p-3 h-100 position-relative d-flex flex-column">
             <button class="btn btn-sm btn-outline-warning position-absolute" style="top:8px; right:8px;" :class="{ 'active': (favorites || []).includes(p.id) }" @click="wiki.toggleFavorite(p.id)" aria-label="Basculer favori">★</button>
-            <h2 class="h5">{{ p.commonName }}</h2>
+            <h2 class="h5 mb-1">{{ p.commonName }}</h2>
+            <div v-if="p.type" class="mb-2">
+              <span class="badge" :class="typeClass(p.type)">{{ formatType(p.type) }}</span>
+            </div>
             <p class="text-muted"><i>{{ p.latinName }}</i></p>
             <p class="text-muted">{{ p.descriptionShort }}</p>
             <button class="btn btn-outline-primary btn-standard mt-auto" @click="open(p.id)">Voir la fiche</button>
@@ -65,4 +68,24 @@ const displayPlants = computed(() => {
   });
   return sorted;
 });
+
+function formatType(t) {
+  const map = {
+    DECORATIVE: 'Décorative',
+    AROMATIQUE: 'Aromatique',
+    PARFUMEE: 'Parfumée',
+    COMESTIBLE: 'Comestible'
+  };
+  return map[t] || t;
+}
+
+function typeClass(t) {
+  const map = {
+    DECORATIVE: 'badge-info',
+    AROMATIQUE: 'badge-success',
+    PARFUMEE: 'badge-warning',
+    COMESTIBLE: 'badge-primary'
+  };
+  return map[t] || 'badge-secondary';
+}
 </script>

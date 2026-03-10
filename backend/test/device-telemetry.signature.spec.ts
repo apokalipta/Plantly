@@ -8,7 +8,7 @@ import * as crypto from 'crypto';
 
 const makePrisma = (secretHash: string) => ({
   device: {
-    findUnique: jest.fn().mockResolvedValue({ id: 'd1', deviceUid: 'UID-1', deviceSecretHash: secretHash, ownerId: null, lastSeenAt: new Date() }),
+    findUnique: jest.fn().mockResolvedValue({ id: 'd1', deviceUid: 'UID-1', deviceSecret: secretHash, ownerId: null, lastSeenAt: new Date() }),
     update: jest.fn().mockResolvedValue(undefined),
   },
   sensorReading: { create: jest.fn().mockResolvedValue(undefined) },
@@ -17,7 +17,7 @@ const makePrisma = (secretHash: string) => ({
 } as any);
 
 describe('DeviceTelemetryService HMAC signature', () => {
-  it('accepts valid signature computed with deviceSecretHash', async () => {
+  it('accepts valid signature computed with deviceSecret', async () => {
     const secretHash = 'super-secret-hash';
     const prisma = makePrisma(secretHash);
     const alerts: any = { createOrUpdate: jest.fn(), resolveAllForDevice: jest.fn() };

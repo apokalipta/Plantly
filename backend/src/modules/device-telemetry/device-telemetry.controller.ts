@@ -49,4 +49,11 @@ export class DeviceTelemetryController {
     // Appel au service
     return this.service.handleTelemetry(deviceUid, headerTimestamp, signature, dto);
   }
+
+  @Post('simple')
+  @ApiOperation({ summary: 'Simple ingestion for prototypes (no HMAC)' })
+  @ApiBody({ type: TelemetryDto })
+  async ingestSimple(@Body() dto: TelemetryDto): Promise<{ status: string }> {
+    return this.service.handleTelemetrySimple(dto);
+  }
 }

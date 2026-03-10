@@ -33,9 +33,22 @@
             <div class="col-md-6 mb-3">
               <div class="card shadow border-0 p-3 h-100">
                 <h3 class="h5">Plante</h3>
-                <p class="text-muted mb-1">Surnom: {{ pot.plant?.nickname || '—' }}</p>
-                <p class="text-muted">Espèce: {{ speciesName(pot.plant) }}</p>
-                <router-link :to="{ name: 'new-plant', params: { id: potId } }" class="btn btn-outline-primary btn-standard mt-2">Changer / ajouter une plante</router-link>
+                <template v-if="pot.plant">
+                  <p class="text-muted mb-1">Surnom: {{ pot.plant?.nickname || '—' }}</p>
+                  <p class="text-muted mb-1">
+                    Espèce:
+                    <span v-if="speciesInfo?.commonName">{{ speciesInfo.commonName }}</span>
+                    <span v-else>{{ speciesName(pot.plant) }}</span>
+                    <span v-if="speciesInfo?.latinName" class="text-muted"> (<i>{{ speciesInfo.latinName }}</i>)</span>
+                  </p>
+                  <div v-if="speciesInfo?.care" class="mt-2">
+                    <p class="text-muted mb-1">Arrosage: toutes {{ speciesInfo.care.wateringIntervalDays }} jours</p>
+                  </div>
+                </template>
+                <template v-else>
+                  <p class="text-muted">Aucune plante associée à ce pot.</p>
+                </template>
+                <button class="btn btn-outline-primary btn-standard mt-2" @click="openPlantActions">Changer / Enlever une plante</button>
               </div>
             </div>
           </div>
@@ -76,7 +89,26 @@
             <MeasurementsChart v-else :measurements="measurements" />
           </section>
 
-          
+          <div v-if="showPlantActions" class="modal-overlay">
+            <div class="card card-static shadow border-0 p-4 modal-card">
+              <h3 class="mb-3">Action sur la plante</h3>
+              <p class="text-muted mb-3">Choisissez une action pour la plante associée à ce pot.</p>
+              <div v-if="!confirmingRemove" class="modal-actions mb-2">
+                <button class="btn btn-primary btn-standard" @click="router.push({ name: 'new-plant', params: { id: potId } })">Changer la plante</button>
+                <button class="btn btn-outline-danger btn-standard" :disabled="!pot?.plant || removingPlant" @click="onClickRemove">Enlever la plante</button>
+                <button class="btn btn-secondary btn-standard" @click="showPlantActions = false">Annuler</button>
+              </div>
+              <div v-else>
+                <p class="mb-3">Êtes-vous sûr de vouloir enlever la plante de ce pot ?</p>
+                <div class="modal-actions">
+                  <button class="btn btn-danger btn-standard" :disabled="removingPlant" @click="confirmRemovePlant">Oui, enlever</button>
+                  <button class="btn btn-secondary btn-standard" :disabled="removingPlant" @click="confirmingRemove = false">Annuler</button>
+                </div>
+              </div>
+              <div v-if="removingPlant" class="text-muted">Suppression en cours…</div>
+              <div v-if="removeError" class="text-danger">{{ removeError }}</div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -90,7 +122,7 @@
 import { onMounted, computed, ref, watch } from 'vue';
 import { useRoute, useRouter, onBeforeRouteUpdate } from 'vue-router';
 import { usePotsStore } from '../stores/pots';
-import { getPotMeasurements } from '../api/potsApi';
+import { getPotMeasurements, removePotPlant } from '../api/potsApi';
 import MeasurementsChart from '@/components/MeasurementsChart.vue';
 import { getPotAlerts } from '@/api/alertsApi';
 import { getPlantById } from '@/api/wikiApi';
@@ -134,6 +166,11 @@ const alerts = ref([]);
 const loadingAlerts = ref(false);
 const alertsError = ref(null);
 
+const showPlantActions = ref(false);
+const removingPlant = ref(false);
+const removeError = ref(null);
+const confirmingRemove = ref(false);
+
 async function loadMeasurements(id) {
   loadingMeasurements.value = true;
   errorMeasurements.value = null;
@@ -161,16 +198,19 @@ async function loadAlerts(id) {
 }
 
 const speciesCare = ref(null);
+const speciesInfo = ref(null);
 
 watch(pot, async (p) => {
   const sid = p?.plant?.speciesId;
   if (sid != null) {
     try {
       const plant = await getPlantById(sid);
+      speciesInfo.value = plant || null;
       speciesCare.value = plant?.care || null;
     } catch {}
   } else {
     speciesCare.value = null;
+    speciesInfo.value = null;
   }
 }, { immediate: true });
 
@@ -252,4 +292,33 @@ const temperatureRangeParts = computed(() => {
   if (typeof v !== 'number' || typeof min !== 'number' || typeof max !== 'number') return null;
   return { left: `${min}°C`, mid: `${v}°C`, right: `${max}°C` };
 });
+
+function openPlantActions() {
+  showPlantActions.value = true;
+}
+
+async function confirmRemovePlant() {
+  if (!potId.value) return;
+  removeError.value = null;
+  removingPlant.value = true;
+  try {
+    await removePotPlant(potId.value);
+    await potsStore.fetchPotById(potId.value);
+    showPlantActions.value = false;
+  } catch (e) {
+    console.error(e);
+    removeError.value = 'Échec de la suppression de la plante';
+  } finally {
+    removingPlant.value = false;
+  }
+}
 </script>
+<style scoped>
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.6); display: flex; align-items: center; justify-content: center; z-index: 1050; }
+.modal-card { width: 520px; max-width: 92vw; }
+.modal-actions { display: flex; gap: .5rem; flex-wrap: wrap; }
+.modal-actions .btn { flex: 1 1 160px; }
+</style>
+function onClickRemove() {
+  confirmingRemove.value = true;
+}

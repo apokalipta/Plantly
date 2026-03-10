@@ -3,16 +3,18 @@
     <div class="container">
       <div class="row justify-content-center">
         <div class="col-lg-6">
-          <div class="card shadow border-0 p-4">
+          <div class="card card-static shadow border-0 p-4">
             <h1 class="mb-3">Associer une plante</h1>
             <p class="text-muted">Choisissez une espèce pour ce pot.</p>
             <form @submit.prevent="onSubmit" class="mt-3">
               <div class="form-group">
                 <label for="species">Espèce</label>
-                <select id="species" v-model="selectedSpeciesId" class="form-control">
-                  <option :value="null">Sélectionner…</option>
-                  <option v-for="plant in wiki.plants" :key="plant.id" :value="plant.id">{{ plant.commonName }}</option>
-                </select>
+                <div class="position-relative">
+                  <input id="species" v-model="speciesQuery" type="text" placeholder="Sélectionner..." class="form-control" @focus="showDropdown = true" @input="onQuery" @keydown.enter.prevent="selectFirst" @blur="onBlur" />
+                  <ul v-if="showDropdown && filteredPlants.length" class="list-group position-absolute w-100" style="z-index:1050; max-height: 220px; overflow-y: auto;">
+                    <li v-for="plant in filteredPlants" :key="plant.id" class="list-group-item list-group-item-action" @mousedown.prevent="choosePlant(plant)">{{ plant.commonName }}</li>
+                  </ul>
+                </div>
               </div>
               <div class="form-group">
                 <label for="nickname">Surnom (optionnel)</label>
@@ -33,14 +35,22 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted, computed, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import { useWikiStore } from '../stores/wiki';
 
 const route = useRoute();
 const potId = computed(() => String(route.params.id || ''));
 const wiki = useWikiStore();
-const selectedSpeciesId = ref(null);
+const speciesQuery = ref('');
+const showDropdown = ref(false);
+const chosenSpeciesId = ref(null);
+const filteredPlants = computed(() => {
+  const q = (speciesQuery.value || '').trim().toLowerCase();
+  const arr = Array.isArray(wiki.plants) ? wiki.plants : [];
+  if (!q) return arr;
+  return arr.filter(p => String(p.commonName || '').toLowerCase().includes(q));
+});
 const nickname = ref('');
 const loading = ref(false);
 const errorMessage = ref(null);
@@ -48,10 +58,40 @@ const successMessage = ref(null);
 
 onMounted(() => { wiki.fetchPlants(); });
 
+watch(speciesQuery, (v) => {
+  const q = (v || '').trim();
+  wiki.fetchPlants(q);
+});
+
+function onQuery() {
+  const q = (speciesQuery.value || '').trim();
+  wiki.fetchPlants(q);
+  showDropdown.value = true;
+}
+
+function choosePlant(p) {
+  speciesQuery.value = p?.commonName || '';
+  chosenSpeciesId.value = p?.id || null;
+  showDropdown.value = false;
+}
+
+function selectFirst() {
+  const p = filteredPlants.value?.[0];
+  if (p) choosePlant(p);
+}
+
+function onBlur() {
+  setTimeout(() => { showDropdown.value = false; }, 100);
+}
+
 async function onSubmit() {
   errorMessage.value = null;
   successMessage.value = null;
-  if (!selectedSpeciesId.value) {
+  const q = (speciesQuery.value || '').trim().toLowerCase();
+  const exact = (wiki.plants || []).find(p => String(p.commonName || '').toLowerCase() === q);
+  const starts = exact ? exact : (wiki.plants || []).find(p => String(p.commonName || '').toLowerCase().startsWith(q));
+  const chosenId = chosenSpeciesId.value || starts?.id;
+  if (!chosenId) {
     errorMessage.value = 'Veuillez choisir une espèce';
     return;
   }

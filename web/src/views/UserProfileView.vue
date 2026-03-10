@@ -181,7 +181,8 @@ async function confirmAvatarChange() {
 
 async function logout() {
   try { await auth.logout(); } catch {}
-  router.push({ name: 'login' });
+  try { router.replace({ name: 'login' }); } catch {}
+  try { window.location.assign('/login'); } catch {}
 }
 
 async function changePassword() {

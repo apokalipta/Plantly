@@ -4,5 +4,6 @@ export class MeasurementDto {
   soilMoisture?: number;
   lightLevel?: number;
   temperature?: number;
+  airHumidity?: number;
 }
 

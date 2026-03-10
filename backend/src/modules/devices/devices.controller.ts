@@ -57,8 +57,8 @@ export class DevicesProvisionController {
   @Post('provision')
   @ApiOperation({ summary: 'Provision a device (admin-only)' })
   @ApiBody({ type: ProvisionDeviceDto, examples: { example: { value: { deviceUid: 'PLANT-ABC-001', name: 'Kitchen Pot' } } } })
-  @ApiOkResponse({ schema: { example: { deviceUid: 'PLANT-ABC-001', pairingCode: '123456', name: 'Kitchen Pot' } } })
-  async provision(@Body() dto: ProvisionDeviceDto): Promise<{ deviceUid: string; pairingCode: string; name: string }> {
+  @ApiOkResponse({ schema: { example: { deviceUid: 'PLANT-ABC-001', pairingCode: '123456', name: 'Kitchen Pot', deviceSecret: 'abcdef123456' } } })
+  async provision(@Body() dto: ProvisionDeviceDto): Promise<{ deviceUid: string; pairingCode: string; name: string; deviceSecret: string }> {
     return this.devicesService.provisionDevice(dto);
   }
 }

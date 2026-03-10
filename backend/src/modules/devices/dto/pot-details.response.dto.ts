@@ -17,6 +17,7 @@ export class PotDetailsResponseDto {
     soilMoisture?: number;
     lightLevel?: number;
     temperature?: number;
+    airHumidity?: number;
   };
 }
 

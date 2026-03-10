@@ -3,7 +3,7 @@ import { Module } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { JwtModule } from '@nestjs/jwt';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtStrategy } from './jwt.strategy';
 import { DatabaseModule } from '../../database/database.module';
 
@@ -11,11 +11,15 @@ import { DatabaseModule } from '../../database/database.module';
   imports: [
     ConfigModule,
     DatabaseModule,
-    JwtModule.register({
-      // Configuration de signature pour le jeton d'accès
-      secret: process.env.JWT_ACCESS_TOKEN_SECRET || 'TODO_SECRET',
-      signOptions: { expiresIn: '15m' },
-      // TODO: configure refresh tokens and more JWT options
+    JwtModule.registerAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: async (configService: ConfigService) => ({
+        secret: configService.get<string>('jwt.accessSecret') || configService.get<string>('JWT_ACCESS_TOKEN_SECRET'),
+        signOptions: {
+          expiresIn: configService.get<string>('jwt.accessExpiration') || '15m',
+        },
+      }),
     }),
   ],
   controllers: [AuthController],

@@ -48,14 +48,43 @@
 
 <script setup>
 import { computed, ref } from 'vue';
+import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
+import { usePotsStore } from '@/stores/pots';
+import { useWikiStore } from '@/stores/wiki';
+import { useAchievementsStore } from '@/stores/achievements';
 
 const auth = useAuthStore();
 const isAuth = computed(() => auth.isAuthenticated);
 const toggled = ref(false);
+const router = useRouter();
+const potsStore = usePotsStore();
+const wikiStore = useWikiStore();
+const achievementsStore = useAchievementsStore();
 
-function logout() {
-  auth.logout();
+async function logout() {
+  try { await auth.logout(); } catch {}
+  try {
+    potsStore.pots = [];
+    potsStore.selectedPot = null;
+    potsStore.loading = false;
+    potsStore.error = null;
+  } catch {}
+  try {
+    wikiStore.plants = [];
+    wikiStore.selectedPlant = null;
+    wikiStore.loading = false;
+    wikiStore.error = null;
+    wikiStore.favorites = [];
+  } catch {}
+  try {
+    achievementsStore.achievements = [];
+    achievementsStore.loading = false;
+    achievementsStore.error = null;
+  } catch {}
+  try { localStorage.removeItem('username'); } catch {}
+  try { router.replace({ name: 'login' }); } catch {}
+  try { window.location.assign('/login'); } catch {}
 }
 </script>
 

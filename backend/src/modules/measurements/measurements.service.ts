@@ -37,6 +37,7 @@ export class MeasurementsService {
       soilMoisture: r.soilMoisture ?? undefined,
       lightLevel: r.lightLevel ?? undefined,
       temperature: r.temperature ?? undefined,
+      airHumidity: r.airHumidity ?? undefined,
     }));
   }
 
@@ -58,6 +59,7 @@ export class MeasurementsService {
       soilMoisture: latest.soilMoisture ?? undefined,
       lightLevel: latest.lightLevel ?? undefined,
       temperature: latest.temperature ?? undefined,
+      airHumidity: latest.airHumidity ?? undefined,
     };
   }
 }

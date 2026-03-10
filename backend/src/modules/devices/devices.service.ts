@@ -11,6 +11,8 @@ import { AchievementEventType } from '../../achievements/AchievementEventType';
 // Objectif: Calculer un statut global et exposer des DTO pour le frontend
 // Logique: Lecture des dernières mesures, soins de l’espèce et seuils tolérants
 
+import * as crypto from 'node:crypto';
+
 @Injectable()
 export class DevicesService {
   constructor(private readonly prisma: PrismaService, private readonly achievements: AchievementsEngineService) {}
@@ -107,6 +109,7 @@ export class DevicesService {
             soilMoisture: latest.soilMoisture ?? undefined,
             lightLevel: latest.lightLevel ?? undefined,
             temperature: latest.temperature ?? undefined,
+            airHumidity: latest.airHumidity ?? undefined,
           }
         : undefined,
     };
@@ -114,25 +117,27 @@ export class DevicesService {
     return details;
   }
 
-  async provisionDevice(dto: ProvisionDeviceDto): Promise<{ deviceUid: string; pairingCode: string; name: string }> {
+  async provisionDevice(dto: ProvisionDeviceDto): Promise<{ deviceUid: string; pairingCode: string; name: string; deviceSecret: string }> {
     // Crée un nouvel appareil si l'UID est libre
     const existing = await this.prisma.device.findUnique({ where: { deviceUid: dto.deviceUid } });
     if (existing) {
       throw new BadRequestException('Device UID already exists');
     }
-    // Génère un code d'appairage et persiste
-    const code = this.generatePairingCode();
+    // Génère un code d'appairage et un secret
+    const pairingCode = this.generatePairingCode();
+    const deviceSecret = crypto.randomBytes(32).toString('hex');
+
     const created = await this.prisma.device.create({
       data: {
         deviceUid: dto.deviceUid,
-        deviceSecretHash: 'PROVISIONED_NO_SECRET',
+        deviceSecret: deviceSecret,
         ownerId: null,
         name: dto.name ?? 'New Device',
-        pairingCode: code,
+        pairingCode: pairingCode,
         pairedAt: null,
       },
     });
-    return { deviceUid: created.deviceUid, pairingCode: code, name: created.name };
+    return { deviceUid: created.deviceUid, pairingCode: pairingCode, name: created.name, deviceSecret };
   }
 
   async linkPotToUser(userId: string, dto: LinkPotDto): Promise<PotDetailsResponseDto> {

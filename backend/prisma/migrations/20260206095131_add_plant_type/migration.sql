@@ -1,0 +1,5 @@
+-- CreateEnum
+CREATE TYPE "PlantType" AS ENUM ('DECORATIVE', 'AROMATIQUE', 'PARFUMEE', 'COMESTIBLE');
+
+-- AlterTable
+ALTER TABLE "PlantSpecies" ADD COLUMN     "type" "PlantType" NOT NULL DEFAULT 'DECORATIVE';
