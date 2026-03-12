@@ -27,7 +27,7 @@ async function bootstrap() {
     allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: false,
   });
-  app.useStaticAssets(join(process.cwd(), 'public'), { prefix: '/static/' });
+  app.useStaticAssets(join(__dirname, '..', 'public'), { prefix: '/static' });
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,

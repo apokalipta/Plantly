@@ -25,7 +25,7 @@
 </template>
 
 <script setup>
-import { onMounted, ref } from 'vue';
+import { onMounted, onUnmounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useBasesStore } from '../stores/bases';
 import { storeToRefs } from 'pinia';
@@ -35,8 +35,37 @@ const basesStore = useBasesStore();
 const { bases, loading, error } = storeToRefs(basesStore);
 const pairCode = ref('');
 
-onMounted(() => {
-  basesStore.fetchMyBases();
+const AUTO_REFRESH_MS = 5000;
+const autoRefreshTimerId = ref(null);
+
+function onVisibilityChange() {
+  if (!document.hidden) basesStore.fetchMyBases({ silent: true });
+}
+
+function startAutoRefresh() {
+  stopAutoRefresh();
+  autoRefreshTimerId.value = window.setInterval(() => {
+    if (document.hidden) return;
+    basesStore.fetchMyBases({ silent: true });
+  }, AUTO_REFRESH_MS);
+  document.addEventListener('visibilitychange', onVisibilityChange);
+}
+
+function stopAutoRefresh() {
+  if (autoRefreshTimerId.value != null) {
+    clearInterval(autoRefreshTimerId.value);
+    autoRefreshTimerId.value = null;
+  }
+  document.removeEventListener('visibilitychange', onVisibilityChange);
+}
+
+onMounted(async () => {
+  await basesStore.fetchMyBases();
+  startAutoRefresh();
+});
+
+onUnmounted(() => {
+  stopAutoRefresh();
 });
 
 function openBase(id) { router.push({ name: 'base-detail', params: { id } }); }

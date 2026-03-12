@@ -28,6 +28,7 @@ enum PlantType {
 
 enum AlertType {
   WATER_NEEDED
+  WATER_TOO_MUCH
   LIGHT_TOO_LOW
   LIGHT_TOO_HIGH
   BATTERY_LOW
@@ -46,6 +47,26 @@ enum PotFormat {
   MEDIUM
   LARGE
 }
+
+enum ProductCategory {
+  SEED
+  ACCESSORY
+  POT
+  SOIL
+}
+
+model Product {
+  id          String          @id @default(uuid())
+  name        String          @unique
+  description String
+  price       Float
+  imageUrl    String?
+  category    ProductCategory
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  @@index([category])
+}
 // Users of the platform
 model User {
   id              String           @id @default(uuid())
@@ -63,6 +84,9 @@ model User {
   bases           BaseDevice[]
   pushTokens      PushToken[]
   achievements    UserAchievement[]
+  discussions     Discussion[]
+  comments        Comment[]
+  notifications   Notification[]
 }
 
 // Per-user settings and preferences
@@ -193,6 +217,49 @@ model UserAchievement {
   achievement    Achievement  @relation(fields: [achievementId], references: [id])
 
   @@unique([userId, achievementId])
+}
+
+model Discussion {
+  id        String   @id @default(uuid())
+  title     String
+  content   String
+  authorId  String
+  imageUrl  String?
+  createdAt DateTime @default(now())
+
+  author    User     @relation(fields: [authorId], references: [id])
+  comments  Comment[]
+
+  @@index([authorId, createdAt])
+  @@index([createdAt])
+}
+
+model Comment {
+  id           String     @id @default(uuid())
+  content      String
+  authorId     String
+  discussionId String
+  createdAt    DateTime   @default(now())
+
+  author       User       @relation(fields: [authorId], references: [id])
+  discussion   Discussion @relation(fields: [discussionId], references: [id])
+
+  @@index([discussionId, createdAt])
+  @@index([authorId, createdAt])
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String
+  message   String
+  type      String
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@index([userId, createdAt])
+  @@index([userId, read, createdAt])
 }
 
 model PlantSpecies {

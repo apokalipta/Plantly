@@ -56,4 +56,43 @@ export class DeviceTelemetryController {
   async ingestSimple(@Body() dto: TelemetryDto): Promise<{ status: string }> {
     return this.service.handleTelemetrySimple(dto);
   }
+
+  @Post('simple/base-raw')
+  @ApiOperation({ summary: 'Simple ingestion for base prototypes (single payload for 4 slots)' })
+  async ingestSimpleBaseRaw(@Body() dto: any): Promise<{ status: string }> {
+    const baseUid = typeof dto?.baseUid === 'string' && dto.baseUid.length > 0 ? dto.baseUid : 'BASE_TEST_01';
+    const timestamp = typeof dto?.timestamp === 'string' && dto.timestamp.length > 0 ? dto.timestamp : new Date().toISOString();
+
+    const toNumber = (v: any): number | undefined => {
+      if (v === undefined || v === null) return undefined;
+      const n = Number(String(v).replace(',', '.').trim());
+      return Number.isFinite(n) ? n : undefined;
+    };
+
+    const toPercent = (v: any): number | undefined => {
+      if (v === undefined || v === null) return undefined;
+      const s = String(v).trim();
+      const n = Number(s.replace('%', '').replace(',', '.'));
+      if (!Number.isFinite(n)) return undefined;
+      if (n < 0) return 0;
+      if (n > 100) return 100;
+      return n;
+    };
+
+    const common = {
+      baseUid,
+      timestamp,
+      temperature: toNumber(dto?.temp),
+      airHumidity: toNumber(dto?.airHum),
+      lightLevel: toNumber(dto?.lux),
+    };
+
+    for (let slotIndex = 1; slotIndex <= 4; slotIndex++) {
+      const soilMoisture = toPercent(dto?.[`pot${slotIndex}`]);
+      const payload: any = { ...common, slotIndex, soilMoisture };
+      await this.service.handleTelemetrySimple(payload);
+    }
+
+    return { status: 'ok' };
+  }
 }

@@ -1,5 +1,5 @@
 // Contrôleurs des pots et appareils: endpoints utilisateur et provisionnement.
-import { Controller, Get, Post, Body, Param, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, UseGuards, Delete, HttpCode, Patch } from '@nestjs/common';
 import { DevicesService } from './devices.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
@@ -7,7 +7,8 @@ import { ListPotsResponseDto } from './dto/list-pots.response.dto';
 import { LinkPotDto } from './dto/link-pot.dto';
 import { PotDetailsResponseDto } from './dto/pot-details.response.dto';
 import { ProvisionDeviceDto } from './dto/provision-device.dto';
-import { ApiTags, ApiBearerAuth, ApiOkResponse, ApiOperation, ApiBadRequestResponse, ApiNotFoundResponse, ApiBody } from '@nestjs/swagger';
+import { ApiTags, ApiBearerAuth, ApiOkResponse, ApiOperation, ApiBadRequestResponse, ApiNotFoundResponse, ApiBody, ApiNoContentResponse } from '@nestjs/swagger';
+import { PatchPlantDto } from '../bases/dto/patch-plant.dto';
 
 @ApiTags('pots')
 @ApiBearerAuth()
@@ -44,6 +45,41 @@ export class DevicesController {
   @ApiNotFoundResponse({ description: 'Device UID unknown' })
   async link(@CurrentUser() user: any, @Body() dto: LinkPotDto): Promise<PotDetailsResponseDto> {
     return this.devicesService.linkPotToUser(user?.userId, dto);
+  }
+
+  // Supprimer un pot (et toutes ses données associées)
+  @UseGuards(JwtAuthGuard)
+  @Delete(':id')
+  @HttpCode(204)
+  @ApiOperation({ summary: 'Delete a pot (and associated data) owned by the current user' })
+  @ApiNoContentResponse({ description: 'Pot deleted' })
+  @ApiNotFoundResponse({ description: 'Pot not found or not owned by user' })
+  async delete(@CurrentUser() user: any, @Param('id') potId: string): Promise<void> {
+    await this.devicesService.deleteUserPotById(user?.userId, potId);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Patch(':id/plant')
+  @ApiOperation({ summary: 'Assign or change the plant associated to a pot' })
+  @ApiBody({ type: PatchPlantDto, examples: { example: { value: { speciesId: 12, nickname: 'Basilou' } } } })
+  @ApiOkResponse({ schema: { example: { status: 'ok' } } })
+  async patchPlant(
+    @CurrentUser() user: any,
+    @Param('id') potId: string,
+    @Body() dto: PatchPlantDto,
+  ): Promise<{ status: string }> {
+    await this.devicesService.assignPlantToPot(String(user?.userId), potId, dto);
+    return { status: 'ok' };
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Delete(':id/plant')
+  @HttpCode(200)
+  @ApiOperation({ summary: 'Unassign the current plant from a pot (mark as removed)' })
+  @ApiOkResponse({ schema: { example: { status: 'ok' } } })
+  async deletePlant(@CurrentUser() user: any, @Param('id') potId: string): Promise<{ status: string }> {
+    await this.devicesService.removePlantFromPot(String(user?.userId), potId);
+    return { status: 'ok' };
   }
 
 }

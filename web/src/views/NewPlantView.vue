@@ -36,10 +36,12 @@
 
 <script setup>
 import { ref, onMounted, computed, watch } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { useWikiStore } from '../stores/wiki';
+import { patchPotPlant } from '../api/potsApi';
 
 const route = useRoute();
+const router = useRouter();
 const potId = computed(() => String(route.params.id || ''));
 const wiki = useWikiStore();
 const speciesQuery = ref('');
@@ -97,10 +99,12 @@ async function onSubmit() {
   }
   loading.value = true;
   try {
-    successMessage.value = 'Fonctionnalité à venir';
+    await patchPotPlant(potId.value, { speciesId: Number(chosenId), nickname: nickname.value || undefined });
+    successMessage.value = 'Plante associée';
+    await router.push({ name: 'pot-detail', params: { id: potId.value } });
   } catch (e) {
     console.error(e);
-    errorMessage.value = 'Erreur lors de l’association de la plante';
+    errorMessage.value = e?.message || 'Erreur lors de l’association de la plante';
   } finally {
     loading.value = false;
   }

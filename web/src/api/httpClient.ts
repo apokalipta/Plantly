@@ -30,7 +30,13 @@ export async function http<T>(path: string, init?: RequestInit): Promise<T> {
     const err = await res.json().catch(() => ({}));
     throw err || new Error(`HTTP ${res.status}`);
   }
-  return res.json();
+  const text = await res.text();
+  if (!text) return undefined as T;
+  try {
+    return JSON.parse(text) as T;
+  } catch {
+    return text as T;
+  }
 }
 
 async function tryRefreshTokens(): Promise<boolean> {

@@ -24,6 +24,15 @@ export async function getPotMeasurements(potId: string, limit: number = 50): Pro
   return http(`/pots/${potId}/measurements?${params.toString()}`, { method: 'GET' });
 }
 
+export async function getPotLatestMeasurement(potId: string): Promise<any | null> {
+  // TODO: type properly MeasurementDto | null
+  return http(`/pots/${potId}/measurements/latest`, { method: 'GET' });
+}
+
+export async function patchPotPlant(potId: string, payload: { speciesId: number; nickname?: string }): Promise<{ status: string }> {
+  return http(`/pots/${potId}/plant`, { method: 'PATCH', body: JSON.stringify(payload) });
+}
+
 export async function linkPot(payload: {
   deviceUid: string;
   pairingCode: string;
@@ -37,5 +46,9 @@ export async function linkPot(payload: {
 
 export async function removePotPlant(potId: string): Promise<{ status?: string } | void> {
   return http(`/pots/${potId}/plant`, { method: 'DELETE' });
+}
+
+export async function deletePot(potId: string): Promise<void> {
+  await http<void>(`/pots/${potId}`, { method: 'DELETE' });
 }
 

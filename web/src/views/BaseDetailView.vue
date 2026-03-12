@@ -48,15 +48,39 @@
                   <div v-if="(currentSlot.alerts || []).length === 0" class="text-muted">Aucune alerte en cours.</div>
                   <ul v-else class="list-group mb-3">
                     <li v-for="a in currentSlot.alerts" :key="a.id" class="list-group-item d-flex justify-content-between align-items-center">
-                      <span>{{ a.type }}</span>
-                      <span class="badge" :class="a.severity === 'CRITICAL' ? 'badge-danger' : 'badge-warning'">{{ a.severity }}</span>
+                      <span>{{ formatAlertType(a.type) }}</span>
+                      <span class="badge" :class="severityBadgeClass(a.severity)">{{ formatSeverity(a.severity) }}</span>
                     </li>
                   </ul>
 
                   <h3 class="h6 mt-3">Dernières mesures</h3>
                   <div v-if="loadingMeasurements">Chargement des mesures…</div>
                   <div v-else-if="errorMeasurements" class="text-danger">{{ errorMeasurements }}</div>
-                  <MeasurementsChart v-else :measurements="measurements" />
+                  <template v-else>
+                    <div v-if="currentSlot?.latestMeasurement" class="row g-2 mb-2">
+                      <div class="col-6">
+                        <p class="text-muted mb-1">Horodatage</p>
+                        <p class="mb-0">{{ formatDate(currentSlot.latestMeasurement.timestamp) }}</p>
+                      </div>
+                      <div class="col-6">
+                        <p class="text-muted mb-1">Humidité du sol</p>
+                        <p class="mb-0">{{ formatMetric(currentSlot.latestMeasurement.soilMoisture, '%') }}</p>
+                      </div>
+                      <div class="col-6">
+                        <p class="text-muted mb-1">Lumière</p>
+                        <p class="mb-0">{{ formatMetric(currentSlot.latestMeasurement.lightLevel) }}</p>
+                      </div>
+                      <div class="col-6">
+                        <p class="text-muted mb-1">Température</p>
+                        <p class="mb-0">{{ formatMetric(currentSlot.latestMeasurement.temperature, '°C') }}</p>
+                      </div>
+                      <div class="col-6">
+                        <p class="text-muted mb-1">Humidité de l’air</p>
+                        <p class="mb-0">{{ formatMetric(currentSlot.latestMeasurement.airHumidity, '%') }}</p>
+                      </div>
+                    </div>
+                    <MeasurementsChart :measurements="measurements" />
+                  </template>
                 </div>
               </div>
             </div>
@@ -94,7 +118,7 @@
 </template>
 
 <script setup>
-import { onMounted, computed, ref, watch } from 'vue';
+import { onMounted, onUnmounted, computed, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useBasesStore } from '../stores/bases';
 import { storeToRefs } from 'pinia';
@@ -110,23 +134,96 @@ const showReconfig = ref(false);
 const plantSpeciesId = ref(null);
 const plantNickname = ref('');
 
-onMounted(async () => {
-  if (baseId.value) {
-    await basesStore.fetchBaseById(baseId.value);
-    await loadSlotMeasurements();
+const AUTO_REFRESH_MS = 5000;
+const refreshInFlight = ref(false);
+const autoRefreshTimerId = ref(null);
+
+async function refreshNow(silent = false) {
+  if (!baseId.value) return;
+  if (refreshInFlight.value) return;
+  refreshInFlight.value = true;
+  try {
+    await Promise.all([
+      basesStore.fetchBaseById(baseId.value, { silent }),
+      loadSlotMeasurements(silent),
+    ]);
+  } finally {
+    refreshInFlight.value = false;
   }
+}
+
+function onVisibilityChange() {
+  if (!document.hidden) refreshNow(true);
+}
+
+function startAutoRefresh() {
+  stopAutoRefresh();
+  autoRefreshTimerId.value = window.setInterval(() => {
+    if (document.hidden) return;
+    refreshNow(true);
+  }, AUTO_REFRESH_MS);
+  document.addEventListener('visibilitychange', onVisibilityChange);
+}
+
+function stopAutoRefresh() {
+  if (autoRefreshTimerId.value != null) {
+    clearInterval(autoRefreshTimerId.value);
+    autoRefreshTimerId.value = null;
+  }
+  document.removeEventListener('visibilitychange', onVisibilityChange);
+}
+
+onMounted(async () => {
+  if (!baseId.value) return;
+  await refreshNow(false);
+  startAutoRefresh();
+});
+
+onUnmounted(() => {
+  stopAutoRefresh();
 });
 
 watch(selectedSlotIndex, async () => {
   await loadSlotMeasurements();
 });
 
-async function loadSlotMeasurements() {
+async function loadSlotMeasurements(silent = false) {
   if (!baseId.value) return;
-  await basesStore.fetchSlotMeasurements(baseId.value, selectedSlotIndex.value, 50);
+  await basesStore.fetchSlotMeasurements(baseId.value, selectedSlotIndex.value, 50, { silent });
 }
 
 function goBack() { router.push({ name: 'bases' }); }
+function formatDate(d) { try { return d ? new Date(d).toLocaleString() : '—'; } catch { return '—'; } }
+function formatMetric(v, unit = '') { return typeof v === 'number' ? `${v}${unit}` : '—'; }
+function formatAlertType(type) {
+  const t = String(type || '').trim();
+  if (!t) return 'Alerte';
+  const map = {
+    WATER_NEEDED: 'Arrosage nécessaire',
+    WATER_TOO_MUCH: 'Excès d’eau',
+    LIGHT_TOO_LOW: 'Lumière trop faible',
+    LIGHT_TOO_HIGH: 'Lumière trop forte',
+    BATTERY_LOW: 'Batterie faible',
+    OFFLINE: 'Base hors ligne',
+    OTHER: 'Alerte (générique)',
+  };
+  if (map[t]) return map[t];
+  return t.replace(/_/g, ' ').toLowerCase().replace(/(^|\s)\S/g, (c) => c.toUpperCase());
+}
+function formatSeverity(severity) {
+  const s = String(severity || '').trim();
+  if (s === 'CRITICAL') return 'Critique';
+  if (s === 'WARNING') return 'Attention';
+  if (s === 'INFO') return 'Info';
+  return s || '—';
+}
+function severityBadgeClass(severity) {
+  const s = String(severity || '').trim();
+  if (s === 'CRITICAL') return 'badge-danger';
+  if (s === 'WARNING') return 'badge-warning';
+  if (s === 'INFO') return 'badge-info';
+  return 'badge-secondary';
+}
 const currentSlot = computed(() => {
   try { return (base.value?.slots || []).find((s) => s.slotIndex === selectedSlotIndex.value) || null; } catch { return null; }
 });

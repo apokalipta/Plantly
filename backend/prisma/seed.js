@@ -408,6 +408,80 @@ async function main() {
     });
   }
 
+  function seedPriceForSpeciesType(type) {
+    if (type === 'AROMATIQUE') return 2.99;
+    if (type === 'COMESTIBLE') return 3.49;
+    if (type === 'PARFUMEE') return 3.99;
+    return 4.49;
+  }
+
+  const mockProducts = [
+    {
+      name: 'Bâton goutte-à-goutte',
+      description: 'Système d’arrosage goutte-à-goutte simple pour un pot, idéal en cas d’absence.',
+      price: 7.99,
+      imageUrl: '/static/boutique/baton-goutte-a-goutte.png',
+      category: 'ACCESSORY',
+    },
+    {
+      name: 'Floraly Classique',
+      description: 'L’essentiel, tout simplement. Surveillance intelligente, Wi‑Fi, design minimaliste. Fonctionne branché en continu.',
+      price: 149.0,
+      imageUrl: '/static/boutique/floraly-classique.png',
+      category: 'POT',
+    },
+    {
+      name: 'Floraly Premium',
+      description: 'L’expérience absolue. Écran intégré, sur batterie, capteurs haute précision, design haut de gamme.',
+      price: 229.0,
+      imageUrl: '/static/boutique/floraly-premium.png',
+      category: 'POT',
+    },
+    {
+      name: 'Terreau universel',
+      description: 'Terreau universel pour plantes d’intérieur et semis, enrichi pour une bonne reprise.',
+      price: 9.5,
+      imageUrl: '/static/boutique/terreau.png',
+      category: 'SOIL',
+    },
+  ];
+
+  const wikiSeedProducts = wikiSpecies.map((s) => {
+    const name = `Graines de ${s.commonName}`;
+    const price = seedPriceForSpeciesType(s.type);
+    const img = s.imageUrl || null;
+    const descBase = s.descriptionShort ? String(s.descriptionShort).trim() : '';
+    const description = descBase ? `Semences de ${s.commonName}. ${descBase}` : `Semences de ${s.commonName}.`;
+    return { name, description, price, imageUrl: img, category: 'SEED' };
+  });
+
+  const allowedShopProductNames = [
+    ...mockProducts.map((p) => p.name),
+    ...wikiSeedProducts.map((p) => p.name),
+  ];
+
+  await prisma.product.deleteMany({
+    where: {
+      name: { notIn: allowedShopProductNames },
+    },
+  });
+
+  for (const p of mockProducts) {
+    await prisma.product.upsert({
+      where: { name: p.name },
+      update: { description: p.description, price: p.price, imageUrl: p.imageUrl, category: p.category },
+      create: p,
+    });
+  }
+
+  for (const p of wikiSeedProducts) {
+    await prisma.product.upsert({
+      where: { name: p.name },
+      update: { description: p.description, price: p.price, imageUrl: p.imageUrl, category: p.category },
+      create: p,
+    });
+  }
+
   async function seedUser() {
     const email = 'demo.user@example.com';
     const password = 'Demo1234!';

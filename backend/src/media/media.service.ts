@@ -106,4 +106,16 @@ export class MediaService {
     await fs.promises.writeFile(full, file.buffer, { mode: 0o644 });
     return this.buildUrl(rel);
   }
+
+  async saveForumImage(file: Express.Multer.File): Promise<string> {
+    this.ensureLocalProvider();
+    const mime = await this.validateAndSniff(file, 3 * 1024 * 1024);
+    const ext = this.extFromMime(mime);
+    const uuid = this.security.sanitizeFilename();
+    const rel = path.posix.join('forum', `${uuid}.${ext}`);
+    const full = this.resolveLocalPath(rel);
+    await this.security.ensureDirectoryExists(full);
+    await fs.promises.writeFile(full, file.buffer, { mode: 0o644 });
+    return this.buildUrl(rel);
+  }
 }

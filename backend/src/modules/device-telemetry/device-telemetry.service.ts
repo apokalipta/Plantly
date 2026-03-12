@@ -233,7 +233,7 @@ export class DeviceTelemetryService {
     const severity = this.getSeverity(status);
     const moistureMin = plantCare?.minMoisture ?? 30;
     const moistureMax = plantCare?.maxMoisture ?? 70;
-    await this.createRangeAlert({ deviceId, plantId, value: soilMoisture, min: moistureMin, max: moistureMax, lowCode: 'WATER_NEEDED', highCode: 'OTHER', severity, baseSlotId });
+    await this.createRangeAlert({ deviceId, plantId, value: soilMoisture, min: moistureMin, max: moistureMax, lowCode: 'WATER_NEEDED', highCode: 'WATER_TOO_MUCH', severity, baseSlotId });
     const lightMin = plantCare?.minLight ?? 200;
     const lightMax = plantCare?.maxLight ?? 1000;
     await this.createRangeAlert({ deviceId, plantId, value: lightLevel, min: lightMin, max: lightMax, lowCode: 'LIGHT_TOO_LOW', highCode: 'LIGHT_TOO_HIGH', severity, baseSlotId });
@@ -245,6 +245,8 @@ export class DeviceTelemetryService {
       await this.alerts.createOrUpdate(deviceId, plantId, 'BATTERY_LOW', 'CRITICAL', baseSlotId);
     } else if (battery < 20) {
       await this.alerts.createOrUpdate(deviceId, plantId, 'BATTERY_LOW', 'WARNING', baseSlotId);
+    } else {
+      await this.alerts.resolveTypes(deviceId, ['BATTERY_LOW'], baseSlotId);
     }
   }
 
@@ -258,8 +260,8 @@ export class DeviceTelemetryService {
     value?: number;
     min: number;
     max: number;
-    lowCode: 'WATER_NEEDED' | 'LIGHT_TOO_LOW' | 'OTHER';
-    highCode: 'LIGHT_TOO_HIGH' | 'OTHER';
+    lowCode: 'WATER_NEEDED' | 'LIGHT_TOO_LOW';
+    highCode?: 'WATER_TOO_MUCH' | 'LIGHT_TOO_HIGH';
     severity: 'CRITICAL' | 'WARNING';
     baseSlotId?: string;
   }): Promise<void> {
@@ -267,8 +269,17 @@ export class DeviceTelemetryService {
     if (typeof value !== 'number') return;
     if (value < min) {
       await this.alerts.createOrUpdate(deviceId, plantId, lowCode, severity, baseSlotId);
+      if (highCode) {
+        await this.alerts.resolveTypes(deviceId, [highCode], baseSlotId);
+      }
     } else if (value > max) {
-      await this.alerts.createOrUpdate(deviceId, plantId, highCode, severity, baseSlotId);
+      await this.alerts.resolveTypes(deviceId, [lowCode], baseSlotId);
+      if (highCode) {
+        await this.alerts.createOrUpdate(deviceId, plantId, highCode, severity, baseSlotId);
+      }
+    } else {
+      const types = highCode ? [lowCode, highCode] : [lowCode];
+      await this.alerts.resolveTypes(deviceId, types, baseSlotId);
     }
   }
 }

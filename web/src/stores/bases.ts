@@ -27,22 +27,32 @@ export const useBasesStore = defineStore('bases', {
         this.loading = false;
       }
     },
-    async fetchMyBases() {
-      this.loading = true;
-      this.error = null;
+    async fetchMyBases(opts?: { silent?: boolean }) {
+      const silent = !!opts?.silent;
+      if (!silent) {
+        this.loading = true;
+        this.error = null;
+      }
       try {
         const data = await basesApi.getMyBases();
         this.bases = Array.isArray(data) ? data : [];
       } catch (e: any) {
         console.error(e);
-        this.error = e?.message || 'Erreur lors du chargement des bases';
+        if (!silent) {
+          this.error = e?.message || 'Erreur lors du chargement des bases';
+        }
       } finally {
-        this.loading = false;
+        if (!silent) {
+          this.loading = false;
+        }
       }
     },
-    async fetchBaseById(id: string) {
-      this.loading = true;
-      this.error = null;
+    async fetchBaseById(id: string, opts?: { silent?: boolean }) {
+      const silent = !!opts?.silent;
+      if (!silent) {
+        this.loading = true;
+        this.error = null;
+      }
       try {
         const data = await basesApi.getBaseDetails(id);
         this.selectedBase = data || null;
@@ -50,9 +60,13 @@ export const useBasesStore = defineStore('bases', {
         if (!exists) this.selectedSlotIndex = 1;
       } catch (e: any) {
         console.error(e);
-        this.error = e?.message || 'Erreur lors du chargement de la base';
+        if (!silent) {
+          this.error = e?.message || 'Erreur lors du chargement de la base';
+        }
       } finally {
-        this.loading = false;
+        if (!silent) {
+          this.loading = false;
+        }
       }
     },
     async reconfigureSlots(id: string, slots: Array<{ slotIndex: number; potFormat: 'SMALL' | 'MEDIUM' | 'LARGE'; isActive: boolean }>) {
@@ -81,17 +95,24 @@ export const useBasesStore = defineStore('bases', {
         this.loading = false;
       }
     },
-    async fetchSlotMeasurements(id: string, slotIndex: number, limit: number = 50) {
-      this.loadingMeasurements = true;
-      this.errorMeasurements = null;
+    async fetchSlotMeasurements(id: string, slotIndex: number, limit: number = 50, opts?: { silent?: boolean }) {
+      const silent = !!opts?.silent;
+      if (!silent) {
+        this.loadingMeasurements = true;
+        this.errorMeasurements = null;
+      }
       try {
         const data = await basesApi.getSlotMeasurements(id, slotIndex, limit);
         this.measurements = Array.isArray(data) ? data : [];
       } catch (e: any) {
         console.error(e);
-        this.errorMeasurements = e?.message || 'Erreur lors du chargement des mesures du slot';
+        if (!silent) {
+          this.errorMeasurements = e?.message || 'Erreur lors du chargement des mesures du slot';
+        }
       } finally {
-        this.loadingMeasurements = false;
+        if (!silent) {
+          this.loadingMeasurements = false;
+        }
       }
     },
     selectSlot(index: number) {

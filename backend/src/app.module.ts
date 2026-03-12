@@ -18,6 +18,8 @@ import { AchievementsModule } from './modules/achievements/achievements.module';
 import { DatabaseModule } from './database/database.module';
 import { DeviceTelemetryModule } from './modules/device-telemetry/device-telemetry.module';
 import { BasesModule } from './modules/bases/bases.module';
+import { ShopModule } from './modules/shop/shop.module';
+import { ForumModule } from './modules/forum/forum.module';
 
 @Module({
   imports: [
@@ -64,6 +66,8 @@ import { BasesModule } from './modules/bases/bases.module';
     AchievementsModule,
     DeviceTelemetryModule,
     BasesModule,
+    ShopModule,
+    ForumModule,
     // MediaModule added in separate module file
   ],
 })

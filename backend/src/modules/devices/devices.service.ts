@@ -182,6 +182,75 @@ export class DevicesService {
     return this.findUserPotById(userId, updated.id);
   }
 
+  async deleteUserPotById(userId: string, potId: string): Promise<void> {
+    await this.prisma.$transaction(async (tx) => {
+      const device = await tx.device.findFirst({ where: { id: potId, ownerId: userId } });
+      if (!device) {
+        throw new NotFoundException('Pot not found');
+      }
+
+      const plants = await tx.plantInstance.findMany({ where: { deviceId: device.id }, select: { id: true } });
+      const plantIds = plants.map((p) => p.id);
+
+      if (plantIds.length > 0) {
+        await tx.baseSlot.updateMany({
+          where: { currentPlantInstanceId: { in: plantIds } },
+          data: { currentPlantInstanceId: null },
+        });
+        await tx.slotAssignmentHistory.deleteMany({ where: { plantInstanceId: { in: plantIds } } });
+        await tx.alert.deleteMany({ where: { plantInstanceId: { in: plantIds } } });
+      }
+
+      await tx.alert.deleteMany({ where: { deviceId: device.id } });
+      await tx.sensorReading.deleteMany({ where: { deviceId: device.id } });
+      await tx.plantInstance.deleteMany({ where: { deviceId: device.id } });
+      await tx.device.delete({ where: { id: device.id } });
+    });
+  }
+
+  async assignPlantToPot(userId: string, potId: string, dto: { speciesId: number; nickname?: string }): Promise<void> {
+    const device = await this.prisma.device.findFirst({ where: { id: potId, ownerId: userId } });
+    if (!device) throw new NotFoundException('Pot not found');
+
+    const existingActive = await this.prisma.plantInstance.findFirst({
+      where: { deviceId: device.id, status: 'ACTIVE' },
+      orderBy: { plantedAt: 'desc' },
+    });
+
+    if (existingActive) {
+      await this.prisma.plantInstance.updateMany({
+        where: { deviceId: device.id, status: 'ACTIVE' },
+        data: { status: 'REMOVED' },
+      });
+    }
+
+    const plant = await this.prisma.plantInstance.create({
+      data: {
+        deviceId: device.id,
+        speciesId: dto.speciesId,
+        nickname: dto.nickname ?? null,
+        plantedAt: new Date(),
+        status: 'ACTIVE',
+      },
+    });
+
+    await this.achievements.onEvent(
+      userId,
+      existingActive ? AchievementEventType.PLANT_CHANGED : AchievementEventType.PLANT_ADDED,
+      { plantId: plant.id },
+    );
+  }
+
+  async removePlantFromPot(userId: string, potId: string): Promise<void> {
+    const device = await this.prisma.device.findFirst({ where: { id: potId, ownerId: userId } });
+    if (!device) throw new NotFoundException('Pot not found');
+
+    await this.prisma.plantInstance.updateMany({
+      where: { deviceId: device.id, status: 'ACTIVE' },
+      data: { status: 'REMOVED' },
+    });
+  }
+
   private computeGlobalStatus(
     device: { lastSeenAt: Date | null },
     latestReading?: { timestamp: Date; soilMoisture?: number; lightLevel?: number } | null,

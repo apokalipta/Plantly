@@ -1,576 +1,328 @@
-# Documentation Technique – Système de Pot de Plante Connecté
+# Floraly – Documentation Technique (Architecture)
 
-## 📋 Table des matières
+## 🧭 Table des matières
 
-1. [Vue d'ensemble](#vue-densemble)
-2. [Architecture système](#architecture-système)
-3. [Stack technique](#stack-technique)
-4. [Modèle de données](#modèle-de-données)
-5. [API REST](#api-rest)
-6. [Frontend Web](#frontend-web)
-7. [Système IoT](#système-iot)
-8. [Système d'alertes](#système-dalertes)
-9. [Installation et démarrage](#installation-et-démarrage)
-10. [Workflow de développement](#workflow-de-développement)
-
----
-
-## Vue d'ensemble
-
-### Objectif du projet
-
-Développer un écosystème complet de suivi et d'accompagnement pour la croissance des plantes, combinant hardware IoT, backend sécurisé, application mobile et interface web.
-
-### Fonctionnalités principales
-
-- **Monitoring en temps réel** : humidité, température, luminosité
-- **Wiki des plantes** : fiches détaillées avec paramètres d'entretien
-- **Système d'alertes** : notifications automatiques en cas d'anomalie
-- **Gamification** : succès et achievements pour encourager l'engagement
-- **Multi-plateforme** : web (Vue.js) et mobile (Android)
+1. [🎯 Vue d’ensemble](#-vue-densemble)
+2. [🧱 Architecture (runtime)](#-architecture-runtime)
+3. [📦 Structure du monorepo](#-structure-du-monorepo)
+4. [🧰 Stack technique](#-stack-technique)
+5. [🗃️ Modèle de données](#️-modèle-de-données)
+6. [🖼️ Gestion des médias & assets](#️-gestion-des-médias--assets)
+7. [🔌 API (principaux endpoints)](#-api-principaux-endpoints)
+8. [🌡️ IoT & alertes](#️-iot--alertes)
+9. [💬 Forum & notifications](#-forum--notifications)
+10. [🚀 Installation & démarrage (Zero to Hero)](#-installation--démarrage-zero-to-hero)
+11. [🧪 Workflow dev (DB, tests)](#-workflow-dev-db-tests)
 
 ---
 
-## Architecture système
+## 🎯 Vue d’ensemble
 
-L'architecture repose sur **5 composants principaux** interconnectés :
+Floraly est une plateforme de **pots connectés** avec :
+- 🌿 **Wiki plantes** (espèces + paramètres d’entretien)
+- 🧠 **Monitoring** (mesures, statut global)
+- 🚨 **Alertes** (eau/lumière/température, etc.)
+- 🏆 **Achievements** (gamification)
+- 🛒 **Boutique** (graines + catalogue Floraly)
+- 💬 **Forum** (discussions, commentaires, notifications)
 
-```
-┌─────────────────┐
-│   Hardware IoT  │  ──────┐
-│  (Pot connecté) │         │
-└─────────────────┘         │
-                            ▼ HTTPS/JSON
-┌─────────────────┐    ┌──────────────────┐
-│  App Mobile     │◄───┤  Backend NestJS  │
-│   (Android)     │    │   (API REST)     │
-└─────────────────┘    └──────────────────┘
-                            ▲      │
-┌─────────────────┐         │      │
-│  Frontend Web   │─────────┘      ▼
-│   (Vue.js 3)    │         ┌──────────────┐
-└─────────────────┘         │  PostgreSQL  │
-                            └──────────────┘
-```
-
-### Composants détaillés
-
-| Composant | Technologie | Rôle |
-|-----------|-------------|------|
-| **Hardware IoT** | Microcontrôleur + capteurs | Collecte des données environnementales |
-| **Backend** | NestJS + TypeScript | API REST, logique métier, authentification |
-| **Base de données** | PostgreSQL (Docker) | Stockage persistant |
-| **Frontend Web** | Vue.js 3 + Pinia | Interface utilisateur web |
-| **App Mobile** | Android | Client mobile REST |
+Le projet est un monorepo avec un backend NestJS et un frontend Vue 3.
 
 ---
 
-## Stack technique
+## 🧱 Architecture (runtime)
 
-### Backend : NestJS + TypeScript
-
-**Choix de NestJS :**
-- Architecture modulaire et scalable
-- Intégration native avec Swagger (documentation auto)
-- Système robuste de middleware/guards/interceptors
-- Support TypeScript de premier ordre
-- Structure MVC claire
-
-**Avantages TypeScript :**
-- Typage strict pour contrats API/DB/Frontend
-- Réduction des erreurs runtime
-- Refactoring sécurisé
-
-### ORM : Prisma
-
-**Pourquoi Prisma ?**
-- Modélisation déclarative du schéma
-- Migrations versionnées et fiables
-- Client TypeScript auto-généré
-- Prisma Studio pour exploration visuelle de la DB
-- Requêtes typées et sécurisées
-
-### Base de données : PostgreSQL
-
-**Avantages Postgres :**
-- Maturité et fiabilité éprouvées
-- Types avancés (JSONB, arrays)
-- Parfaite intégration avec Prisma
-- Modèles relationnels complexes
-- Déploiement simplifié via Docker
-
-### Frontend : Vue.js 3 + Pinia + Vue Router
-
-**Vue.js 3 :**
-- Courbe d'apprentissage douce
-- Composants Single File Component lisibles
-- Performance optimale
-- Réactivité fine et structure modulaire
-
-**Pinia (State Management) :**
-- Remplaçant moderne de Vuex
-- Typage TypeScript excellent
-- Stores légers et isolés
-- Idéal pour synchroniser auth/pots/wiki
-
-**Vue Material Kit :**
-- Composants visuels professionnels prêts à l'emploi
-- Thème cohérent sans CSS custom massif
-- Gain de temps considérable sur le design
-
-### Communication IoT : HTTPS + REST
-
-**Pourquoi pas MQTT ?**
-L'architecture est volontairement simplifiée pour éviter un broker supplémentaire.
-
-**Avantages HTTPS/REST :**
-- Compatible nativement avec microcontrôleurs modernes
-- Pas de serveur additionnel à maintenir
-- Sécurisation simple via API key/deviceUid
-- Protocole universel
+```
+┌──────────────────────────┐
+│ Frontend Web (Vue 3/Vite)│
+│ http://localhost:5173    │
+└──────────────┬───────────┘
+               │ HTTPS/JSON
+               ▼
+┌──────────────────────────┐
+│ Backend API (NestJS)      │
+│ http://localhost:3000     │
+│ - /api (REST)             │
+│ - /docs (Swagger)         │
+│ - /static (assets)        │
+│ - /media (uploads)        │
+└──────────────┬───────────┘
+               │ Prisma
+               ▼
+┌──────────────────────────┐
+│ PostgreSQL (Docker)       │
+└──────────────────────────┘
+```
 
 ---
 
-## Modèle de données
+## 📦 Structure du monorepo
 
-### Schéma relationnel
-
-```
-User ──┬─── Device (Pot)
-       │
-       └─── UserAchievement
-       
-Device ───── PlantInstance ───── PlantSpecies ───── PlantCare
-   │
-   └─── SensorReading
-   │
-   └─── Alert
-
-PlantSpecies ───── PlantCare
-```
-
-### Tables principales
-
-#### **User**
-Gestion des utilisateurs et authentification.
-
-| Champ | Type | Description |
-|-------|------|-------------|
-| `id` | UUID | Identifiant unique |
-| `email` | String | Email (unique) |
-| `password` | Hash | Mot de passe chiffré |
-| `preferences` | JSON | Paramètres utilisateur |
-
-#### **Device**
-Représente chaque pot physique connecté.
-
-| Champ | Type | Description |
-|-------|------|-------------|
-| `id` | UUID | Identifiant unique |
-| `deviceUid` | String | UID matériel immutable |
-| `pairingCode` | String | Code de pairing |
-| `status` | Enum | ok / action / mauvais / offline |
-| `userId` | UUID | Propriétaire |
-
-#### **PlantSpecies**
-Fiches encyclopédiques des espèces.
-
-| Champ | Type | Description |
-|-------|------|-------------|
-| `id` | UUID | Identifiant unique |
-| `commonName` | String | Nom vernaculaire |
-| `latinName` | String | Nom scientifique |
-| `description` | Text | Description détaillée |
-| `imageUrl` | String | Photo de l'espèce |
-
-#### **PlantCare**
-Paramètres d'entretien optimaux par espèce.
-
-| Champ | Type | Description |
-|-------|------|-------------|
-| `moistureMin` | Float | Humidité minimale (%) |
-| `moistureMax` | Float | Humidité maximale (%) |
-| `lightMin` | Int | Luminosité minimale (lux) |
-| `lightMax` | Int | Luminosité maximale (lux) |
-| `tempMin` | Float | Température min (°C) |
-| `tempMax` | Float | Température max (°C) |
-| `tips` | Text | Conseils d'entretien |
-
-#### **PlantInstance**
-La plante concrète dans un pot.
-
-| Champ | Type | Description |
-|-------|------|-------------|
-| `id` | UUID | Identifiant unique |
-| `nickname` | String | Nom personnalisé |
-| `plantedAt` | DateTime | Date de plantation |
-| `deviceId` | UUID | Pot associé |
-| `speciesId` | UUID | Espèce |
-| `userId` | UUID | Propriétaire |
-
-#### **SensorReading**
-Historique des mesures capteurs.
-
-| Champ | Type | Description |
-|-------|------|-------------|
-| `id` | UUID | Identifiant unique |
-| `deviceId` | UUID | Pot source |
-| `timestamp` | DateTime | Date de mesure |
-| `soilMoisture` | Float | Humidité sol (%) |
-| `lightLevel` | Int | Luminosité (lux) |
-| `temperature` | Float | Température (°C) |
-
-#### **Alert**
-Alertes déclenchées automatiquement.
-
-| Champ | Type | Description |
-|-------|------|-------------|
-| `id` | UUID | Identifiant unique |
-| `deviceId` | UUID | Pot concerné |
-| `type` | Enum | moisture_low, temp_high, etc. |
-| `message` | String | Message explicatif |
-| `createdAt` | DateTime | Date création |
-| `resolvedAt` | DateTime? | Date résolution |
-
-#### **Achievement / UserAchievement**
-Système de succès gamifiés.
-
-**Categories :**
-- Découverte
-- Entretien
-- Personnalisation
-- Régularité
+- `backend/` : API NestJS + Prisma + static/media
+- `web/` : SPA Vue 3 + Vite + Pinia
+- `mobile/` : client mobile (présent dans le repo, hors scope de ce document)
+- `infra/` : éléments d’infra (présent dans le repo, hors scope de ce document)
 
 ---
 
-## API REST
+## 🧰 Stack technique
 
-### Organisation modulaire
+### 🧩 Backend
+- 🟦 **NestJS** (TypeScript) : architecture modulaire, guards JWT, validation DTO
+- 🧬 **Prisma** : schéma et migrations (client `@prisma/client`)
+- 🐘 **PostgreSQL** (par défaut) via Docker Compose
+  - Prisma est compatible SQLite, mais Floraly est configuré en PostgreSQL par défaut (voir `backend/prisma/schema.prisma` + `backend/.env`).
+- 📚 **Swagger** : exposé en dev sur `http://localhost:3000/docs`
 
-L'API est structurée en **modules NestJS** :
-
-#### **Auth Module**
-- `POST /auth/register` - Inscription
-- `POST /auth/login` - Connexion (retourne JWT)
-- `POST /auth/refresh` - Renouvellement token
-- `POST /auth/logout` - Déconnexion
-
-**Authentification :** JWT avec Access Token + Refresh Token
-
-#### **Pots Module**
-- `GET /pots` - Liste des pots de l'utilisateur
-- `GET /pots/:id` - Détail d'un pot
-- `POST /pots/pair` - Associer un pot (deviceUid + pairingCode)
-- `GET /pots/:id/readings` - Historique mesures
-- `GET /pots/:id/alerts` - Alertes actives
-
-#### **Wiki Module**
-- `GET /wiki/species` - Liste des espèces
-- `GET /wiki/species/search?q=...` - Recherche
-- `GET /wiki/species/:id` - Fiche détaillée + care
-
-#### **Achievements Module**
-- `GET /achievements` - Liste complète
-- `GET /achievements/user` - Succès débloqués
-
-#### **User Module**
-- `GET /user/profile` - Profil utilisateur
-- `PATCH /user/profile` - Mise à jour profil
-- `POST /user/avatar` - Upload photo
-- `GET /user/achievements` - Succès liés au compte
-
-### Sécurité
-
-- **Validation automatique** via DTO (Data Transfer Objects)
-- **Documentation Swagger** auto-générée
-- **Guards JWT** sur routes protégées
-- **Rate limiting** sur endpoints sensibles
+### 🖥️ Frontend
+- 🟩 **Vue 3** + ⚡ **Vite**
+- 🧠 **Pinia** (state management)
+- 🧭 **Vue Router**
+- 🎨 UI : **Vue Material Kit / Argon (Bootstrap)** + styles custom
+  - Des tokens visuels “stone/emerald” sont utilisés côté UI ; Tailwind CSS n’est pas câblé par défaut dans ce repo (pas de `tailwind.config.*`), mais l’UI suit des conventions proches des utilitaires.
 
 ---
 
-## Frontend Web
+## 🗃️ Modèle de données
 
-### Architecture Vue.js
+Le schéma Prisma est dans `backend/prisma/schema.prisma`.
 
-#### **Stores Pinia**
+### 🧍 Comptes & sécurité
+- `User` : email, username, `avatarUrl`, etc.
+- `UserSettings` : préférences utilisateur
+- `PushToken` : tokens push (si utilisés)
 
-```javascript
-// authStore : gestion authentification
-- state : user, token, isAuthenticated
-- actions : login(), logout(), register(), refresh()
+### 🪴 Pots connectés & mesures
+- `Device` : pot/appareil (pairing, ownerId, etc.)
+- `PlantInstance` : plante “réelle” associée à un device
+- `SensorReading` : séries temporelles (humidité, lumière, température, humidité air…)
+- `Alert` : alertes générées (types/severity, résolues ou non)
 
-// potsStore : gestion des pots
-- state : pots[], selectedPot
-- actions : fetchPots(), fetchPotDetails(), pairPot()
+### 📚 Wiki plantes
+- `PlantSpecies` : espèce (id numérique, nom, type, image)
+- `PlantCare` : paramètres d’entretien + tips (careTips/plantingTips/maintenanceTips)
 
-// wikiStore : encyclopédie plantes
-- state : species[], searchResults
-- actions : fetchSpecies(), searchSpecies()
+### 🛒 Boutique
+- `Product` : catalogue boutique
+  - catégories : `SEED`, `ACCESSORY`, `POT`, `SOIL`
+  - utilisé par `GET /api/products` avec filtre `?category=...`
 
-// achievementsStore : succès
-- state : achievements[], userAchievements[]
-- actions : fetchAchievements()
-```
+### 💬 Forum
+- `Discussion` : titre, contenu, auteur, `imageUrl`, `createdAt`
+- `Comment` : contenu, auteur, discussion, `createdAt`
+- `Notification` : `userId`, message, type (ex: `REPLY`), `read`, `createdAt`
 
-#### **Gestion du token JWT**
-
-1. Token stocké dans `localStorage`
-2. `initFromStorage()` appelé au démarrage de l'app
-3. `httpClient` injecte automatiquement `Authorization: Bearer <token>`
-4. Refresh automatique si token expiré
-
-#### **Routes principales**
-
-| Route | Composant | Protection | Description |
-|-------|-----------|------------|-------------|
-| `/` | Home | Public | Page d'accueil |
-| `/login` | Login | Public | Connexion |
-| `/register` | Register | Public | Inscription |
-| `/pots` | PotsList | 🔒 Protégée | Liste des pots |
-| `/pots/:id` | PotDetail | 🔒 Protégée | Détail + graphiques |
-| `/wiki` | WikiList | Public | Encyclopédie |
-| `/wiki/:id` | WikiDetail | Public | Fiche espèce |
-| `/profile` | Profile | 🔒 Protégée | Profil utilisateur |
-| `/achievements` | Achievements | 🔒 Protégée | Succès |
-
-**Guard de navigation :** Redirection automatique vers `/login` si token absent.
-
-#### **UI - Vue Material Kit**
-
-Composants utilisés :
-- **Navbar** Material Kit
-- **Footer** Material Kit
-- **Cards** pour pots, wiki, alertes, succès
-- **Hero Section** sur la home
-- **Inputs stylés** Material Design (login/register)
-- **Graphiques** SVG custom intégrés dans Material cards
-
-**Avantages :**
-- Cohérence visuelle immédiate
-- Pas de CSS artisanal nécessaire
-- Look professionnel out-of-the-box
+### 🏆 Achievements
+- `Achievement` : définition (code, titre, description, category, icon)
+- `UserAchievement` : état “débloqué” par utilisateur (unlockedAt)
 
 ---
 
-## Système IoT
+## 🖼️ Gestion des médias & assets
 
-### Pairing d'un pot
+Floraly sert deux familles d’images :
 
-```
-1. L'utilisateur reçoit un pot avec :
-   - deviceUid (gravé sur le pot)
-   - pairingCode (fourni)
+### 🧷 Assets “build-time” via `/static`
+- Route : `http://localhost:3000/static/...`
+- Source disque : `backend/public/` (en dev) via `app.useStaticAssets(..., { prefix: '/static' })`
+- Exemples :
+  - `backend/public/boutique/*.png` → `/static/boutique/...`
+  - `backend/public/plants/*.png` → `/static/plants/...`
+  - `backend/public/HomePage/*.png` → `/static/HomePage/...`
 
-2. Dans l'app/web :
-   POST /pots/pair
-   {
-     "deviceUid": "xxxx",
-     "pairingCode": "yyyy"
-   }
-
-3. Backend associe le Device au User
-
-4. Le pot peut maintenant envoyer des données
-```
-
-### Envoi de données capteurs
-
-**Format JSON :**
-
-```json
-{
-  "deviceUid": "xxxx",
-  "timestamp": "2025-12-03T14:30:00Z",
-  "soilMoisture": 45.2,
-  "lightLevel": 650,
-  "temperature": 22.3
-}
-```
-
-**Endpoint :** `POST /iot/readings`
-
-**Traitement backend :**
-1. Authentification du device via `deviceUid`
-2. Enregistrement dans `SensorReading`
-3. Comparaison avec bornes `PlantCare`
-4. Déclenchement d'alertes si nécessaire
-5. Mise à jour du statut du `Device`
+### 📤 Uploads “runtime” via `/media`
+- Route : `http://localhost:3000/media/...`
+- Source disque : `backend/media/` (par défaut) via `ServeStaticModule` (AppModule)
+- Config :
+  - `MEDIA_BASE_PATH` (dossier) — défaut : `backend/media`
+  - `MEDIA_BASE_URL` (URL publique) — défaut : `http://localhost:3000/media`
+- Conventions de stockage (via `MediaService`) :
+  - 👤 Avatars : `media/users/<userId>/avatar/<uuid>.<ext>`
+  - 💬 Images forum : `media/forum/<uuid>.<ext>`
 
 ---
 
-## Système d'alertes
+## 🔌 API (principaux endpoints)
 
-### Déclenchement automatique
+Le backend expose ses routes sous le préfixe `/api` (ex: `http://localhost:3000/api/...`).
 
-```
-Nouvelle mesure reçue
-    ↓
-Comparaison avec PlantCare (min/max)
-    ↓
-Anomalie détectée ?
-    ↓ OUI
-Création Alert {
-  type: "moisture_low" | "temp_high" | "light_low" | ...
-  message: "Votre plante a besoin d'eau"
-}
-```
+### 🔐 Auth
+- `POST /api/auth/register`
+- `POST /api/auth/login`
+- `POST /api/auth/refresh`
+- `POST /api/auth/logout` (JWT)
 
-### Types d'alertes
+### 👤 Utilisateurs & avatar
+- `GET /api/users/me` (JWT)
+- `PUT /api/users/me` (JWT)
+- `POST /api/users/me/avatar` (JWT, upload fichier `file`)
 
-| Type | Condition | Message |
-|------|-----------|---------|
-| `moisture_low` | `soilMoisture < moistureMin` | "Humidité trop basse" |
-| `moisture_high` | `soilMoisture > moistureMax` | "Risque d'excès d'eau" |
-| `temp_low` | `temperature < tempMin` | "Température trop froide" |
-| `temp_high` | `temperature > tempMax` | "Température trop élevée" |
-| `light_low` | `lightLevel < lightMin` | "Manque de lumière" |
-| `light_high` | `lightLevel > lightMax` | "Trop de soleil direct" |
+### 🪴 Pots, mesures, alertes
+- `GET /api/pots` (JWT)
+- `GET /api/pots/:id` (JWT)
+- `POST /api/pots/link` (JWT) : pairing “côté utilisateur”
+- `GET /api/pots/:potId/measurements` (JWT)
+- `GET /api/pots/:potId/measurements/latest` (JWT)
+- `GET /api/pots/:potId/alerts` (JWT)
 
-### Résolution
+### 📚 Wiki
+- `GET /api/wiki/plants`
+- `GET /api/wiki/plants/:id`
 
-Une alerte est résolue :
-- **Automatiquement** : nouvelle mesure conforme
-- **Manuellement** : action utilisateur (selon logique métier)
+### 🛒 Boutique
+- `GET /api/products`
+- `GET /api/products?category=SEED|ACCESSORY|POT|SOIL`
+- `GET /api/products/:id`
 
-### Affichage frontend
+### 💬 Forum
+- `GET /api/forum`
+- `POST /api/forum` (JWT, upload optionnel `file`)
+- `POST /api/forum/:id/comment` (JWT)
+- `GET /api/notifications` (JWT)
 
-- Badge rouge/orange Material Design
-- Liste des alertes dans détail pot
-- Compteur sur l'icône du pot (liste)
+### 🏆 Achievements
+- `GET /api/achievements` (public)
+- `GET /api/me/achievements` (JWT)
+
+### 🌡️ Ingestion IoT (télémétrie)
+- `POST /api/device/telemetry` (HMAC)
+- `POST /api/device/telemetry/simple` (prototype, sans HMAC)
+- `POST /api/device/telemetry/simple/base-raw` (prototype base multi-slots)
 
 ---
 
-## Installation et démarrage
+## 🌡️ IoT & alertes
 
-### Prérequis
+### 📡 Comment les capteurs communiquent avec NestJS
 
-- Node.js 18+
-- Docker & Docker Compose
-- npm ou yarn
+Deux modes coexistent :
 
-### Installation
+1) 🔒 Mode “device” sécurisé (HMAC)  
+Le device envoie un payload JSON et signe la requête via headers :
+- `X-DEVICE-UID`
+- `X-DEVICE-TIMESTAMP`
+- `X-DEVICE-SIGNATURE`
 
-#### 1. Base de données
+2) 🧪 Mode “prototype” (sans HMAC)  
+Endpoints `.../simple` utilisés pour simuler l’ingestion pendant le dev.
+
+### 🚨 Génération d’alertes (vue d’ensemble)
+
+- Les mesures sont enregistrées en base (`SensorReading`)
+- Le backend calcule un **statut global** et expose des endpoints de lecture
+- Les alertes sont consultables via `GET /api/pots/:potId/alerts`
+
+---
+
+## 💬 Forum & notifications
+
+### 🧵 Discussions / commentaires
+
+- Une discussion possède un auteur (`User`) et peut avoir une image (`imageUrl`)
+- Les commentaires sont chargés avec leur auteur
+
+### 🔔 Notifications forum
+
+Lorsqu’un utilisateur ajoute un commentaire sur une discussion :
+- le commentaire est créé
+- si l’auteur du commentaire est différent de l’auteur de la discussion, une `Notification` est créée pour l’auteur de la discussion (type `REPLY`)
+- le dashboard web consomme `GET /api/notifications`
+
+---
+
+## 🚀 Installation & démarrage (Zero to Hero)
+
+Objectif : démarrer Floraly après un `git clone`, sans surprise.
+
+### ✅ Prérequis
+- Node.js **20 LTS** (recommandé)
+- Docker + Docker Compose
+- npm
+
+### 1) 🧰 Configuration de l’environnement
+
+Backend : créer un fichier `backend/.env` (exemple minimal) :
 
 ```bash
-# Démarrer PostgreSQL en Docker
+DATABASE_URL=postgresql://<user>:<password>@localhost:5432/<db>?schema=public
+JWT_ACCESS_TOKEN_SECRET=dev_secret
+JWT_REFRESH_TOKEN_SECRET=dev_secret_refresh
+PORT=3000
+```
+
+Astuce : pour éviter les erreurs de configuration, alignez `DATABASE_URL` avec les identifiants définis dans `docker-compose.yml` (service `db`) et avec le fichier `backend/.env` du repo.
+
+### 2) 📦 Installation des dépendances (depuis la racine)
+
+```bash
+npm install --prefix backend
+npm install --prefix web
+```
+
+### 3) 🐘 Lancer PostgreSQL (Docker)
+
+```bash
 docker compose up -d db
 ```
 
-#### 2. Backend
+### 4) 🗃️ Initialisation de la base (Prisma)
+
+Exécuter dans `backend/` :
 
 ```bash
 cd backend
-
-# Installer les dépendances
-npm install
-
-# Générer le client Prisma
-npm run prisma:generate
-
-# Appliquer les migrations
-npm run prisma:migrate
-
-# Seed la base (données de test)
-npm run prisma:seed
-
-# Démarrer le serveur
-npm run dev
+npx prisma generate
+npx prisma migrate dev
+npx prisma db seed
 ```
 
-**URL API :** `http://localhost:3000`  
-**Swagger :** `http://localhost:3000/api`
+Le seed injecte notamment :
+- 🌿 espèces du wiki + care tips
+- 🛒 produits (graines issues du wiki + catalogue Floraly)
+- 🏆 achievements
 
-#### 3. Frontend Web
+### 5) ▶️ Lancer backend + frontend en parallèle
+
+Dans un terminal :
 
 ```bash
-cd web
-
-# Installer les dépendances
-npm install
-
-# Démarrer le serveur de dev
-npm run dev
+npm run dev --prefix backend
 ```
 
-**URL Web :** `http://localhost:5173`
+Dans un second terminal :
+
+```bash
+npm run dev --prefix web
+```
+
+### 6) 🔎 Vérifications rapides
+
+Backend :
+- API : `http://localhost:3000/api`
+- Swagger : `http://localhost:3000/docs`
+- Assets : `http://localhost:3000/static/boutique/floraly-classique.png`
+
+Frontend :
+- Web : `http://localhost:5173`
 
 ---
 
-## Workflow de développement
+## 🧪 Workflow dev (DB, tests)
 
-### Modification du schéma DB
+### 🧬 Modifier la base de données (Prisma)
 
 ```bash
 cd backend
-
-# 1. Modifier prisma/schema.prisma
-
-# 2. Créer une migration
-npm run prisma:migrate -- --name nom_migration
-
-# 3. Régénérer le client
-npm run prisma:generate
+# 1) Modifier prisma/schema.prisma
+# 2) Créer une migration
+npx prisma migrate dev --name ma_migration
+# 3) Régénérer le client
+npx prisma generate
 ```
 
-### Ajouter un endpoint API
+### ✅ Tests backend
 
 ```bash
-# 1. Créer un module NestJS
-nest g module nom-module
-nest g controller nom-module
-nest g service nom-module
-
-# 2. Implémenter la logique dans le service
-
-# 3. Créer les DTOs de validation
-
-# 4. Documenter avec Swagger decorators
+cd backend
+npm test
 ```
-
-### Ajouter une page Vue
-
-```bash
-# 1. Créer le composant dans src/views/
-
-# 2. Ajouter la route dans src/router/
-
-# 3. Mettre à jour le store Pinia si nécessaire
-
-# 4. Utiliser Vue Material Kit pour l'UI
-```
-
----
-
-## Points d'extension
-
-### Fonctionnalités futures
-
-- **Notifications push** (mobile + web)
-- **Machine Learning** : prédictions de croissance
-- **Communauté** : partage de photos, conseils
-- **Marketplace** : achat de plantes/accessoires
-- **Intégration météo** : alertes climatiques
-- **Automatisation** : arrosage automatique
-
-### Scalabilité
-
-- **Microservices** : séparer IoT, API, Notifications
-- **Cache Redis** : réduire charge DB
-- **CDN** : assets statiques
-- **Load balancing** : distribuer le trafic
-
----
-
-## Conclusion
-
-Cette architecture offre :
-
-✅ **Séparation claire des responsabilités** entre IoT, backend, frontend  
-✅ **Stack moderne et pérenne** (NestJS, Prisma, Vue 3, PostgreSQL)  
-✅ **Modèle de données structuré** autour des besoins réels  
-✅ **Interface professionnelle** grâce à Vue Material Kit  
-✅ **Communication IoT simplifiée** via HTTPS/REST  
-✅ **Base solide et extensible** pour évolutions futures
-
-Le système est prêt pour un déploiement en production et peut facilement évoluer vers des fonctionnalités avancées.
