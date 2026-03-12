@@ -1,4 +1,4 @@
-import { Injectable, BadRequestException, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { Injectable, BadRequestException, NotFoundException, UnauthorizedException, Logger } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
 import { AchievementsEngineService } from '../../achievements/achievements-engine.service';
 import { AchievementEventType } from '../../achievements/AchievementEventType';
@@ -8,6 +8,8 @@ import { PatchPlantDto } from './dto/patch-plant.dto';
 
 @Injectable()
 export class BasesService {
+  private readonly logger = new Logger(BasesService.name);
+
   constructor(private readonly prisma: PrismaService, private readonly achievements: AchievementsEngineService) {}
 
   async pairBaseForUser(userId: string, dto: PairBaseDto): Promise<{ id: string }> {
@@ -101,6 +103,33 @@ export class BasesService {
       data: { baseSlotId: slot.id, plantInstanceId: plant.id, assignedAt: new Date() },
     });
     await this.achievements.onEvent(userId, AchievementEventType.PLANT_ADDED, { plantId: plant.id });
+
+    const baseWithIp = await this.prisma.baseDevice.findUnique({ where: { id: base.id }, select: { lastIp: true } });
+    const lastIp = baseWithIp?.lastIp ?? null;
+    if (!lastIp) return;
+
+    const species = await this.prisma.plantSpecies.findUnique({
+      where: { id: dto.speciesId },
+      select: { commonName: true },
+    });
+    const displayName = (dto.nickname && dto.nickname.trim().length > 0)
+      ? dto.nickname.trim()
+      : (species?.commonName ?? `Espèce ${dto.speciesId}`);
+
+    const url = `http://${lastIp}/api/rename?pot=${slotIndex}&name=${encodeURIComponent(displayName)}`;
+    try {
+      void fetch(url, { method: 'POST' })
+        .then((res) => {
+          if (!res.ok) {
+            this.logger.warn(`ESP32 rename failed (HTTP ${res.status}) for base ${base.id} slot ${slotIndex}`);
+          }
+        })
+        .catch((e) => {
+          this.logger.warn(`ESP32 rename request failed for base ${base.id} slot ${slotIndex}: ${String(e)}`);
+        });
+    } catch (e) {
+      this.logger.warn(`ESP32 rename request failed for base ${base.id} slot ${slotIndex}: ${String(e)}`);
+    }
   }
 
   async getSlotMeasurements(userId: string, baseId: string, slotIndex: number, limit: number = 50): Promise<any[]> {

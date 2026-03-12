@@ -1,5 +1,5 @@
 // Contrôleur télémétrie: point d’entrée HTTP, validation basique, délégation au service.
-import { Body, Controller, Headers, Post } from '@nestjs/common';
+import { Body, Controller, Headers, Ip, Post } from '@nestjs/common';
 import { DeviceTelemetryService } from './device-telemetry.service';
 import { TelemetryDto } from './dto/telemetry.dto';
 import { ApiTags, ApiOperation, ApiBody, ApiOkResponse, ApiUnauthorizedResponse, ApiBadRequestResponse } from '@nestjs/swagger';
@@ -14,6 +14,14 @@ import { ApiTags, ApiOperation, ApiBody, ApiOkResponse, ApiUnauthorizedResponse,
 export class DeviceTelemetryController {
   // Injection du service
   constructor(private readonly service: DeviceTelemetryService) {}
+
+  private normalizeIp(raw: string | undefined | null): string | null {
+    if (!raw) return null;
+    const s = String(raw).trim();
+    if (!s) return null;
+    if (s.startsWith('::ffff:')) return s.slice('::ffff:'.length);
+    return s;
+  }
 
   // Endpoint POST d’ingestion
   @Post()
@@ -53,13 +61,14 @@ export class DeviceTelemetryController {
   @Post('simple')
   @ApiOperation({ summary: 'Simple ingestion for prototypes (no HMAC)' })
   @ApiBody({ type: TelemetryDto })
-  async ingestSimple(@Body() dto: TelemetryDto): Promise<{ status: string }> {
-    return this.service.handleTelemetrySimple(dto);
+  async ingestSimple(@Ip() ip: string, @Body() dto: TelemetryDto): Promise<{ status: string }> {
+    return this.service.handleTelemetrySimple(dto, this.normalizeIp(ip));
   }
 
   @Post('simple/base-raw')
   @ApiOperation({ summary: 'Simple ingestion for base prototypes (single payload for 4 slots)' })
-  async ingestSimpleBaseRaw(@Body() dto: any): Promise<{ status: string }> {
+  async ingestSimpleBaseRaw(@Ip() ip: string, @Body() dto: any): Promise<{ status: string }> {
+    const normalizedIp = this.normalizeIp(ip);
     const baseUid = typeof dto?.baseUid === 'string' && dto.baseUid.length > 0 ? dto.baseUid : 'BASE_TEST_01';
     const timestamp = typeof dto?.timestamp === 'string' && dto.timestamp.length > 0 ? dto.timestamp : new Date().toISOString();
 
@@ -90,7 +99,7 @@ export class DeviceTelemetryController {
     for (let slotIndex = 1; slotIndex <= 4; slotIndex++) {
       const soilMoisture = toPercent(dto?.[`pot${slotIndex}`]);
       const payload: any = { ...common, slotIndex, soilMoisture };
-      await this.service.handleTelemetrySimple(payload);
+      await this.service.handleTelemetrySimple(payload, normalizedIp);
     }
 
     return { status: 'ok' };

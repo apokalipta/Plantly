@@ -296,6 +296,7 @@ model BaseDevice {
   baseUid     String   @unique
   pairingCode String?  @unique
   name        String?
+  lastIp      String?
   ownerId     String
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt

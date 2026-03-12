@@ -20,6 +20,7 @@ export class DeviceTelemetryService {
     signature: string,
     dto: TelemetryDto,
     skipSecurity = false,
+    remoteIp?: string | null,
   ): Promise<{ status: string }> {
     // Vérifier device + horodatage + signature, puis persister et mettre à jour le statut
     const device = (deviceUid && deviceUid.length > 0) 
@@ -70,6 +71,12 @@ export class DeviceTelemetryService {
       const base = await this.prisma.baseDevice.findUnique({ where: { baseUid: String(dto.baseUid) } });
       if (!base) {
         throw new UnauthorizedException('Unknown base UID');
+      }
+      if (remoteIp && remoteIp.length > 0) {
+        await this.prisma.baseDevice.update({
+          where: { id: base.id },
+          data: { lastIp: remoteIp },
+        });
       }
       const slot = await this.prisma.baseSlot.findUnique({
         where: { baseId_slotIndex: { baseId: base.id, slotIndex: Number(dto.slotIndex) } },
@@ -151,8 +158,8 @@ export class DeviceTelemetryService {
     return { status: 'ok' };
   }
 
-  async handleTelemetrySimple(dto: TelemetryDto): Promise<{ status: string }> {
-    return this.handleTelemetry('', '', '', dto, true);
+  async handleTelemetrySimple(dto: TelemetryDto, remoteIp?: string | null): Promise<{ status: string }> {
+    return this.handleTelemetry('', '', '', dto, true, remoteIp);
   }
 
   // Parse timestamp (ISO ou epoch ms)
