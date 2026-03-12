@@ -250,6 +250,15 @@ JWT_REFRESH_TOKEN_SECRET=dev_secret_refresh
 PORT=3000
 ```
 
+Par exemple le miens ressemble à ça :
+
+```bash
+DATABASE_URL=postgresql://plantly:plantly_password@localhost:5432/plantly_dev?schema=public
+JWT_ACCESS_TOKEN_SECRET=dev_secret
+JWT_REFRESH_TOKEN_SECRET=dev_secret_refresh
+PORT=3000
+```
+
 Astuce : pour éviter les erreurs de configuration, alignez `DATABASE_URL` avec les identifiants définis dans `docker-compose.yml` (service `db`) et avec le fichier `backend/.env` du repo.
 
 ### 2) 📦 Installation des dépendances (depuis la racine)
