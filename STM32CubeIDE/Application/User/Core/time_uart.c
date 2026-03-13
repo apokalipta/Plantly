@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <stdint.h>
 
-#include "plantly_arrosage_store.h"   // ✅
+#include "plantly_arrosage_store.h"
 
 static UART_HandleTypeDef* g_huart = NULL;
 extern UART_HandleTypeDef huart6;
@@ -28,9 +28,13 @@ static volatile bool g_ip_ready = false;
 static char g_ssid[33] = "";
 static volatile bool g_ssid_ready = false;
 
-// ✅ NOUVEAU : Noms des pots (max 32 chars)
+// Noms des pots (max 32 chars)
 static char g_potname[4][33] = { "POT 1", "POT 2", "POT 3", "POT 4" };
 static volatile bool g_potname_ready[4] = { false, false, false, false };
+
+/* NOUVEAU : espèces des pots (max 32 chars) */
+static char g_espece[4][33] = { "AUCUNE", "AUCUNE", "AUCUNE", "AUCUNE" };
+static volatile bool g_espece_ready[4] = { false, false, false, false };
 
 // -------- helper transmit (safe) --------
 static void tx_line(const char* s)
@@ -72,20 +76,35 @@ static void parse_line(const char* s)
         return;
     }
 
-    // ✅ NOUVEAU : PN1=NomDuPot  (PN2=..., PN3=..., PN4=...)
-    // Format côté ESP32: "PN<1..4>=<name>"
+    // PN1=NomDuPot
     if (strncmp(s, "PN", 2) == 0)
     {
-        // s[2] = '1'..'4' et s[3] = '='
         if (s[2] >= '1' && s[2] <= '4' && s[3] == '=')
         {
-            uint8_t idx = (uint8_t)(s[2] - '1'); // 0..3
-            const char* name = s + 4;            // après "PNx="
+            uint8_t idx = (uint8_t)(s[2] - '1');
+            const char* name = s + 4;
 
             __disable_irq();
             strncpy(g_potname[idx], name, sizeof(g_potname[idx]) - 1);
             g_potname[idx][sizeof(g_potname[idx]) - 1] = '\0';
             g_potname_ready[idx] = true;
+            __enable_irq();
+        }
+        return;
+    }
+
+    /* NOUVEAU : ES1=EspeceDuPot */
+    if (strncmp(s, "ES", 2) == 0)
+    {
+        if (s[2] >= '1' && s[2] <= '4' && s[3] == '=')
+        {
+            uint8_t idx = (uint8_t)(s[2] - '1');
+            const char* espece = s + 4;
+
+            __disable_irq();
+            strncpy(g_espece[idx], espece, sizeof(g_espece[idx]) - 1);
+            g_espece[idx][sizeof(g_espece[idx]) - 1] = '\0';
+            g_espece_ready[idx] = true;
             __enable_irq();
         }
         return;
@@ -127,6 +146,7 @@ void TimeUart_Init(UART_HandleTypeDef* huart)
     g_valid = false;
 
     __disable_irq();
+
     strncpy(g_ip, "0.0.0.0", sizeof(g_ip) - 1);
     g_ip[sizeof(g_ip) - 1] = '\0';
     g_ip_ready = false;
@@ -134,7 +154,6 @@ void TimeUart_Init(UART_HandleTypeDef* huart)
     g_ssid[0] = '\0';
     g_ssid_ready = false;
 
-    // ✅ init noms (default)
     strncpy(g_potname[0], "POT 1", sizeof(g_potname[0]) - 1);
     strncpy(g_potname[1], "POT 2", sizeof(g_potname[1]) - 1);
     strncpy(g_potname[2], "POT 3", sizeof(g_potname[2]) - 1);
@@ -142,6 +161,16 @@ void TimeUart_Init(UART_HandleTypeDef* huart)
     for (int i = 0; i < 4; i++) {
         g_potname[i][32] = '\0';
         g_potname_ready[i] = false;
+    }
+
+    /* NOUVEAU : init espèces */
+    strncpy(g_espece[0], "AUCUNE", sizeof(g_espece[0]) - 1);
+    strncpy(g_espece[1], "AUCUNE", sizeof(g_espece[1]) - 1);
+    strncpy(g_espece[2], "AUCUNE", sizeof(g_espece[2]) - 1);
+    strncpy(g_espece[3], "AUCUNE", sizeof(g_espece[3]) - 1);
+    for (int i = 0; i < 4; i++) {
+        g_espece[i][32] = '\0';
+        g_espece_ready[i] = false;
     }
 
     __enable_irq();
@@ -216,17 +245,30 @@ bool Plantly_SSID_Get(char* out, uint16_t outLen)
     return true;
 }
 
-// ✅ NOUVEAU : getter noms des pots
 bool Plantly_PotName_Get(uint8_t potIndex, char* out, uint16_t outLen)
 {
     if (!out || outLen < 2) return false;
     if (potIndex > 3) return false;
 
     __disable_irq();
-    // même si pas "ready", on renvoie le default
     strncpy(out, g_potname[potIndex], outLen - 1);
     out[outLen - 1] = '\0';
     bool ok = g_potname_ready[potIndex] || (g_potname[potIndex][0] != '\0');
+    __enable_irq();
+
+    return ok;
+}
+
+/* NOUVEAU : getter espèce */
+bool Plantly_Espece_Get(uint8_t potIndex, char* out, uint16_t outLen)
+{
+    if (!out || outLen < 2) return false;
+    if (potIndex > 3) return false;
+
+    __disable_irq();
+    strncpy(out, g_espece[potIndex], outLen - 1);
+    out[outLen - 1] = '\0';
+    bool ok = g_espece_ready[potIndex] || (g_espece[potIndex][0] != '\0');
     __enable_irq();
 
     return ok;
@@ -238,7 +280,7 @@ void Plantly_WiFi_Clear_Request(void)
 }
 
 // =======================================================
-// ✅ Envoi date/heure arrosage des pots vers ESP32
+// Envoi date/heure arrosage des pots vers ESP32
 // =======================================================
 
 void Plantly_Arrosage_Send(uint8_t potIndex)

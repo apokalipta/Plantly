@@ -49,6 +49,18 @@ void Pot3View::setupScreen()
     touchgfx::Unicode::snprintf(ValHumiditeBuffer, VALHUMIDITE_SIZE, "0%%");
     ValHumidite.invalidate();
 
+    ValPlante.setWildcard(ValPlanteBuffer);
+    char espece[33] = {0};
+    if (Plantly_Espece_Get(2, espece, sizeof(espece)) && espece[0])
+        touchgfx::Unicode::fromUTF8((uint8_t*)espece, ValPlanteBuffer, VALPLANTE_SIZE);
+    else
+        touchgfx::Unicode::snprintf(ValPlanteBuffer, VALPLANTE_SIZE, "AUCUNE");
+    ValPlante.invalidate();
+
+    textescore.setWildcard(textescoreBuffer);
+    touchgfx::Unicode::snprintf(textescoreBuffer, TEXTESCORE_SIZE, "0/100");
+    textescore.invalidate();
+
     ValBarreHumidite.setRange(0, 100);
     ValBarreHumidite.setValue(0);
     ValBarreHumidite.invalidate();
@@ -114,6 +126,13 @@ void Pot3View::handleTickEvent()
             Titre.invalidate();
         }
     }
+
+    char espece[33] = {0};
+    if (Plantly_Espece_Get(2, espece, sizeof(espece)) && espece[0])
+        touchgfx::Unicode::fromUTF8((uint8_t*)espece, ValPlanteBuffer, VALPLANTE_SIZE);
+    else
+        touchgfx::Unicode::snprintf(ValPlanteBuffer, VALPLANTE_SIZE, "AUCUNE");
+    ValPlante.invalidate();
 
     uint32_t soilPct = g_soil_percent[2];
     if (soilPct != lastSoilPct)

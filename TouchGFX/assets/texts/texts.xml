@@ -6,6 +6,18 @@
   <Texts>
     <TextGroup Id="Group1" />
     <TextGroup Id="Unsorted">
+      <Text Id="__SingleUse_7083" Alignment="Left" TypographyId="Default">
+        <Translation Language="GB">    /100</Translation>
+      </Text>
+      <Text Id="__SingleUse_ZPAK" Alignment="Left" TypographyId="Default">
+        <Translation Language="GB">    /100</Translation>
+      </Text>
+      <Text Id="__SingleUse_HFB2" Alignment="Left" TypographyId="Default">
+        <Translation Language="GB">    /100</Translation>
+      </Text>
+      <Text Id="__SingleUse_C7PG" Alignment="Left" TypographyId="Default">
+        <Translation Language="GB">    /100</Translation>
+      </Text>
       <Text Id="__SingleUse_HUUH" Alignment="Left" TypographyId="Default">
         <Translation Language="GB">Mode vacance</Translation>
       </Text>
@@ -79,7 +91,7 @@
         <Translation Language="GB">&lt;d&gt;</Translation>
       </Text>
       <Text Id="__SingleUse_ERDM" Alignment="Left" TypographyId="Small">
-        <Translation Language="GB">    /100</Translation>
+        <Translation Language="GB">&lt;d&gt;</Translation>
       </Text>
       <Text Id="__SingleUse_6G3M" Alignment="Left" TypographyId="Date">
         <Translation Language="GB">&lt;d&gt;</Translation>
@@ -97,7 +109,7 @@
         <Translation Language="GB">&lt;d&gt;</Translation>
       </Text>
       <Text Id="__SingleUse_YL1G" Alignment="Left" TypographyId="Small">
-        <Translation Language="GB">    /100</Translation>
+        <Translation Language="GB">&lt;d&gt;</Translation>
       </Text>
       <Text Id="__SingleUse_EEP9" Alignment="Left" TypographyId="Date">
         <Translation Language="GB">Humidite :</Translation>
@@ -115,7 +127,7 @@
         <Translation Language="GB">&lt;d&gt;</Translation>
       </Text>
       <Text Id="__SingleUse_YA8T" Alignment="Left" TypographyId="Small">
-        <Translation Language="GB">    /100</Translation>
+        <Translation Language="GB">&lt;d&gt;</Translation>
       </Text>
       <Text Id="__SingleUse_HBTX" Alignment="Left" TypographyId="Date">
         <Translation Language="GB">&lt;d&gt;</Translation>
@@ -151,10 +163,10 @@
         <Translation Language="GB">&lt;d&gt;</Translation>
       </Text>
       <Text Id="__SingleUse_VQ01" Alignment="Left" TypographyId="Small">
-        <Translation Language="GB">    /100</Translation>
+        <Translation Language="GB">&lt;d&gt;</Translation>
       </Text>
       <Text Id="__SingleUse_RZOS" Alignment="Center" TypographyId="TITRE">
-        <Translation Language="GB">PLANTLY</Translation>
+        <Translation Language="GB">FLORALY</Translation>
       </Text>
       <Text Id="__SingleUse_P7G7" Alignment="Left" TypographyId="Default">
         <Translation Language="GB">Temperature : </Translation>
@@ -186,11 +198,11 @@
     </TextGroup>
   </Texts>
   <Typographies>
-    <Typography Id="Default" Font="ROCKBI.TTF" Size="20" Bpp="4" IsVector="no" Direction="LTR" WildcardCharacters="0123456789°azertyuiopqsdfghjklmwxcvbn./:,%°AZERTYYUIOPQSDFGHJKLMWXCVBN" />
-    <Typography Id="TITRE" Font="BOD_BI.TTF" Size="40" Bpp="4" IsVector="no" Direction="LTR" FallbackCharacter="?" WildcardCharacters="AZERTYUIOPQSDFGHJKLMWXCVBNazertyuiopqsdfghjklmwxcvbn0123456789_.?:!-%^¨îù@ '" />
-    <Typography Id="Date" Font="calibriz.ttf" Size="15" Bpp="4" IsVector="no" Direction="LTR" FallbackCharacter="?" WildcardCharacters="0123456789azertyuiopqsdfghjklmwxcvbnéè.,:/AZERTYUIOPQSDFGHJKLMWXCVBN%°" />
-    <Typography Id="Small" Font="verdana.ttf" Size="10" Bpp="4" IsVector="no" Direction="LTR" FallbackCharacter="?" />
-    <Typography Id="Datemain" Font="calibriz.ttf" Size="19" Bpp="4" IsVector="no" Direction="LTR" FallbackCharacter="?" WildcardCharacters="0123456789azertyuiopqsdfghjklmwxcvbnéè.,:/AZERTYUIOPQSDFGHJKLMWXCVBN%°" />
-    <Typography Id="Dateheure" Font="calibriz.ttf" Size="24" Bpp="4" IsVector="no" Direction="LTR" FallbackCharacter="?" WildcardCharacters="0123456789azertyuiopqsdfghjklmwxcvbnéè.,:/AZERTYUIOPQSDFGHJKLMWXCVBN%°" WidgetWildcardCharacters="0123456789 :APM" />
+    <Typography Id="Default" Font="ROCKBI.TTF" Size="20" Bpp="4" IsVector="no" Direction="LTR" WildcardCharacters="0123456789°azertyuiopqsdfghjklmwxcvbn./:,%°AZERTYYUIOPQSDFGHJKLMWXCVBNÉ" />
+    <Typography Id="TITRE" Font="BOD_BI.TTF" Size="40" Bpp="4" IsVector="no" Direction="LTR" FallbackCharacter="?" WildcardCharacters="AZERTYUIOPQSDFGHJKLMWXCVBNazertyuiopqsdfghjklmwxcvbn0123456789_.?:!-%^¨îù@ 'É" />
+    <Typography Id="Date" Font="calibriz.ttf" Size="15" Bpp="4" IsVector="no" Direction="LTR" FallbackCharacter="?" WildcardCharacters="0123456789azertyuiopqsdfghjklmwxcvbnéè.,:/AZERTYUIOPQSDFGHJKLMWXCVBN%°É " />
+    <Typography Id="Small" Font="verdana.ttf" Size="10" Bpp="4" IsVector="no" Direction="LTR" FallbackCharacter="?" WildcardCharacters="0123456789°azertyuiopqsdfghjklmwxcvbn./:,%°AZERTYYUIOPQSDFGHJKLMWXCVBNÉ " />
+    <Typography Id="Datemain" Font="calibriz.ttf" Size="19" Bpp="4" IsVector="no" Direction="LTR" FallbackCharacter="?" WildcardCharacters="0123456789azertyuiopqsdfghjklmwxcvbnéè.,:/AZERTYUIOPQSDFGHJKLMWXCVBN%°É " />
+    <Typography Id="Dateheure" Font="calibriz.ttf" Size="24" Bpp="4" IsVector="no" Direction="LTR" FallbackCharacter="?" WildcardCharacters="0123456789azertyuiopqsdfghjklmwxcvbnéè.,:/AZERTYUIOPQSDFGHJKLMWXCVBN%°É " WidgetWildcardCharacters="0123456789 :APM" />
   </Typographies>
 </TextDatabase>

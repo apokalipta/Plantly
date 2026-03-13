@@ -33,7 +33,7 @@ void Pot4View::setupScreen()
 {
     Pot4ViewBase::setupScreen();
 
-    // ✅ Titre = nom du pot (depuis ESP32 via UART)
+    // Titre = nom du pot
     Titre.setWildcard(TitreBuffer);
     char name[33] = {0};
     if (Plantly_PotName_Get(3, name, sizeof(name)) && name[0])
@@ -50,6 +50,19 @@ void Pot4View::setupScreen()
     ValHumidite.setWildcard(ValHumiditeBuffer);
     touchgfx::Unicode::snprintf(ValHumiditeBuffer, VALHUMIDITE_SIZE, "0%%");
     ValHumidite.invalidate();
+
+    // Espèce
+    ValPlante.setWildcard(ValPlanteBuffer);
+    char espece[33] = {0};
+    if (Plantly_Espece_Get(3, espece, sizeof(espece)) && espece[0])
+        touchgfx::Unicode::fromUTF8((uint8_t*)espece, ValPlanteBuffer, VALPLANTE_SIZE);
+    else
+        touchgfx::Unicode::snprintf(ValPlanteBuffer, VALPLANTE_SIZE, "AUCUNE");
+    ValPlante.invalidate();
+
+    textescore.setWildcard(textescoreBuffer);
+    touchgfx::Unicode::snprintf(textescoreBuffer, TEXTESCORE_SIZE, "0/100");
+    textescore.invalidate();
 
     ValBarreHumidite.setRange(0, 100);
     ValBarreHumidite.setValue(0);
@@ -79,7 +92,7 @@ void Pot4View::setupScreen()
     videoShown = false;
     lastSoilPct = 0xFFFFFFFF;
 
-    // ✅ stock local pour détecter changement de nom
+    // stock local pour détecter changement de nom
     std::memset(lastTitleName, 0, sizeof(lastTitleName));
     if (Plantly_PotName_Get(3, lastTitleName, sizeof(lastTitleName)) == false) {
         std::strncpy(lastTitleName, "POT 4", sizeof(lastTitleName) - 1);
@@ -107,7 +120,7 @@ void Pot4View::tearDownScreen()
 
 void Pot4View::handleTickEvent()
 {
-    // ✅ Mise à jour nom si l’appli le change
+    // Mise à jour nom si l’appli le change
     char name[33] = {0};
     if (Plantly_PotName_Get(3, name, sizeof(name)) && name[0])
     {
@@ -120,6 +133,13 @@ void Pot4View::handleTickEvent()
             Titre.invalidate();
         }
     }
+
+    char espece[33] = {0};
+    if (Plantly_Espece_Get(3, espece, sizeof(espece)) && espece[0])
+        touchgfx::Unicode::fromUTF8((uint8_t*)espece, ValPlanteBuffer, VALPLANTE_SIZE);
+    else
+        touchgfx::Unicode::snprintf(ValPlanteBuffer, VALPLANTE_SIZE, "AUCUNE");
+    ValPlante.invalidate();
 
     // Humidité
     uint32_t soilPct = g_soil_percent[3];

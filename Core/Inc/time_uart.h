@@ -23,7 +23,7 @@ bool Plantly_SSID_Get(char* out, uint16_t outLen);
 
 // ✅ NOUVEAU : nom des pots (reçu depuis ESP32 via UART: PN1=..., PN2=...)
 bool Plantly_PotName_Get(uint8_t potIndex, char* out, uint16_t outLen); // potIndex: 0..3
-
+bool Plantly_Espece_Get(uint8_t potIndex, char* out, uint16_t outLen);
 // Envoi commande vers ESP32
 void Plantly_WiFi_Clear_Request(void);
 

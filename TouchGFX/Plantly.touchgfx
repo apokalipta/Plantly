@@ -766,7 +766,12 @@
             "Height": 12,
             "TextId": "__SingleUse_VQ01",
             "TextRotation": "0",
-            "AutoSize": true
+            "AutoSize": true,
+            "Wildcard1": {
+              "TextId": "__SingleUse_C7PG",
+              "UseBuffer": true,
+              "BufferSize": 10
+            }
           },
           {
             "Type": "TextArea",
@@ -787,13 +792,13 @@
             "Name": "ValPlante",
             "X": 106,
             "Y": 95,
-            "Width": 153,
+            "Width": 214,
             "Height": 25,
             "TextId": "__SingleUse_VHWX",
             "TextRotation": "0",
             "Wildcard1": {
               "UseBuffer": true,
-              "BufferSize": 10
+              "BufferSize": 25
             }
           },
           {
@@ -1107,7 +1112,12 @@
             "Height": 12,
             "TextId": "__SingleUse_YL1G",
             "TextRotation": "0",
-            "AutoSize": true
+            "AutoSize": true,
+            "Wildcard1": {
+              "TextId": "__SingleUse_HFB2",
+              "UseBuffer": true,
+              "BufferSize": 10
+            }
           },
           {
             "Type": "TextArea",
@@ -1128,13 +1138,13 @@
             "Name": "ValPlante",
             "X": 106,
             "Y": 95,
-            "Width": 153,
+            "Width": 214,
             "Height": 25,
             "TextId": "__SingleUse_3NIG",
             "TextRotation": "0",
             "Wildcard1": {
               "UseBuffer": true,
-              "BufferSize": 10
+              "BufferSize": 25
             }
           },
           {
@@ -1448,7 +1458,12 @@
             "Height": 12,
             "TextId": "__SingleUse_ERDM",
             "TextRotation": "0",
-            "AutoSize": true
+            "AutoSize": true,
+            "Wildcard1": {
+              "TextId": "__SingleUse_ZPAK",
+              "UseBuffer": true,
+              "BufferSize": 10
+            }
           },
           {
             "Type": "TextArea",
@@ -1469,13 +1484,13 @@
             "Name": "ValPlante",
             "X": 106,
             "Y": 95,
-            "Width": 153,
+            "Width": 214,
             "Height": 25,
             "TextId": "__SingleUse_1XSQ",
             "TextRotation": "0",
             "Wildcard1": {
               "UseBuffer": true,
-              "BufferSize": 10
+              "BufferSize": 25
             }
           },
           {
@@ -1765,13 +1780,13 @@
             "Name": "ValPlante",
             "X": 106,
             "Y": 95,
-            "Width": 153,
+            "Width": 214,
             "Height": 25,
             "TextId": "__SingleUse_HBTX",
             "TextRotation": "0",
             "Wildcard1": {
               "UseBuffer": true,
-              "BufferSize": 10
+              "BufferSize": 25
             }
           },
           {
@@ -1803,7 +1818,12 @@
             "Height": 12,
             "TextId": "__SingleUse_YA8T",
             "TextRotation": "0",
-            "AutoSize": true
+            "AutoSize": true,
+            "Wildcard1": {
+              "TextId": "__SingleUse_7083",
+              "UseBuffer": true,
+              "BufferSize": 10
+            }
           },
           {
             "Type": "TextArea",
