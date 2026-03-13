@@ -21,7 +21,7 @@ export class DeviceTelemetryService {
     dto: TelemetryDto,
     skipSecurity = false,
     remoteIp?: string | null,
-  ): Promise<{ status: string }> {
+  ): Promise<{ status: string; espece?: string | null; slotIndex?: number }> {
     // Vérifier device + horodatage + signature, puis persister et mettre à jour le statut
     const device = (deviceUid && deviceUid.length > 0) 
       ? await this.prisma.device.findUnique({ where: { deviceUid } })
@@ -138,6 +138,9 @@ export class DeviceTelemetryService {
       where: { deviceId: mappedDeviceId, status: 'ACTIVE' },
       orderBy: { plantedAt: 'desc' },
     }) : null;
+    const plantSpecies = plant
+      ? await this.prisma.plantSpecies.findUnique({ where: { id: plant.speciesId }, select: { commonName: true } })
+      : null;
     const plantCare = plant ? await this.prisma.plantCare.findUnique({ where: { speciesId: plant.speciesId } }) : null;
     const latestReading: { timestamp: Date; soilMoisture?: number; lightLevel?: number } = {
       timestamp: readingTimestamp,
@@ -155,10 +158,13 @@ export class DeviceTelemetryService {
     await this.syncBatteryAlerts(mappedDeviceId!, plant ? String(plant.id) : null, dto.batteryLevel, baseSlotId ?? undefined);
 
     // Confirmer
+    if (useBaseFlow && typeof dto.slotIndex === 'number') {
+      return { status: 'ok', espece: plantSpecies?.commonName ?? null, slotIndex: dto.slotIndex };
+    }
     return { status: 'ok' };
   }
 
-  async handleTelemetrySimple(dto: TelemetryDto, remoteIp?: string | null): Promise<{ status: string }> {
+  async handleTelemetrySimple(dto: TelemetryDto, remoteIp?: string | null): Promise<{ status: string; espece?: string | null; slotIndex?: number }> {
     return this.handleTelemetry('', '', '', dto, true, remoteIp);
   }
 

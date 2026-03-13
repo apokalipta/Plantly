@@ -2,8 +2,9 @@ import 'reflect-metadata';
 import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { join } from 'path';
+import * as os from 'node:os';
 import { AppModule } from './app.module';
-import { BadRequestException, ValidationPipe } from '@nestjs/common';
+import { BadRequestException, Logger, ValidationPipe } from '@nestjs/common';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 // Intention: Point d’entrée de l’API Nest
@@ -53,7 +54,21 @@ async function bootstrap() {
   }
 
   const port = process.env.PORT ? Number(process.env.PORT) : 3000;
-  await app.listen(port);
+  await app.listen(port, '0.0.0.0');
+
+  const nets = os.networkInterfaces();
+  const candidates: string[] = [];
+  for (const name of Object.keys(nets)) {
+    const addrs = nets[name] || [];
+    for (const addr of addrs) {
+      if (addr && addr.family === 'IPv4' && !addr.internal) {
+        candidates.push(addr.address);
+      }
+    }
+  }
+
+  const ip = candidates[0] || '0.0.0.0';
+  Logger.log(`🚀 Serveur prêt sur le LAN : http://${ip}:${port}`, 'Bootstrap');
 }
 
 bootstrap();

@@ -53,7 +53,7 @@ export class DeviceTelemetryController {
     @Headers('X-DEVICE-TIMESTAMP') headerTimestamp: string,
     @Headers('X-DEVICE-SIGNATURE') signature: string,
     @Body() dto: TelemetryDto,
-  ): Promise<{ status: string }> {
+  ): Promise<{ status: string; espece?: string | null; slotIndex?: number }> {
     // Appel au service
     return this.service.handleTelemetry(deviceUid, headerTimestamp, signature, dto);
   }
@@ -61,7 +61,7 @@ export class DeviceTelemetryController {
   @Post('simple')
   @ApiOperation({ summary: 'Simple ingestion for prototypes (no HMAC)' })
   @ApiBody({ type: TelemetryDto })
-  async ingestSimple(@Ip() ip: string, @Body() dto: TelemetryDto): Promise<{ status: string }> {
+  async ingestSimple(@Ip() ip: string, @Body() dto: TelemetryDto): Promise<{ status: string; espece?: string | null; slotIndex?: number }> {
     return this.service.handleTelemetrySimple(dto, this.normalizeIp(ip));
   }
 

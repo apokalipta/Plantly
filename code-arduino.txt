@@ -28,8 +28,9 @@ const char* ntpServer = "pool.ntp.org";
 const char* tzInfo    = "CET-1CEST,M3.5.0/2,M10.5.0/3";
 
 // ====== CONFIGURATION BACKEND ======
-const char* backendUrl = "http://172.20.10.3:3000/api/device/telemetry/simple";
-const char* myBaseUid  = "BASE_TEST_01";
+static String backendUrl = "";
+static String defaultBackendUrl = "http://192.168.1.191:3000/api/device/telemetry/simple";
+static String myBaseUid  = "BASE_TEST_01";
 
 // ====== UART2 vers STM32 ======
 static const int UART_RX = 16; // STM32 TX -> ESP32 RX
@@ -65,6 +66,8 @@ String arrosageStr[4] = {"NONE","NONE","NONE","NONE"}; // AR1..AR4
 
 // ====== NOMS des pots ======
 String potNames[4] = {"POT 1","POT 2","POT 3","POT 4"};
+String plantNames[4] = {"","", "",""};
+String espece[4] = {"","","",""};
 
 // ====== Suivi de l'IP pour la STM32 ======
 String lastIpSent = "0.0.0.0";
@@ -80,6 +83,12 @@ static String uartLine = "";
 // ====== RESET WIFI ======
 volatile bool pendingWifiClear = false;
 volatile bool ignoreAutoSave   = false;
+static bool DBG_UART_LINES = true;
+static bool DBG_UART_UNKNOWN = true;
+static bool DBG_PLANT_NAME = true;
+static bool DBG_HTTP = true;
+static unsigned long lastDbgUnknownMs = 0;
+static unsigned long lastDbgPlantMs = 0;
 
 // ------------------ helpers ------------------
 static inline bool isHex(char c){
@@ -125,6 +134,36 @@ static String jsonEscape(const String& s){
     else o += c;
   }
   return o;
+}
+
+static String extractEspece(const String& response) {
+  int p = response.indexOf("\"espece\":");
+  if (p < 0) return "";
+  p += 9;
+  while (p < (int)response.length() && response.charAt(p) == ' ') p++;
+  if (p + 4 <= (int)response.length() && response.substring(p, p + 4) == "null") return "AUCUNE";
+  if (p >= (int)response.length() || response.charAt(p) != '"') return "";
+  p++;
+  String out;
+  out.reserve(32);
+  while (p < (int)response.length()) {
+    char c = response.charAt(p);
+    if (c == '"') break;
+    if (c == '\\') {
+      if (p + 1 >= (int)response.length()) break;
+      char n = response.charAt(p + 1);
+      if (n == '"' || n == '\\' || n == '/') { out += n; p += 2; continue; }
+      if (n == 'n') { out += '\n'; p += 2; continue; }
+      if (n == 'r') { out += '\r'; p += 2; continue; }
+      if (n == 't') { out += '\t'; p += 2; continue; }
+    }
+    out += c;
+    p++;
+  }
+  out.trim();
+  if (out.length() == 0) return "AUCUNE";
+  if (out.length() > 32) out = out.substring(0, 32);
+  return out;
 }
 
 // ------------------ PORTAIL WIFI (HTML) ------------------
@@ -217,6 +256,9 @@ static void sendPotNameToSTM32(uint8_t potIndex){
   if (name.length() == 0) name = "POT " + String(potIndex + 1);
   if (name.length() > 32) name = name.substring(0, 32);
 
+  if (DBG_UART_LINES) {
+    Serial.printf("UART=> PN%d=%s\n", (int)(potIndex + 1), name.c_str());
+  }
   Serial2.print("PN");
   Serial2.print((int)(potIndex + 1));
   Serial2.print("=");
@@ -230,6 +272,30 @@ static void sendAllPotNamesToSTM32(){
   }
 }
 
+static void sendEspeceToSTM32(uint8_t potIndex){
+  if (potIndex > 3) return;
+
+  String v = espece[potIndex];
+  v.trim();
+  if (v.length() == 0) v = "AUCUNE";
+  if (v.length() > 32) v = v.substring(0, 32);
+
+  if (DBG_UART_LINES) {
+    Serial.printf("UART=> ES%d=%s\n", (int)(potIndex + 1), v.c_str());
+  }
+  Serial2.print("ES");
+  Serial2.print((int)(potIndex + 1));
+  Serial2.print("=");
+  Serial2.print(v);
+  Serial2.print("\n");
+}
+
+static void sendAllEspecesToSTM32(){
+  for (uint8_t i = 0; i < 4; i++){
+    sendEspeceToSTM32(i);
+  }
+}
+
 static int clampPct(int v){
   if(v < 0) return 0;
   if(v > 100) return 100;
@@ -239,6 +305,7 @@ static int clampPct(int v){
 // ------------------ ENVOI BACKEND ------------------
 void sendTelemetryToBackend() {
   if (WiFi.status() != WL_CONNECTED) return;
+  String url = backendUrl.length() ? backendUrl : defaultBackendUrl;
 
   struct tm t;
   if (!getLocalTime(&t) || t.tm_year < 120) return;
@@ -247,8 +314,10 @@ void sendTelemetryToBackend() {
   const String timeStr = String(buf);
 
   for (int i = 0; i < 4; i++) {
+    WiFiClient client;
     HTTPClient http;
-    http.begin(backendUrl);
+    http.setReuse(true);
+    http.begin(client, url);
     http.addHeader("Content-Type", "application/json");
     http.setTimeout(5000);
 
@@ -276,6 +345,17 @@ void sendTelemetryToBackend() {
       String response = http.getString();
       Serial.printf("Pot %d sent to backend: HTTP %d\n", i + 1, httpResponseCode);
       Serial.println("Response: " + response);
+      String sp = extractEspece(response);
+      sp.trim();
+      if (sp.length() == 0) sp = "AUCUNE";
+      if (espece[i] != sp) {
+        espece[i] = sp;
+        prefs.begin("plantly", false);
+        String key = "espece" + String(i + 1);
+        prefs.putString(key.c_str(), sp);
+        prefs.end();
+        sendEspeceToSTM32((uint8_t)i);
+      }
     } else {
       Serial.printf("Error sending pot %d to backend: %s\n", i + 1, http.errorToString(httpResponseCode).c_str());
     }
@@ -296,6 +376,34 @@ static void parseToken(String token){
     if(cmd == "WIFI_CLEAR"){
       pendingWifiClear = true;
       ignoreAutoSave   = true;
+    }
+    return;
+  }
+
+  if (token.startsWith("PN")) {
+    if (DBG_UART_LINES) Serial.printf("UART<= %s\n", token.c_str());
+    return;
+  }
+
+  if (token.startsWith("PLANT")) {
+    int eq = token.indexOf('=');
+    if (eq < 0) return;
+    int potIdx = -1;
+    if (token.length() > 5) {
+      char c = token.charAt(5);
+      if (c >= '1' && c <= '4') potIdx = (int)(c - '1');
+    }
+    String name = token.substring(eq + 1);
+    name.trim();
+    if (potIdx >= 0 && potIdx <= 3) {
+      bool changed = plantNames[potIdx] != name;
+      plantNames[potIdx] = name;
+      if (DBG_PLANT_NAME && changed && millis() - lastDbgPlantMs > 50) {
+        lastDbgPlantMs = millis();
+        Serial.printf("PLANT_NAME pot=%d name=\"%s\" raw=\"%s\"\n", potIdx + 1, name.c_str(), token.c_str());
+      }
+    } else {
+      if (DBG_PLANT_NAME) Serial.printf("PLANT_NAME raw=\"%s\"\n", token.c_str());
     }
     return;
   }
@@ -337,6 +445,11 @@ static void parseToken(String token){
     if (val.length() == 0) val = "NONE";
     arrosageStr[potIdx] = val;
     return;
+  }
+
+  if (DBG_UART_UNKNOWN && token.indexOf('=') >= 0 && millis() - lastDbgUnknownMs > 200) {
+    lastDbgUnknownMs = millis();
+    Serial.printf("UART<= UNKNOWN \"%s\"\n", token.c_str());
   }
 }
 
@@ -457,7 +570,12 @@ void handleApiRename(){
 
   if (newName.length() > 32) newName = newName.substring(0, 32);
 
+  String prev = potNames[idx];
   potNames[idx] = newName;
+  if (DBG_UART_LINES) {
+    String rip = server.client().remoteIP().toString();
+    Serial.printf("HTTP<= /api/rename from=%s pot=%d prev=\"%s\" next=\"%s\" rawName=\"%s\"\n", rip.c_str(), pot, prev.c_str(), newName.c_str(), rawName.c_str());
+  }
 
   prefs.begin("plantly", false);
   String key = "name" + String(pot);
@@ -465,6 +583,71 @@ void handleApiRename(){
   prefs.end();
 
   sendPotNameToSTM32((uint8_t)idx);
+
+  server.send(200, "application/json; charset=utf-8", "{\"status\":\"success\"}");
+}
+
+void handleApiPlant(){
+  if (!server.hasArg("pot") || !server.hasArg("name")){
+    server.send(400, "application/json; charset=utf-8", "{\"status\":\"error\",\"msg\":\"missing pot/name\"}");
+    return;
+  }
+
+  int pot = server.arg("pot").toInt();
+  int idx = pot - 1;
+  if (idx < 0 || idx > 3){
+    server.send(400, "application/json; charset=utf-8", "{\"status\":\"error\",\"msg\":\"bad pot\"}");
+    return;
+  }
+
+  String rawName = server.arg("name");
+  String newName = urlDecode(rawName);
+  newName.trim();
+  if (newName.length() > 64) newName = newName.substring(0, 64);
+
+  String prev = plantNames[idx];
+  plantNames[idx] = newName;
+
+  if (DBG_HTTP || DBG_PLANT_NAME) {
+    String rip = server.client().remoteIP().toString();
+    Serial.printf("HTTP<= /api/plant from=%s pot=%d prev=\"%s\" next=\"%s\" rawName=\"%s\"\n", rip.c_str(), pot, prev.c_str(), newName.c_str(), rawName.c_str());
+  }
+
+  server.send(200, "application/json; charset=utf-8", "{\"status\":\"success\"}");
+}
+
+void handleApiEspece(){
+  if (!server.hasArg("pot") || !server.hasArg("espece")){
+    server.send(400, "application/json; charset=utf-8", "{\"status\":\"error\",\"msg\":\"missing pot/espece\"}");
+    return;
+  }
+
+  int pot = server.arg("pot").toInt();
+  int idx = pot - 1;
+  if (idx < 0 || idx > 3){
+    server.send(400, "application/json; charset=utf-8", "{\"status\":\"error\",\"msg\":\"bad pot\"}");
+    return;
+  }
+
+  String raw = server.arg("espece");
+  String v = urlDecode(raw);
+  v.trim();
+  if (v.length() == 0) v = "AUCUNE";
+  if (v.length() > 32) v = v.substring(0, 32);
+
+  String prev = espece[idx];
+  espece[idx] = v;
+  if (DBG_HTTP) {
+    String rip = server.client().remoteIP().toString();
+    Serial.printf("HTTP<= /api/espece from=%s pot=%d prev=\"%s\" next=\"%s\" raw=\"%s\"\n", rip.c_str(), pot, prev.c_str(), v.c_str(), raw.c_str());
+  }
+
+  prefs.begin("plantly", false);
+  String key = "espece" + String(pot);
+  prefs.putString(key.c_str(), v);
+  prefs.end();
+
+  sendEspeceToSTM32((uint8_t)idx);
 
   server.send(200, "application/json; charset=utf-8", "{\"status\":\"success\"}");
 }
@@ -518,6 +701,15 @@ static void loadConfigFromNVS() {
     if (potNames[i].length() > 32) potNames[i] = potNames[i].substring(0, 32);
   }
 
+  for (int i=0; i<4; i++){
+    int pot = i + 1;
+    String key = "espece" + String(pot);
+    espece[i] = prefs.getString(key.c_str(), "AUCUNE");
+    espece[i].trim();
+    if (espece[i].length() == 0) espece[i] = "AUCUNE";
+    if (espece[i].length() > 32) espece[i] = espece[i].substring(0, 32);
+  }
+
   prefs.end();
 }
 
@@ -528,10 +720,19 @@ static void saveWifiToNVS(const String& ssid, const String& pass) {
   prefs.end();
 }
 
+static void saveBackendToNVS(const String& url, const String& baseUid) {
+  prefs.begin("plantly", false);
+  prefs.putString("backendUrl", url);
+  prefs.putString("baseUid", baseUid);
+  prefs.end();
+}
+
 static void clearWifiNVS() {
   prefs.begin("plantly", false);
   prefs.remove("ssid");
   prefs.remove("pass");
+  prefs.remove("backendUrl");
+  prefs.remove("baseUid");
   prefs.end();
 }
 
@@ -585,6 +786,7 @@ static void startSTAApi() {
   lastSendIpMs = millis();
 
   sendAllPotNamesToSTM32();
+  sendAllEspecesToSTM32();
   lastSendNamesMs = millis();
   backendSendPending = true;
 
@@ -603,6 +805,39 @@ static void startSTAApi() {
   server.on("/api/data",   HTTP_GET,  handleApiData);
   server.on("/api/wifi",   HTTP_GET,  handleApiWifi);
   server.on("/api/rename", HTTP_POST, handleApiRename);
+  server.on("/api/plant",  HTTP_POST, handleApiPlant);
+  server.on("/api/espece", HTTP_POST, handleApiEspece);
+  server.on("/api/plant",  HTTP_GET,  [](){
+    String json = "{";
+    json += "\"p1\":\"" + jsonEscape(plantNames[0]) + "\",";
+    json += "\"p2\":\"" + jsonEscape(plantNames[1]) + "\",";
+    json += "\"p3\":\"" + jsonEscape(plantNames[2]) + "\",";
+    json += "\"p4\":\"" + jsonEscape(plantNames[3]) + "\"";
+    json += "}";
+    server.send(200, "application/json; charset=utf-8", json);
+  });
+
+  server.on("/api/backend", HTTP_GET, [](){
+    String url = backendUrl.length() ? backendUrl : defaultBackendUrl;
+    String json = "{\"backendUrl\":\"" + jsonEscape(url) + "\",\"baseUid\":\"" + jsonEscape(myBaseUid) + "\"}";
+    server.send(200, "application/json; charset=utf-8", json);
+  });
+
+  server.on("/api/backend", HTTP_POST, [](){
+    if (!server.hasArg("url") && !server.hasArg("baseUid")) {
+      server.send(400, "application/json; charset=utf-8", "{\"status\":\"error\",\"msg\":\"missing params\"}");
+      return;
+    }
+    String newUrl = server.hasArg("url") ? urlDecode(server.arg("url")) : (backendUrl.length() ? backendUrl : defaultBackendUrl);
+    String newBase = server.hasArg("baseUid") ? urlDecode(server.arg("baseUid")) : myBaseUid;
+    newUrl.trim();
+    newBase.trim();
+    if (newUrl.length() == 0) newUrl = defaultBackendUrl;
+    backendUrl = newUrl;
+    myBaseUid = newBase;
+    saveBackendToNVS(backendUrl, myBaseUid);
+    server.send(200, "application/json; charset=utf-8", "{\"status\":\"success\"}");
+  });
 
   server.on("/api/wifi/clear", HTTP_POST, [](){
     clearWifiNVS();
@@ -646,7 +881,12 @@ static void uartRxProcess()
       String line = uartLine;
       uartLine = "";
       line.trim();
-      if (line.length()) parseLine(line);
+      if (line.length()) {
+        if (DBG_UART_LINES && (line.indexOf("PLANT") >= 0 || line.indexOf("PN") >= 0)) {
+          Serial.printf("UART<= LINE \"%s\"\n", line.c_str());
+        }
+        parseLine(line);
+      }
     } else {
       if (uartLine.length() < 200) uartLine += c;
       else uartLine = "";
@@ -663,6 +903,10 @@ void setup() {
   delay(100);
 
   loadConfigFromNVS();
+  prefs.begin("plantly", true);
+  backendUrl = prefs.getString("backendUrl", "");
+  myBaseUid = prefs.getString("baseUid", myBaseUid);
+  prefs.end();
 
   bool connected = false;
   if (wifiSsid.length() > 0) {
@@ -725,6 +969,7 @@ void loop() {
   if (!configMode && WiFi.status() == WL_CONNECTED && millis() - lastSendNamesMs >= 5000) {
     lastSendNamesMs = millis();
     sendAllPotNamesToSTM32();
+    sendAllEspecesToSTM32();
   }
 
   if (!configMode && WiFi.status() == WL_CONNECTED && backendSendPending) {

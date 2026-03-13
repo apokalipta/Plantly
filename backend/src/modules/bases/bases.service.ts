@@ -104,31 +104,34 @@ export class BasesService {
     });
     await this.achievements.onEvent(userId, AchievementEventType.PLANT_ADDED, { plantId: plant.id });
 
-    const baseWithIp = await this.prisma.baseDevice.findUnique({ where: { id: base.id }, select: { lastIp: true } });
-    const lastIp = baseWithIp?.lastIp ?? null;
-    if (!lastIp) return;
+    const baseDevice = await this.prisma.baseDevice.findUnique({ where: { id: base.id }, select: { lastIp: true } });
+    this.logger.log(`ESP32 IP pour la base ${base.baseUid} : ${baseDevice?.lastIp}`);
+    if (!baseDevice?.lastIp) {
+      this.logger.warn("Impossible de notifier l'ESP32 : aucune IP connue.");
+    } else {
+      const targetPot = slotIndex >= 1 && slotIndex <= 4 ? slotIndex : slotIndex >= 0 && slotIndex <= 3 ? slotIndex + 1 : slotIndex;
+      if (targetPot < 1 || targetPot > 4) {
+        this.logger.warn(`Impossible de notifier l'ESP32 : index de pot invalide (${targetPot}).`);
+        return;
+      }
 
-    const species = await this.prisma.plantSpecies.findUnique({
-      where: { id: dto.speciesId },
-      select: { commonName: true },
-    });
-    const displayName = (dto.nickname && dto.nickname.trim().length > 0)
-      ? dto.nickname.trim()
-      : (species?.commonName ?? `Espèce ${dto.speciesId}`);
+      const species = await this.prisma.plantSpecies.findUnique({
+        where: { id: dto.speciesId },
+        select: { commonName: true },
+      });
+      const espece = species?.commonName ?? `Espèce ${dto.speciesId}`;
 
-    const url = `http://${lastIp}/api/rename?pot=${slotIndex}&name=${encodeURIComponent(displayName)}`;
-    try {
-      void fetch(url, { method: 'POST' })
-        .then((res) => {
-          if (!res.ok) {
-            this.logger.warn(`ESP32 rename failed (HTTP ${res.status}) for base ${base.id} slot ${slotIndex}`);
-          }
-        })
-        .catch((e) => {
-          this.logger.warn(`ESP32 rename request failed for base ${base.id} slot ${slotIndex}: ${String(e)}`);
-        });
-    } catch (e) {
-      this.logger.warn(`ESP32 rename request failed for base ${base.id} slot ${slotIndex}: ${String(e)}`);
+      const url = `http://${baseDevice.lastIp}/api/espece?pot=${targetPot}&espece=${encodeURIComponent(espece)}`;
+      this.logger.log(`Envoi à l'ESP32 -> ${url}`);
+
+      try {
+        const response = await fetch(url, { method: 'POST' });
+        const text = await response.text();
+        this.logger.log(`Réponse ESP32 (${response.status}) : ${text}`);
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        this.logger.error(`Erreur réseau avec l'ESP32 : ${message}`);
+      }
     }
   }
 

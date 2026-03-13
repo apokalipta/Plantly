@@ -1,5 +1,5 @@
 // Service des appareils/pots: recherche, détails, appairage et statut global.
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, Logger } from '@nestjs/common';
 import { ListPotsResponseDto } from './dto/list-pots.response.dto';
 import { PotDetailsResponseDto } from './dto/pot-details.response.dto';
 import { LinkPotDto } from './dto/link-pot.dto';
@@ -17,6 +17,7 @@ import * as crypto from 'node:crypto';
 export class DevicesService {
   constructor(private readonly prisma: PrismaService, private readonly achievements: AchievementsEngineService) {}
 
+  private readonly logger = new Logger(DevicesService.name);
   private readonly MOISTURE_MIN = 30;
   private readonly MOISTURE_MAX = 70;
   private readonly LIGHT_MIN = 200;
@@ -212,6 +213,10 @@ export class DevicesService {
     const device = await this.prisma.device.findFirst({ where: { id: potId, ownerId: userId } });
     if (!device) throw new NotFoundException('Pot not found');
 
+    const virtualMatch = /^BASE-(.+)-S(\d+)$/.exec(String(device.deviceUid || '').trim());
+    const virtualBaseUid = virtualMatch?.[1];
+    const virtualSlotIndex = virtualMatch?.[2] ? Number.parseInt(virtualMatch[2], 10) : null;
+
     const existingActive = await this.prisma.plantInstance.findFirst({
       where: { deviceId: device.id, status: 'ACTIVE' },
       orderBy: { plantedAt: 'desc' },
@@ -239,6 +244,64 @@ export class DevicesService {
       existingActive ? AchievementEventType.PLANT_CHANGED : AchievementEventType.PLANT_ADDED,
       { plantId: plant.id },
     );
+
+    if (virtualBaseUid && typeof virtualSlotIndex === 'number' && Number.isInteger(virtualSlotIndex) && virtualSlotIndex >= 1 && virtualSlotIndex <= 4) {
+      const base = await this.prisma.baseDevice.findUnique({
+        where: { baseUid: virtualBaseUid },
+        select: { id: true, baseUid: true, ownerId: true, lastIp: true },
+      });
+
+      if (base && base.ownerId === userId) {
+        const slot = await this.prisma.baseSlot.findUnique({
+          where: { baseId_slotIndex: { baseId: base.id, slotIndex: virtualSlotIndex } },
+          select: { id: true, slotIndex: true, currentPlantInstanceId: true },
+        });
+
+        if (slot) {
+          const prevPlantId = slot.currentPlantInstanceId ?? null;
+          if (prevPlantId) {
+            const openHist = await this.prisma.slotAssignmentHistory.findFirst({
+              where: { baseSlotId: slot.id, plantInstanceId: prevPlantId, unassignedAt: null },
+            });
+            if (openHist) {
+              await this.prisma.slotAssignmentHistory.update({
+                where: { id: openHist.id },
+                data: { unassignedAt: new Date() },
+              });
+            }
+          }
+
+          await this.prisma.baseSlot.update({ where: { id: slot.id }, data: { currentPlantInstanceId: plant.id } });
+          await this.prisma.slotAssignmentHistory.create({
+            data: { baseSlotId: slot.id, plantInstanceId: plant.id, assignedAt: new Date() },
+          });
+
+          this.logger.log(`ESP32 IP pour la base ${base.baseUid} : ${base.lastIp}`);
+          if (!base.lastIp) {
+            this.logger.warn("Impossible de notifier l'ESP32 : aucune IP connue.");
+            return;
+          }
+
+          const species = await this.prisma.plantSpecies.findUnique({
+            where: { id: dto.speciesId },
+            select: { commonName: true },
+          });
+          const espece = species?.commonName ?? `Espèce ${dto.speciesId}`;
+
+          const url = `http://${base.lastIp}/api/espece?pot=${virtualSlotIndex}&espece=${encodeURIComponent(espece)}`;
+          this.logger.log(`Envoi à l'ESP32 -> ${url}`);
+
+          try {
+            const response = await fetch(url, { method: 'POST' });
+            const text = await response.text();
+            this.logger.log(`Réponse ESP32 (${response.status}) : ${text}`);
+          } catch (error) {
+            const message = error instanceof Error ? error.message : String(error);
+            this.logger.error(`Erreur réseau avec l'ESP32 : ${message}`);
+          }
+        }
+      }
+    }
   }
 
   async removePlantFromPot(userId: string, potId: string): Promise<void> {
